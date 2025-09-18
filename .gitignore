@@ -1,0 +1,21 @@
+# Arquivos de log
+*.log
+
+# Dependências
+node_modules/
+
+# Build
+dist/
+build/
+
+# Arquivos de ambiente
+.env
+.env.local
+
+# IDE
+.vscode/
+.idea/
+
+# Sistema Operacional
+.DS_Store
+Thumbs.db
