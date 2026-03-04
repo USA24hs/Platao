@@ -41,6 +41,18 @@
       border-radius: 0.5rem; 
     }
     
+    .btn-secondary {
+      background: linear-gradient(135deg, #3b82f6, #2563eb);
+      color: white;
+      padding: 0.5rem 1rem;
+      border-radius: 0.5rem;
+      transition: all 0.2s;
+    }
+    .btn-secondary:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+    }
+    
     /* Calendário */
     .calendar-container {
       background: linear-gradient(145deg, #1e293b, #0f172a);
@@ -71,11 +83,9 @@
     
     .calendar-day.has-shift { 
       background: linear-gradient(145deg, #10b98120, #05966920); 
-      border-color: #10b981; 
     }
     
     .calendar-day.has-swap { 
-      background: linear-gradient(145deg, #f59e0b20, #d9770620); 
       border-color: #f59e0b; 
     }
     
@@ -93,12 +103,34 @@
       font-size: 0.65rem;
       padding: 2px 6px;
       border-radius: 12px;
-      background: #1e293b;
       margin-top: 2px;
       white-space: nowrap;
       max-width: 100%;
       overflow: hidden;
       text-overflow: ellipsis;
+    }
+    
+    /* Cores dos locais */
+    .location-hrl { 
+      background: linear-gradient(135deg, #ef4444, #dc2626);
+      color: white;
+    }
+    .location-hto { 
+      background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+      color: white;
+    }
+    .location-hcm { 
+      background: linear-gradient(135deg, #3b82f6, #2563eb);
+      color: white;
+    }
+    .location-cia { 
+      background: linear-gradient(135deg, #f97316, #ea580c);
+      color: white;
+    }
+    .location-default {
+      background: #1e293b;
+      color: white;
+      border: 1px solid #475569;
     }
     
     /* Indicadores de tipo */
@@ -168,6 +200,14 @@
       font-weight: bold;
     }
     
+    .location-badge {
+      background: #334155;
+      color: white;
+      font-size: 0.7rem;
+      padding: 0.2rem 0.5rem;
+      border-radius: 1rem;
+    }
+    
     /* Stats cards */
     .stat-card {
       background: linear-gradient(145deg, #1e293b, #0f172a);
@@ -201,6 +241,12 @@
     .animate-slide-up {
       animation: slideUp 0.3s ease-out forwards;
     }
+
+    /* Cores dos locais nas bordas dos cards */
+    .location-hrl-border { border-left-color: #ef4444; }
+    .location-hto-border { border-left-color: #8b5cf6; }
+    .location-hcm-border { border-left-color: #3b82f6; }
+    .location-cia-border { border-left-color: #f97316; }
   </style>
 </head>
 <body class="p-4 md:p-6">
@@ -214,15 +260,23 @@
       </div>
       <div>
         <h1 class="text-2xl font-bold tracking-tight">Minha Escala</h1>
-        <p class="text-sm text-gray-400">Sistema de Gerenciamento de Plantões</p>
+        <p class="text-sm text-gray-400">Sistema de Gerenciamento de Plantões 24x72</p>
       </div>
     </div>
-    <button onclick="openFormModal()" class="btn-primary flex items-center gap-2 px-6 py-3">
-      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
-      </svg>
-      Novo Plantão
-    </button>
+    <div class="flex flex-wrap gap-2">
+      <button onclick="openGeneratorModal()" class="btn-secondary flex items-center gap-2 px-6 py-3">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
+        </svg>
+        Gerar Escala 24x72
+      </button>
+      <button onclick="openFormModal()" class="btn-primary flex items-center gap-2 px-6 py-3">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+        </svg>
+        Novo Plantão
+      </button>
+    </div>
   </div>
 
   <!-- CALENDÁRIO NO TOPO -->
@@ -267,7 +321,25 @@
       <div class="flex items-center gap-2"><div class="w-3 h-3 rounded-full bg-purple-500"></div><span class="text-sm">SN (12h)</span></div>
       <div class="flex items-center gap-2"><div class="w-3 h-3 rounded-full bg-blue-500"></div><span class="text-sm">DN (24h)</span></div>
       <div class="flex items-center gap-2"><div class="w-3 h-3 rounded-full bg-yellow-500"></div><span class="text-sm">Disponível p/ Troca</span></div>
+      
+      <!-- Legenda dos Locais -->
       <div class="flex items-center gap-2 ml-auto">
+        <div class="w-3 h-3 rounded-full bg-red-500"></div>
+        <span class="text-sm">HRL</span>
+      </div>
+      <div class="flex items-center gap-2">
+        <div class="w-3 h-3 rounded-full bg-purple-500"></div>
+        <span class="text-sm">HTO</span>
+      </div>
+      <div class="flex items-center gap-2">
+        <div class="w-3 h-3 rounded-full bg-blue-500"></div>
+        <span class="text-sm">HCM</span>
+      </div>
+      <div class="flex items-center gap-2">
+        <div class="w-3 h-3 rounded-full bg-orange-500"></div>
+        <span class="text-sm">CIA</span>
+      </div>
+      <div class="flex items-center gap-2">
         <div class="w-3 h-3 rounded-full border-2 border-emerald-500"></div>
         <span class="text-sm">Hoje</span>
       </div>
@@ -326,7 +398,7 @@
     </div>
   </div>
 
-  <!-- Dados (Mês, Horas, Receitas, Próximo, Trocas) - AGORA DEPOIS DOS PRÓXIMOS PLANTÕES -->
+  <!-- Dados (Mês, Horas, Receitas, Próximo, Trocas) -->
   <div class="grid grid-cols-2 lg:grid-cols-5 gap-4 mb-6 animate-slide-up">
     <div class="stat-card rounded-xl p-4">
       <div class="text-sm text-gray-400">Este Mês</div>
@@ -401,6 +473,60 @@
     </div>
   </div>
 
+  <!-- Modal Gerador de Escala -->
+  <div id="generatorModal" class="modal">
+    <div class="modal-content">
+      <h2 class="text-xl font-bold mb-4">⚙️ Gerar Escala 24x72</h2>
+      <p class="text-sm text-gray-400 mb-4">Trabalha 1 dia e folga 3 dias (24x72)</p>
+      
+      <form id="generatorForm" onsubmit="generateScale(event)">
+        <div class="mb-3">
+          <label class="block text-sm mb-1">Data Inicial</label>
+          <input type="date" id="startDate" required>
+        </div>
+
+        <div class="mb-3">
+          <label class="block text-sm mb-1">Local</label>
+          <select id="generatorLocation" required>
+            <option value="HRL">HRL 🏥 (Vermelho)</option>
+            <option value="HTO">HTO 🏥 (Roxo)</option>
+            <option value="HCM">HCM 🏥 (Azul)</option>
+            <option value="CIA">CIA 🚑 (Laranja)</option>
+          </select>
+        </div>
+
+        <div class="mb-3">
+          <label class="block text-sm mb-1">Tipo de Plantão</label>
+          <select id="generatorType" required>
+            <option value="sd">SD (12h)</option>
+            <option value="sn">SN (12h)</option>
+            <option value="dn">DN (24h)</option>
+          </select>
+        </div>
+
+        <div class="mb-3">
+          <label class="block text-sm mb-1">Valor do Plantão (R$)</label>
+          <input type="number" id="generatorValue" step="0.01" min="0" placeholder="Ex: 800">
+        </div>
+
+        <div class="mb-4">
+          <label class="block text-sm mb-1">Número de Plantões a Gerar</label>
+          <input type="number" id="generatorCount" min="1" max="30" value="8" required>
+        </div>
+
+        <div class="bg-slate-800 p-4 rounded-xl mb-4">
+          <p class="text-sm font-medium mb-2">📋 Prévia do Padrão 24x72:</p>
+          <p class="text-xs text-gray-400">Trabalha no dia inicial, folga 3 dias, repete...</p>
+        </div>
+
+        <div class="flex gap-2">
+          <button type="submit" class="btn-secondary flex-1 py-3">Gerar Escala</button>
+          <button type="button" onclick="closeGeneratorModal()" class="bg-slate-600 text-white px-4 py-3 rounded-lg flex-1 hover:bg-slate-500 transition-colors">Cancelar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <div id="detailModal" class="modal">
     <div class="modal-content">
       <div id="detailContent"></div>
@@ -422,6 +548,24 @@
       dn: { name: 'DN', fullName: 'Plantão DN', hours: 24, color: 'bg-blue-500', textColor: 'text-white' }
     };
 
+    const LOCATIONS = [
+      { id: 'HRL', name: 'HRL 🏥', icon: '🏥', color: 'bg-red-500', bgGradient: 'from-red-500 to-red-700', borderColor: 'border-red-500' },
+      { id: 'HTO', name: 'HTO 🏥', icon: '🏥', color: 'bg-purple-500', bgGradient: 'from-purple-500 to-purple-700', borderColor: 'border-purple-500' },
+      { id: 'HCM', name: 'HCM 🏥', icon: '🏥', color: 'bg-blue-500', bgGradient: 'from-blue-500 to-blue-700', borderColor: 'border-blue-500' },
+      { id: 'CIA', name: 'CIA 🚑', icon: '🚑', color: 'bg-orange-500', bgGradient: 'from-orange-500 to-orange-700', borderColor: 'border-orange-500' }
+    ];
+
+    // Função para obter a cor do local
+    function getLocationColor(locationId) {
+      const location = LOCATIONS.find(l => l.id === locationId);
+      return location ? location.color : 'bg-slate-600';
+    }
+
+    function getLocationGradient(locationId) {
+      const location = LOCATIONS.find(l => l.id === locationId);
+      return location ? `linear-gradient(135deg, ${location.color.replace('bg-', '').replace('-500', '')}40, ${location.color.replace('bg-', '').replace('-500', '')}20)` : 'linear-gradient(135deg, #10b98120, #05966920)';
+    }
+
     // Estado
     let shifts = [];
     let currentDate = new Date();
@@ -434,7 +578,7 @@
       if (saved) {
         shifts = JSON.parse(saved);
       } else {
-        // Dados iniciais
+        // Dados iniciais com locais
         const today = new Date();
         const dates = [];
         for (let i = 0; i < 10; i++) {
@@ -448,9 +592,9 @@
             id: '1',
             date: dates[0],
             type: 'sd',
-            location: 'UTI Central',
+            location: 'HRL',
             value: 800,
-            notes: 'Plantão SD',
+            notes: 'Plantão SD - UTI',
             swapRequest: false,
             swapWith: null
           },
@@ -458,7 +602,7 @@
             id: '2',
             date: dates[1],
             type: 'sn',
-            location: 'Pronto Socorro',
+            location: 'HTO',
             value: 850,
             notes: '',
             swapRequest: true,
@@ -469,9 +613,9 @@
             id: '3',
             date: dates[3],
             type: 'dn',
-            location: 'UTI Central',
+            location: 'HCM',
             value: 1800,
-            notes: 'Plantão DN',
+            notes: 'Plantão DN - Emergência',
             swapRequest: false,
             swapWith: null
           },
@@ -479,7 +623,7 @@
             id: '4',
             date: dates[5],
             type: 'sd',
-            location: 'Enfermaria',
+            location: 'CIA',
             value: 780,
             notes: '',
             swapRequest: true,
@@ -490,7 +634,7 @@
             id: '5',
             date: dates[7],
             type: 'dn',
-            location: 'Centro Cirúrgico',
+            location: 'HRL',
             value: 1900,
             notes: 'Plantão de final de semana',
             swapRequest: true,
@@ -544,8 +688,13 @@
 
       const datalist = document.getElementById('locationList');
       datalist.innerHTML = '';
+      LOCATIONS.forEach(loc => {
+        datalist.innerHTML += `<option value="${loc.id}">${loc.name}</option>`;
+      });
       locations.forEach(loc => {
-        datalist.innerHTML += `<option value="${loc}">`;
+        if (!LOCATIONS.find(l => l.id === loc)) {
+          datalist.innerHTML += `<option value="${loc}">`;
+        }
       });
     }
 
@@ -556,6 +705,83 @@
         const locationMatch = currentFilters.location === 'all' || s.location === currentFilters.location;
         return typeMatch && locationMatch;
       });
+    }
+
+    // Gerador de escala 24x72
+    function openGeneratorModal() {
+      const today = new Date();
+      document.getElementById('startDate').value = formatDate(today);
+      document.getElementById('generatorModal').style.display = 'flex';
+    }
+
+    function closeGeneratorModal() {
+      document.getElementById('generatorModal').style.display = 'none';
+    }
+
+    function generateScale(e) {
+      e.preventDefault();
+      
+      const startDate = document.getElementById('startDate').value;
+      const location = document.getElementById('generatorLocation').value;
+      const type = document.getElementById('generatorType').value;
+      const value = parseFloat(document.getElementById('generatorValue').value) || 0;
+      const count = parseInt(document.getElementById('generatorCount').value);
+
+      if (!startDate || !location || !type || !count) {
+        alert('Preencha todos os campos');
+        return;
+      }
+
+      const start = new Date(startDate + 'T12:00:00');
+      const newShifts = [];
+      let conflicts = 0;
+
+      // Gerar plantões no padrão 24x72 (trabalha 1, folga 3)
+      for (let i = 0; i < count; i++) {
+        const shiftDate = new Date(start);
+        shiftDate.setDate(start.getDate() + (i * 4)); // +4 dias = 1 trabalho + 3 folgas
+        
+        const dateStr = formatDate(shiftDate);
+        
+        // Verificar se já existe plantão nesta data
+        const existing = shifts.find(s => s.date === dateStr);
+        if (existing) {
+          conflicts++;
+          continue;
+        }
+
+        newShifts.push({
+          id: generateId(),
+          date: dateStr,
+          type: type,
+          value: value,
+          location: location,
+          notes: `Plantão gerado automaticamente - 24x72`,
+          swapRequest: false,
+          swapWith: null
+        });
+      }
+
+      if (newShifts.length === 0) {
+        alert('Todas as datas já possuem plantões cadastrados!');
+        closeGeneratorModal();
+        return;
+      }
+
+      // Adicionar novos plantões
+      shifts = [...shifts, ...newShifts];
+      saveData();
+
+      let message = `${newShifts.length} plantões gerados com sucesso!`;
+      if (conflicts > 0) {
+        message += `\n${conflicts} datas foram ignoradas pois já existiam plantões.`;
+      }
+
+      alert(message);
+      
+      updateLocationFilter();
+      renderCalendar();
+      closeGeneratorModal();
     }
 
     // Render calendar
@@ -587,16 +813,31 @@
         if (shift) {
           classes += ' has-shift';
           if (shift.swapRequest) classes += ' has-swap';
+          
+          // Adiciona borda colorida baseada no local
+          const location = LOCATIONS.find(l => l.id === shift.location);
+          if (location) {
+            classes += ` border-${location.color.replace('bg-', '')}`;
+          }
         }
         if (dateStr === todayStr) classes += ' today';
         
         let badgeHtml = '';
         if (shift) {
           const typeInfo = SHIFT_TYPES[shift.type];
-          badgeHtml = `<div class="shift-badge ${typeInfo.color} ${typeInfo.textColor}">${typeInfo.name}${shift.swapRequest ? ' 🔄' : ''}</div>`;
+          const locationInfo = LOCATIONS.find(l => l.id === shift.location);
+          const locationColor = locationInfo ? locationInfo.color.replace('bg-', '') : 'slate-600';
+          const locationGradient = locationInfo ? 
+            `linear-gradient(135deg, ${locationInfo.color.replace('bg-', '').replace('-500', '')}40, ${locationInfo.color.replace('bg-', '').replace('-500', '')}20)` : 
+            'linear-gradient(135deg, #10b98120, #05966920)';
+          
+          // Aplica o gradiente de fundo baseado no local
+          classes += ` location-${shift.location.toLowerCase()}`;
+          
+          badgeHtml = `<div class="shift-badge ${locationInfo ? locationInfo.color : 'bg-slate-600'} text-white">${typeInfo.name} ${locationInfo?.icon || ''}${shift.swapRequest ? ' 🔄' : ''}</div>`;
         }
         
-        html += `<div class="${classes}" onclick="handleDayClick('${dateStr}')">
+        html += `<div class="${classes}" onclick="handleDayClick('${dateStr}')" style="${shift ? `background: ${getLocationGradient(shift.location)}` : ''}">
           <span class="day-number">${d}</span>
           ${badgeHtml}
         </div>`;
@@ -663,13 +904,18 @@
 
       container.innerHTML = upcoming.map(s => {
         const typeInfo = SHIFT_TYPES[s.type];
+        const locationInfo = LOCATIONS.find(l => l.id === s.location);
+        const locationColor = locationInfo ? locationInfo.color : 'bg-slate-600';
+        const borderColor = locationInfo ? `border-${locationInfo.color.replace('bg-', '')}` : 'border-emerald-500';
+        
         return `
-        <div onclick="openDetailModal('${s.id}')" class="p-4 bg-slate-800 rounded-xl cursor-pointer hover:bg-slate-700 transition-all border-l-4 ${s.swapRequest ? 'border-yellow-500' : 'border-emerald-500'} hover:translate-x-1">
+        <div onclick="openDetailModal('${s.id}')" class="p-4 bg-slate-800 rounded-xl cursor-pointer hover:bg-slate-700 transition-all border-l-4 ${s.swapRequest ? 'border-yellow-500' : borderColor} hover:translate-x-1">
           <div class="flex justify-between items-start">
             <div>
               <div class="flex items-center gap-2 mb-1">
                 <span class="font-semibold">${formatFullDate(s.date)}</span>
                 <span class="text-xs px-2 py-1 rounded-full ${typeInfo.color} text-white font-medium">${typeInfo.name}</span>
+                <span class="text-xs px-2 py-1 rounded-full ${locationColor} text-white">${s.location} ${locationInfo?.icon || ''}</span>
               </div>
               <p class="text-sm text-gray-400">${s.location}</p>
             </div>
@@ -692,6 +938,9 @@
 
       container.innerHTML = pendingSwaps.map(s => {
         const typeInfo = SHIFT_TYPES[s.type];
+        const locationInfo = LOCATIONS.find(l => l.id === s.location);
+        const locationColor = locationInfo ? locationInfo.color : 'bg-slate-600';
+        
         return `
         <div class="trade-card p-4 rounded-xl">
           <div class="flex justify-between items-start">
@@ -699,6 +948,7 @@
               <div class="flex items-center gap-2 mb-2">
                 <span class="font-semibold">${formatFullDate(s.date)}</span>
                 <span class="text-xs px-2 py-1 rounded-full ${typeInfo.color} text-white font-medium">${typeInfo.name}</span>
+                <span class="text-xs px-2 py-1 rounded-full ${locationColor} text-white">${s.location} ${locationInfo?.icon || ''}</span>
               </div>
               <p class="text-sm text-gray-300">📍 ${s.location}</p>
               ${s.swapNotes ? `
@@ -807,6 +1057,9 @@
       if (!shift) return;
 
       const typeInfo = SHIFT_TYPES[shift.type];
+      const locationInfo = LOCATIONS.find(l => l.id === shift.location);
+      const locationColor = locationInfo ? locationInfo.color : 'bg-slate-600';
+      const locationGradient = locationInfo ? locationInfo.bgGradient : 'from-slate-600 to-slate-800';
       
       const html = `
         <div class="mb-6">
@@ -814,6 +1067,7 @@
             <h2 class="text-2xl font-bold">${formatFullDate(shift.date)}</h2>
             <div class="flex gap-2">
               <span class="px-3 py-1 rounded-full text-sm ${typeInfo.color} text-white font-medium">${typeInfo.name}</span>
+              <span class="px-3 py-1 rounded-full text-sm ${locationColor} text-white">${shift.location} ${locationInfo?.icon || ''}</span>
               ${shift.swapRequest ? '<span class="px-3 py-1 rounded-full text-sm bg-yellow-500 text-black font-medium">🔄 Troca</span>' : ''}
             </div>
           </div>
@@ -929,13 +1183,16 @@
       
       otherShifts.forEach(s => {
         const typeInfo = SHIFT_TYPES[s.type];
+        const locationInfo = LOCATIONS.find(l => l.id === s.location);
+        const locationColor = locationInfo ? locationInfo.color : 'bg-slate-600';
+        
         html += `
           <div onclick="proposeSwap('${shift.id}', '${s.id}')" class="p-4 bg-slate-800 rounded-xl cursor-pointer hover:bg-slate-700 border border-gray-700 transition-all hover:translate-x-1">
             <div class="flex justify-between items-center mb-1">
               <span class="font-semibold">${formatFullDate(s.date)}</span>
               <span class="text-xs px-2 py-1 rounded-full ${typeInfo.color} text-white">${typeInfo.name}</span>
             </div>
-            <p class="text-sm text-gray-400">${s.location}</p>
+            <p class="text-sm text-gray-400">${s.location} ${locationInfo?.icon || ''}</p>
             ${s.value ? `<p class="text-sm text-emerald-400 mt-1">${formatCurrency(s.value)}</p>` : ''}
           </div>
         `;
@@ -995,6 +1252,7 @@
           <div class="flex items-center gap-2 mb-1">
             <span class="font-bold">${formatFullDate(targetShift.date)}</span>
             <span class="text-xs px-2 py-1 rounded-full ${SHIFT_TYPES[targetShift.type].color} text-white">${SHIFT_TYPES[targetShift.type].name}</span>
+            <span class="text-xs px-2 py-1 rounded-full ${LOCATIONS.find(l => l.id === targetShift.location)?.color || 'bg-slate-600'} text-white">${targetShift.location}</span>
           </div>
           <p class="text-sm text-gray-300">${targetShift.location}</p>
           ${targetShift.swapNotes ? `<p class="text-sm text-yellow-500 mt-2">"${targetShift.swapNotes}"</p>` : ''}
@@ -1005,13 +1263,17 @@
       
       myShifts.forEach(s => {
         const typeInfo = SHIFT_TYPES[s.type];
+        const locationInfo = LOCATIONS.find(l => l.id === s.location);
+        const locationColor = locationInfo ? locationInfo.color : 'bg-slate-600';
+        const locationIcon = locationInfo?.icon || '';
+        
         html += `
           <div onclick="proposeSwap('${s.id}', '${targetShift.id}')" class="p-4 bg-slate-800 rounded-xl cursor-pointer hover:bg-slate-700 border border-gray-700 transition-all hover:translate-x-1">
             <div class="flex justify-between items-center mb-1">
               <span class="font-semibold">${formatFullDate(s.date)}</span>
               <span class="text-xs px-2 py-1 rounded-full ${typeInfo.color} text-white">${typeInfo.name}</span>
             </div>
-            <p class="text-sm text-gray-400">${s.location}</p>
+            <p class="text-sm text-gray-400">${s.location} ${locationIcon}</p>
           </div>
         `;
       });
@@ -1070,9 +1332,11 @@
         const formModal = document.getElementById('formModal');
         const detailModal = document.getElementById('detailModal');
         const swapModal = document.getElementById('swapModal');
+        const generatorModal = document.getElementById('generatorModal');
         if (event.target === formModal) closeFormModal();
         if (event.target === detailModal) closeDetailModal();
         if (event.target === swapModal) closeSwapModal();
+        if (event.target === generatorModal) closeGeneratorModal();
       };
     });
   </script>
