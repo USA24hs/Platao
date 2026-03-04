@@ -17,7 +17,7 @@
       background: #0a0f1a;
       color: #f1f5f9;
       min-height: 100vh;
-      padding: 12px;
+      padding: 10px;
       padding-bottom: 80px;
     }
 
@@ -37,14 +37,14 @@
       background: #1e293b;
       border: 1px solid #334155;
       border-radius: 16px;
-      padding: 16px;
+      padding: 12px;
     }
     
     /* CALENDÁRIO - CORRIGIDO */
     .calendar-grid {
       display: grid;
       grid-template-columns: repeat(7, 1fr);
-      gap: 4px;
+      gap: 1.5px;
       margin-bottom: 12px;
     }
     
@@ -55,33 +55,36 @@
       align-items: center;
       justify-content: center;
       background: #0f172a;
-      border-radius: 10px;
-      border: 2px solid transparent;
-      font-size: 14px;
+      border-radius: 8px;
+      border: 1.5px solid transparent;
+      font-size: 13px;
       cursor: pointer;
       padding: 2px;
-      min-height: 50px;
+      min-height: 45px;
+      max-height: 60px;
       position: relative;
     }
     
-    /* Aumentar tamanho em telas maiores */
-    @media (min-width: 380px) {
+    /* Altura fixa para telas pequenas */
+    @media (max-width: 380px) {
       .calendar-day {
-        min-height: 55px;
-        font-size: 15px;
+        min-height: 42px;
+        max-height: 52px;
+        font-size: 12px;
       }
     }
     
     @media (min-width: 450px) {
       .calendar-day {
-        min-height: 65px;
-        font-size: 16px;
+        min-height: 55px;
+        max-height: 60px;
+        font-size: 14px;
       }
     }
     
     .calendar-day.today {
       border-color: #10b981;
-      box-shadow: 0 0 10px #10b98180;
+      box-shadow: 0 0 8px #10b98180;
     }
     
     .calendar-day.has-swap {
@@ -92,46 +95,30 @@
       font-weight: bold;
       font-size: 1em;
       line-height: 1.2;
+      margin-bottom: 2px;
     }
     
-    /* BADGE DO TIPO DE PLANTAO - CORRIGIDO */
+    /* BADGE DO TIPO DE PLANTAO - OTIMIZADO */
     .calendar-day .shift-badge {
-      font-size: 0.65rem;
-      padding: 2px 6px;
+      font-size: 0.6rem;
+      padding: 2px 4px;
       border-radius: 20px;
-      margin-top: 2px;
-      max-width: 95%;
+      margin-top: 1px;
+      max-width: 98%;
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
       font-weight: 600;
-      letter-spacing: 0.3px;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+      letter-spacing: 0.2px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+      line-height: 1.2;
     }
     
-    /* Badge para SD - mais largo */
-    .calendar-day .shift-badge.sd-badge {
-      background: #10b981;
-      color: white;
-    }
-    
-    /* Badge para SN */
-    .calendar-day .shift-badge.sn-badge {
-      background: #8b5cf6;
-      color: white;
-    }
-    
-    /* Badge para DN */
-    .calendar-day .shift-badge.dn-badge {
-      background: #3b82f6;
-      color: white;
-    }
-    
-    /* Em telas muito pequenas, mostrar apenas a primeira letra */
-    @media (max-width: 350px) {
+    /* Em telas muito pequenas, mostrar apenas a primeira letra do tipo */
+    @media (max-width: 340px) {
       .calendar-day .shift-badge {
-        font-size: 0.6rem;
-        padding: 2px 4px;
+        font-size: 0.55rem;
+        padding: 1px 3px;
       }
     }
     
@@ -140,8 +127,8 @@
       background: #1e293b;
       border: 1px solid #334155;
       border-radius: 12px;
-      padding: 12px;
-      min-width: 100px;
+      padding: 10px;
+      min-width: 90px;
     }
     
     /* Bottom nav */
@@ -152,7 +139,7 @@
       right: 0;
       background: #1e293b;
       border-top: 1px solid #334155;
-      padding: 8px 16px;
+      padding: 6px 12px;
       display: flex;
       justify-content: space-around;
       z-index: 50;
@@ -162,12 +149,12 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 4px;
+      gap: 3px;
       color: #94a3b8;
-      font-size: 11px;
+      font-size: 10px;
       background: none;
       border: none;
-      padding: 8px;
+      padding: 6px;
     }
     
     .nav-item.active {
@@ -175,8 +162,8 @@
     }
     
     .nav-item svg {
-      width: 24px;
-      height: 24px;
+      width: 22px;
+      height: 22px;
       stroke: currentColor;
       fill: none;
     }
@@ -194,17 +181,17 @@
       align-items: center;
       justify-content: center;
       z-index: 100;
-      padding: 16px;
+      padding: 12px;
     }
     
     .modal-content {
       background: #1e293b;
       border: 1px solid #334155;
-      border-radius: 24px;
-      padding: 20px;
+      border-radius: 20px;
+      padding: 16px;
       width: 100%;
       max-width: 400px;
-      max-height: 90vh;
+      max-height: 85vh;
       overflow-y: auto;
     }
     
@@ -213,18 +200,18 @@
       background: #0f172a;
       border: 1px solid #334155;
       color: white;
-      padding: 12px;
-      border-radius: 12px;
+      padding: 10px;
+      border-radius: 10px;
       width: 100%;
-      font-size: 16px;
-      margin-bottom: 12px;
+      font-size: 15px;
+      margin-bottom: 10px;
     }
     
     button {
-      min-height: 44px;
+      min-height: 42px;
       touch-action: manipulation;
       border: none;
-      font-size: 16px;
+      font-size: 15px;
       font-weight: 500;
       cursor: pointer;
     }
@@ -232,49 +219,25 @@
     .btn-primary {
       background: #10b981;
       color: white;
-      padding: 12px;
-      border-radius: 12px;
+      padding: 10px;
+      border-radius: 10px;
       width: 100%;
     }
     
     .btn-secondary {
       background: #3b82f6;
       color: white;
-      padding: 12px;
-      border-radius: 12px;
-      width: 100%;
-    }
-    
-    .btn-warning {
-      background: #f59e0b;
-      color: black;
-      padding: 12px;
-      border-radius: 12px;
-      width: 100%;
-    }
-    
-    .btn-success {
-      background: #10b981;
-      color: white;
-      padding: 12px;
-      border-radius: 12px;
-      width: 100%;
-    }
-    
-    .btn-danger {
-      background: #ef4444;
-      color: white;
-      padding: 12px;
-      border-radius: 12px;
+      padding: 10px;
+      border-radius: 10px;
       width: 100%;
     }
     
     /* Scroll horizontal */
     .scroll-x {
       display: flex;
-      gap: 12px;
+      gap: 8px;
       overflow-x: auto;
-      padding: 4px 0 12px;
+      padding: 4px 0 10px;
       -webkit-overflow-scrolling: touch;
       scrollbar-width: none;
     }
@@ -286,16 +249,16 @@
     /* Toast/Notificação */
     .toast {
       position: fixed;
-      top: 20px;
+      top: 15px;
       left: 50%;
       transform: translateX(-50%) translateY(-100px);
       background: #1e293b;
       border-left: 4px solid #10b981;
-      border-radius: 12px;
-      padding: 16px;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+      border-radius: 10px;
+      padding: 12px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.5);
       z-index: 1000;
-      min-width: 300px;
+      min-width: 280px;
       max-width: 90%;
       transition: transform 0.3s ease;
       border: 1px solid #334155;
@@ -313,27 +276,22 @@
     .toast-content {
       display: flex;
       align-items: center;
-      gap: 12px;
+      gap: 10px;
     }
 
     .toast-icon {
-      width: 32px;
-      height: 32px;
+      width: 28px;
+      height: 28px;
       border-radius: 50%;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 18px;
+      font-size: 16px;
     }
-
-    .toast.success .toast-icon { background: #10b98120; color: #10b981; }
-    .toast.warning .toast-icon { background: #f59e0b20; color: #f59e0b; }
-    .toast.error .toast-icon { background: #ef444420; color: #ef4444; }
-    .toast.info .toast-icon { background: #3b82f620; color: #3b82f6; }
 
     .toast-message {
       flex: 1;
-      font-size: 14px;
+      font-size: 13px;
       font-weight: 500;
     }
 
@@ -341,8 +299,8 @@
       background: none;
       border: none;
       color: #94a3b8;
-      font-size: 18px;
-      padding: 4px 8px;
+      font-size: 16px;
+      padding: 4px 6px;
       min-height: auto;
       cursor: pointer;
     }
@@ -351,47 +309,22 @@
     .swap-badge {
       background: #f59e0b;
       color: black;
-      font-size: 11px;
-      padding: 4px 8px;
-      border-radius: 20px;
+      font-size: 10px;
+      padding: 3px 6px;
+      border-radius: 16px;
       font-weight: 600;
       display: inline-flex;
       align-items: center;
-      gap: 4px;
+      gap: 3px;
     }
 
-    .swap-badge-pending {
-      background: #f59e0b;
-      color: black;
-    }
-    
-    .swap-badge-confirmed {
-      background: #10b981;
-      color: white;
-    }
-
-    /* Card de troca */
-    .trade-card {
-      background: linear-gradient(145deg, #2d3748, #1e293b);
-      border-left: 4px solid #f59e0b;
-      border-radius: 12px;
-      padding: 16px;
-      transition: all 0.2s;
-    }
-    
-    .trade-card.confirmed {
-      border-left-color: #10b981;
-      background: linear-gradient(145deg, #1e293b, #0f172a);
-    }
-    
-    /* Status da troca */
     .swap-status {
       display: inline-flex;
       align-items: center;
-      gap: 4px;
-      padding: 4px 8px;
-      border-radius: 20px;
-      font-size: 11px;
+      gap: 3px;
+      padding: 3px 6px;
+      border-radius: 16px;
+      font-size: 10px;
       font-weight: 600;
     }
     
@@ -406,14 +339,27 @@
       color: #10b981;
       border: 1px solid #10b981;
     }
+
+    /* Card de troca */
+    .trade-card {
+      background: linear-gradient(145deg, #2d3748, #1e293b);
+      border-left: 4px solid #f59e0b;
+      border-radius: 10px;
+      padding: 12px;
+      transition: all 0.2s;
+    }
     
-    /* Ajuste para os dias da semana */
+    .trade-card.confirmed {
+      border-left-color: #10b981;
+    }
+    
+    /* Dias da semana */
     .week-day {
       text-align: center;
-      font-size: 12px;
+      font-size: 11px;
       font-weight: 500;
       color: #94a3b8;
-      padding: 4px 0;
+      padding: 2px 0;
     }
     
     @media (max-width: 350px) {
@@ -435,26 +381,26 @@
   </div>
 
   <!-- Header -->
-  <div class="flex items-center justify-between mb-4">
+  <div class="flex items-center justify-between mb-3">
     <div class="flex items-center gap-2">
-      <div class="w-10 h-10 rounded-xl bg-emerald-600 flex items-center justify-center">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+      <div class="w-9 h-9 rounded-xl bg-emerald-600 flex items-center justify-center">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
           <path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
         </svg>
       </div>
       <div>
-        <h1 class="text-xl font-bold">Minha Escala</h1>
-        <p class="text-xs text-gray-400">24x72 • Sistema de Trocas</p>
+        <h1 class="text-lg font-bold">Minha Escala</h1>
+        <p class="text-xs text-gray-400">24x72 • Trocas</p>
       </div>
     </div>
-    <div class="flex gap-2">
-      <button onclick="openGeneratorModal()" class="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+    <div class="flex gap-1.5">
+      <button onclick="openGeneratorModal()" class="w-9 h-9 rounded-xl bg-blue-600 flex items-center justify-center">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
           <path d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
         </svg>
       </button>
-      <button onclick="openFormModal()" class="w-10 h-10 rounded-xl bg-emerald-600 flex items-center justify-center">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+      <button onclick="openFormModal()" class="w-9 h-9 rounded-xl bg-emerald-600 flex items-center justify-center">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
           <path d="M12 4v16m8-8H4"/>
         </svg>
       </button>
@@ -462,23 +408,23 @@
   </div>
 
   <!-- Calendário -->
-  <div class="card mb-4">
-    <div class="flex items-center justify-between mb-4">
-      <button onclick="changeMonth(-1)" class="w-10 h-10 rounded-lg bg-slate-700 flex items-center justify-center">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+  <div class="card mb-3">
+    <div class="flex items-center justify-between mb-3">
+      <button onclick="changeMonth(-1)" class="w-9 h-9 rounded-lg bg-slate-700 flex items-center justify-center">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
           <path d="M15 19l-7-7 7-7"/>
         </svg>
       </button>
-      <h2 class="font-semibold text-base md:text-lg" id="calendarTitle">Março 2026</h2>
-      <button onclick="changeMonth(1)" class="w-10 h-10 rounded-lg bg-slate-700 flex items-center justify-center">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+      <h2 class="font-semibold text-sm md:text-base" id="calendarTitle">Março 2026</h2>
+      <button onclick="changeMonth(1)" class="w-9 h-9 rounded-lg bg-slate-700 flex items-center justify-center">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
           <path d="M9 5l7 7-7 7"/>
         </svg>
       </button>
     </div>
 
     <!-- Dias da Semana -->
-    <div class="grid grid-cols-7 gap-1 mb-2">
+    <div class="grid grid-cols-7 gap-[1.5px] mb-1">
       <div class="week-day">DOM</div>
       <div class="week-day">SEG</div>
       <div class="week-day">TER</div>
@@ -491,85 +437,84 @@
     <!-- Grid do Calendário -->
     <div id="calendarGrid" class="calendar-grid"></div>
 
-    <!-- Legenda -->
-    <div class="flex flex-wrap gap-2 pt-3 border-t border-gray-700 text-xs">
-      <div class="flex items-center gap-1"><span class="w-3 h-3 rounded-full bg-emerald-500"></span><span>SD</span></div>
-      <div class="flex items-center gap-1"><span class="w-3 h-3 rounded-full bg-purple-500"></span><span>SN</span></div>
-      <div class="flex items-center gap-1"><span class="w-3 h-3 rounded-full bg-blue-500"></span><span>DN</span></div>
-      <div class="flex items-center gap-1"><span class="w-3 h-3 rounded-full bg-red-500"></span><span>HRL</span></div>
-      <div class="flex items-center gap-1"><span class="w-3 h-3 rounded-full bg-purple-500"></span><span>HTO</span></div>
-      <div class="flex items-center gap-1"><span class="w-3 h-3 rounded-full bg-blue-500"></span><span>HCM</span></div>
-      <div class="flex items-center gap-1"><span class="w-3 h-3 rounded-full bg-orange-500"></span><span>CIA</span></div>
-      <div class="flex items-center gap-1"><span class="w-3 h-3 rounded-full bg-yellow-500"></span><span>Troca</span></div>
-      <div class="flex items-center gap-1 ml-auto"><span class="w-3 h-3 rounded-full border-2 border-emerald-500"></span><span>Hoje</span></div>
+    <!-- Legenda Compacta -->
+    <div class="flex flex-wrap gap-2 pt-2 border-t border-gray-700 text-[10px]">
+      <div class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-emerald-500"></span><span>SD</span></div>
+      <div class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-purple-500"></span><span>SN</span></div>
+      <div class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-blue-500"></span><span>DN</span></div>
+      <div class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-red-500"></span><span>HRL</span></div>
+      <div class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-purple-500"></span><span>HTO</span></div>
+      <div class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-blue-500"></span><span>HCM</span></div>
+      <div class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-orange-500"></span><span>CIA</span></div>
+      <div class="flex items-center gap-1 ml-auto"><span class="w-2 h-2 rounded-full border border-emerald-500"></span><span>Hoje</span></div>
     </div>
   </div>
 
   <!-- Stats Scroll -->
-  <div class="scroll-x mb-4">
+  <div class="scroll-x mb-3">
     <div class="stat-card">
-      <div class="text-xs text-gray-400">Este mês</div>
-      <div class="text-2xl font-bold" id="totalShifts">0</div>
+      <div class="text-[10px] text-gray-400">Mês</div>
+      <div class="text-xl font-bold" id="totalShifts">0</div>
     </div>
     <div class="stat-card">
-      <div class="text-xs text-gray-400">Horas</div>
-      <div class="text-2xl font-bold" id="totalHours">0</div>
+      <div class="text-[10px] text-gray-400">Horas</div>
+      <div class="text-xl font-bold" id="totalHours">0</div>
     </div>
     <div class="stat-card">
-      <div class="text-xs text-gray-400">Receita</div>
-      <div class="text-lg font-bold text-emerald-400" id="totalRevenue">R$ 0</div>
+      <div class="text-[10px] text-gray-400">Receita</div>
+      <div class="text-base font-bold text-emerald-400" id="totalRevenue">R$ 0</div>
     </div>
     <div class="stat-card">
-      <div class="text-xs text-gray-400">Próximo</div>
-      <div class="text-lg font-bold" id="nextShift">-</div>
+      <div class="text-[10px] text-gray-400">Próx</div>
+      <div class="text-base font-bold" id="nextShift">-</div>
     </div>
     <div class="stat-card">
-      <div class="text-xs text-gray-400">Trocas</div>
-      <div class="text-2xl font-bold text-yellow-500" id="swapCount">0</div>
+      <div class="text-[10px] text-gray-400">Trocas</div>
+      <div class="text-xl font-bold text-yellow-500" id="swapCount">0</div>
     </div>
   </div>
 
-  <!-- Filtros -->
-  <div class="card mb-4">
-    <div class="flex gap-2">
-      <select id="filterType" class="flex-1 text-sm p-2">
-        <option value="all">Todos tipos</option>
-        <option value="sd">SD (12h)</option>
-        <option value="sn">SN (12h)</option>
-        <option value="dn">DN (24h)</option>
+  <!-- Filtros Compactos -->
+  <div class="card mb-3 p-2">
+    <div class="flex gap-1.5">
+      <select id="filterType" class="flex-1 text-xs p-1.5">
+        <option value="all">Tipos</option>
+        <option value="sd">SD</option>
+        <option value="sn">SN</option>
+        <option value="dn">DN</option>
       </select>
       
-      <select id="filterLocation" class="flex-1 text-sm p-2">
-        <option value="all">Todos locais</option>
+      <select id="filterLocation" class="flex-1 text-xs p-1.5">
+        <option value="all">Locais</option>
       </select>
       
-      <button onclick="clearFilters()" class="px-4 py-2 bg-slate-700 rounded-lg text-sm whitespace-nowrap">
+      <button onclick="clearFilters()" class="px-3 py-1.5 bg-slate-700 rounded-lg text-xs whitespace-nowrap">
         Limpar
       </button>
     </div>
   </div>
 
   <!-- Trocas Pendentes -->
-  <div class="card mb-4 border-l-4 border-yellow-500">
-    <div class="flex items-center justify-between mb-3">
-      <h3 class="text-lg font-semibold flex items-center gap-2">
+  <div class="card mb-3 border-l-4 border-yellow-500 p-3">
+    <div class="flex items-center justify-between mb-2">
+      <h3 class="text-sm font-semibold flex items-center gap-1">
         <span class="text-yellow-500">🔄</span>
-        Trocas Pendentes
+        Trocas
       </h3>
-      <span class="bg-yellow-500 text-black px-3 py-1 rounded-full text-sm font-bold" id="pendingSwapsCount">0</span>
+      <span class="bg-yellow-500 text-black px-2 py-0.5 rounded-full text-xs font-bold" id="pendingSwapsCount">0</span>
     </div>
-    <div id="pendingSwapsList" class="space-y-3"></div>
+    <div id="pendingSwapsList" class="space-y-2"></div>
   </div>
 
   <!-- Próximos Plantões -->
-  <div class="card">
-    <h3 class="text-lg font-semibold mb-3 flex items-center gap-2">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2">
+  <div class="card p-3">
+    <h3 class="text-sm font-semibold mb-2 flex items-center gap-1">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2">
         <path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
       </svg>
-      Próximos Plantões
+      Próximos
     </h3>
-    <div id="upcomingShifts" class="space-y-2"></div>
+    <div id="upcomingShifts" class="space-y-1.5"></div>
   </div>
 
   <!-- Bottom Navigation -->
@@ -603,29 +548,29 @@
   <!-- MODAIS -->
   <div id="formModal" class="modal">
     <div class="modal-content">
-      <h2 class="text-xl font-bold mb-4" id="formTitle">Novo Plantão</h2>
+      <h2 class="text-lg font-bold mb-3" id="formTitle">Novo Plantão</h2>
       <form id="shiftForm" onsubmit="saveShift(event)">
         <input type="hidden" id="shiftId">
         
-        <label class="block text-sm mb-1">Data</label>
+        <label class="block text-xs mb-1">Data</label>
         <input type="date" id="shiftDate" required>
 
         <div class="grid grid-cols-2 gap-2">
           <div>
-            <label class="block text-sm mb-1">Tipo</label>
+            <label class="block text-xs mb-1">Tipo</label>
             <select id="shiftType" required>
-              <option value="sd">SD (12h)</option>
-              <option value="sn">SN (12h)</option>
-              <option value="dn">DN (24h)</option>
+              <option value="sd">SD</option>
+              <option value="sn">SN</option>
+              <option value="dn">DN</option>
             </select>
           </div>
           <div>
-            <label class="block text-sm mb-1">Valor (R$)</label>
+            <label class="block text-xs mb-1">Valor (R$)</label>
             <input type="number" id="shiftValue" step="0.01" min="0">
           </div>
         </div>
 
-        <label class="block text-sm mb-1">Local</label>
+        <label class="block text-xs mb-1">Local</label>
         <input type="text" id="shiftLocation" required list="locationList">
         <datalist id="locationList">
           <option value="HRL">HRL 🏥</option>
@@ -634,12 +579,12 @@
           <option value="CIA">CIA 🚑</option>
         </datalist>
 
-        <label class="block text-sm mb-1">Observações</label>
+        <label class="block text-xs mb-1">Observações</label>
         <textarea id="shiftNotes" rows="2"></textarea>
 
-        <div class="flex gap-2 mt-4">
+        <div class="flex gap-2 mt-3">
           <button type="submit" class="btn-primary">Salvar</button>
-          <button type="button" onclick="closeFormModal()" class="bg-slate-600 text-white px-4 py-3 rounded-lg flex-1">Cancelar</button>
+          <button type="button" onclick="closeFormModal()" class="bg-slate-600 text-white px-4 py-2 rounded-lg flex-1 text-sm">Cancelar</button>
         </div>
       </form>
     </div>
@@ -647,12 +592,12 @@
 
   <div id="generatorModal" class="modal">
     <div class="modal-content">
-      <h2 class="text-xl font-bold mb-4">⚙️ Gerar Escala 24x72</h2>
+      <h2 class="text-lg font-bold mb-3">⚙️ Gerar Escala</h2>
       <form id="generatorForm" onsubmit="generateScale(event)">
-        <label class="block text-sm mb-1">Data Inicial</label>
+        <label class="block text-xs mb-1">Data Inicial</label>
         <input type="date" id="startDate" required>
 
-        <label class="block text-sm mb-1">Local</label>
+        <label class="block text-xs mb-1">Local</label>
         <select id="generatorLocation" required>
           <option value="HRL">HRL 🏥</option>
           <option value="HTO">HTO 🏥</option>
@@ -660,22 +605,22 @@
           <option value="CIA">CIA 🚑</option>
         </select>
 
-        <label class="block text-sm mb-1">Tipo</label>
+        <label class="block text-xs mb-1">Tipo</label>
         <select id="generatorType" required>
-          <option value="sd">SD (12h)</option>
-          <option value="sn">SN (12h)</option>
-          <option value="dn">DN (24h)</option>
+          <option value="sd">SD</option>
+          <option value="sn">SN</option>
+          <option value="dn">DN</option>
         </select>
 
-        <label class="block text-sm mb-1">Valor (R$)</label>
+        <label class="block text-xs mb-1">Valor (R$)</label>
         <input type="number" id="generatorValue" step="0.01" min="0">
 
-        <label class="block text-sm mb-1">Nº de Plantões</label>
+        <label class="block text-xs mb-1">Nº Plantões</label>
         <input type="number" id="generatorCount" min="1" max="30" value="8" required>
 
-        <div class="flex gap-2 mt-4">
+        <div class="flex gap-2 mt-3">
           <button type="submit" class="btn-secondary">Gerar</button>
-          <button type="button" onclick="closeGeneratorModal()" class="bg-slate-600 text-white px-4 py-3 rounded-lg flex-1">Cancelar</button>
+          <button type="button" onclick="closeGeneratorModal()" class="bg-slate-600 text-white px-4 py-2 rounded-lg flex-1 text-sm">Cancelar</button>
         </div>
       </form>
     </div>
@@ -687,14 +632,14 @@
 
   <div id="swapModal" class="modal">
     <div class="modal-content">
-      <h2 class="text-xl font-bold mb-4">🔄 Propor Troca</h2>
+      <h2 class="text-lg font-bold mb-3">🔄 Propor Troca</h2>
       <div id="swapModalContent"></div>
     </div>
   </div>
   
   <div id="confirmSwapModal" class="modal">
     <div class="modal-content">
-      <h2 class="text-xl font-bold mb-4">✅ Confirmar Troca</h2>
+      <h2 class="text-lg font-bold mb-3">✅ Confirmar Troca</h2>
       <div id="confirmSwapContent"></div>
     </div>
   </div>
@@ -702,9 +647,9 @@
   <script>
     // CONSTANTES
     const SHIFT_TYPES = {
-      sd: { name: 'SD', fullName: 'Plantão SD', hours: 12, color: 'bg-emerald-500', badge: 'sd-badge' },
-      sn: { name: 'SN', fullName: 'Plantão SN', hours: 12, color: 'bg-purple-500', badge: 'sn-badge' },
-      dn: { name: 'DN', fullName: 'Plantão DN', hours: 24, color: 'bg-blue-500', badge: 'dn-badge' }
+      sd: { name: 'SD', fullName: 'Plantão SD', hours: 12, color: 'bg-emerald-500' },
+      sn: { name: 'SN', fullName: 'Plantão SN', hours: 12, color: 'bg-purple-500' },
+      dn: { name: 'DN', fullName: 'Plantão DN', hours: 24, color: 'bg-blue-500' }
     };
 
     const LOCATIONS = [
@@ -720,7 +665,7 @@
     let currentFilters = { type: 'all', location: 'all' };
     let pendingSwapSelection = { shift1: null, shift2: null };
 
-    // FUNÇÕES DE TOAST/NOTIFICAÇÃO
+    // FUNÇÕES DE TOAST
     function showToast(message, type = 'success') {
       const toast = document.getElementById('toast');
       const icon = document.getElementById('toastIcon');
@@ -729,19 +674,11 @@
       toast.className = 'toast ' + type;
       msg.textContent = message;
       
-      const icons = {
-        success: '✅',
-        warning: '⚠️',
-        error: '❌',
-        info: 'ℹ️'
-      };
+      const icons = { success: '✅', warning: '⚠️', error: '❌', info: 'ℹ️' };
       icon.textContent = icons[type] || '✅';
       
       toast.classList.add('show');
-      
-      setTimeout(() => {
-        toast.classList.remove('show');
-      }, 4000);
+      setTimeout(() => toast.classList.remove('show'), 3000);
     }
 
     function hideToast() {
@@ -763,7 +700,7 @@
 
     function formatFullDate(dateStr) {
       const d = new Date(dateStr + 'T12:00:00');
-      return d.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: '2-digit' });
+      return d.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' });
     }
 
     function formatCurrency(value) {
@@ -797,66 +734,11 @@
         }
         
         shifts = [
-          {
-            id: '1',
-            date: dates[0],
-            type: 'sd',
-            location: 'HRL',
-            value: 800,
-            notes: 'Plantão SD - UTI',
-            swapRequest: false,
-            swapWith: null,
-            swapConfirmed: false,
-            swapNotes: null
-          },
-          {
-            id: '2',
-            date: dates[1],
-            type: 'sn',
-            location: 'HTO',
-            value: 850,
-            notes: '',
-            swapRequest: true,
-            swapWith: null,
-            swapConfirmed: false,
-            swapNotes: 'Preciso trocar este SN - horário conflitante'
-          },
-          {
-            id: '3',
-            date: dates[3],
-            type: 'dn',
-            location: 'HCM',
-            value: 1800,
-            notes: 'Plantão DN - Emergência',
-            swapRequest: false,
-            swapWith: null,
-            swapConfirmed: false,
-            swapNotes: null
-          },
-          {
-            id: '4',
-            date: dates[5],
-            type: 'sd',
-            location: 'CIA',
-            value: 780,
-            notes: '',
-            swapRequest: true,
-            swapWith: null,
-            swapConfirmed: false,
-            swapNotes: 'Troco por SD ou SN em qualquer data'
-          },
-          {
-            id: '5',
-            date: dates[7],
-            type: 'dn',
-            location: 'HRL',
-            value: 1900,
-            notes: 'Plantão de final de semana',
-            swapRequest: true,
-            swapWith: null,
-            swapConfirmed: false,
-            swapNotes: 'Preciso trocar por outro DN'
-          }
+          { id: '1', date: dates[0], type: 'sd', location: 'HRL', value: 800, notes: 'UTI', swapRequest: false },
+          { id: '2', date: dates[1], type: 'sn', location: 'HTO', value: 850, notes: '', swapRequest: true, swapNotes: 'Preciso trocar' },
+          { id: '3', date: dates[3], type: 'dn', location: 'HCM', value: 1800, notes: 'Emergência', swapRequest: false },
+          { id: '4', date: dates[5], type: 'sd', location: 'CIA', value: 780, notes: '', swapRequest: true, swapNotes: 'Troco por qualquer data' },
+          { id: '5', date: dates[7], type: 'dn', location: 'HRL', value: 1900, notes: 'Final de semana', swapRequest: true, swapNotes: 'Preciso trocar' }
         ];
         saveData();
       }
@@ -871,10 +753,8 @@
     function updateLocationFilter() {
       const select = document.getElementById('filterLocation');
       const locations = [...new Set(shifts.map(s => s.location))];
-      select.innerHTML = '<option value="all">Todos locais</option>';
-      locations.forEach(loc => {
-        select.innerHTML += `<option value="${loc}">${loc}</option>`;
-      });
+      select.innerHTML = '<option value="all">Locais</option>';
+      locations.forEach(loc => select.innerHTML += `<option value="${loc}">${loc}</option>`);
     }
 
     function applyFilters() {
@@ -917,12 +797,8 @@
 
       let html = '';
       
-      // Dias vazios no início do mês
-      for (let i = 0; i < firstDay; i++) {
-        html += '<div></div>';
-      }
+      for (let i = 0; i < firstDay; i++) html += '<div></div>';
 
-      // Dias do mês
       for (let d = 1; d <= daysInMonth; d++) {
         const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
         const shift = filteredShifts.find(s => s.date === dateStr);
@@ -937,7 +813,6 @@
         if (shift) {
           const typeInfo = SHIFT_TYPES[shift.type];
           const locationInfo = getLocationInfo(shift.location);
-          // Badge com o tipo do plantão - usando cor do local
           badgeHtml = `<div class="shift-badge ${locationInfo.color} text-white">${typeInfo.name}</div>`;
         }
         
@@ -978,122 +853,63 @@
     // PRÓXIMOS PLANTÕES
     function renderUpcoming() {
       const todayStr = formatDate(new Date());
-      const upcoming = getFilteredShifts()
-        .filter(s => s.date >= todayStr)
-        .sort((a, b) => a.date.localeCompare(b.date))
-        .slice(0, 5);
-
-      const container = document.getElementById('upcomingShifts');
+      const upcoming = getFilteredShifts().filter(s => s.date >= todayStr).sort((a, b) => a.date.localeCompare(b.date)).slice(0, 5);
       
-      if (upcoming.length === 0) {
-        container.innerHTML = '<p class="text-gray-400 text-center py-4">Nenhum plantão futuro</p>';
-        return;
-      }
-
-      container.innerHTML = upcoming.map(s => {
+      document.getElementById('upcomingShifts').innerHTML = upcoming.length ? upcoming.map(s => {
         const typeInfo = SHIFT_TYPES[s.type];
         const locationInfo = getLocationInfo(s.location);
-        const diff = Math.ceil((new Date(s.date + 'T12:00:00') - new Date()) / (1000 * 60 * 60 * 24));
-        const diffText = diff === 0 ? 'Hoje' : diff === 1 ? 'Amanhã' : `Em ${diff} dias`;
-        
         return `
-        <div onclick="openDetailModal('${s.id}')" class="p-3 bg-slate-800 rounded-xl border-l-4 ${locationInfo.border} cursor-pointer active:bg-slate-700">
-          <div class="flex justify-between items-center">
-            <div>
-              <span class="font-medium">${formatDisplayDate(s.date)}</span>
-              <span class="text-xs text-gray-400 ml-2">${diffText}</span>
-            </div>
-            <span class="text-xs px-2 py-1 rounded-full ${typeInfo.color} text-white">${typeInfo.name}</span>
+        <div onclick="openDetailModal('${s.id}')" class="p-2 bg-slate-800 rounded-lg border-l-4 ${locationInfo.border} text-xs">
+          <div class="flex justify-between">
+            <span class="font-medium">${formatDisplayDate(s.date)}</span>
+            <span class="px-1.5 py-0.5 rounded-full ${typeInfo.color} text-white">${typeInfo.name}</span>
           </div>
-          <div class="flex justify-between items-center mt-1">
-            <span class="text-sm text-gray-400">${s.location} ${locationInfo.icon}</span>
-            ${s.swapRequest ? '<span class="swap-badge">🔄 Troca</span>' : ''}
+          <div class="flex justify-between mt-0.5">
+            <span class="text-gray-400">${s.location}</span>
+            ${s.swapRequest ? '<span class="text-yellow-500">🔄</span>' : ''}
           </div>
-          ${s.value ? `<div class="text-sm text-emerald-400 mt-1">${formatCurrency(s.value)}</div>` : ''}
         </div>
-      `}).join('');
+      `}).join('') : '<p class="text-gray-400 text-center py-2 text-xs">Nenhum</p>';
     }
 
     // TROCAS PENDENTES
     function renderPendingSwaps() {
-      const pendingSwaps = shifts.filter(s => s.swapRequest);
-      const container = document.getElementById('pendingSwapsList');
-      
-      if (pendingSwaps.length === 0) {
-        container.innerHTML = '<p class="text-gray-400 text-center py-4">Nenhuma troca pendente</p>';
-        return;
-      }
-
-      container.innerHTML = pendingSwaps.map(s => {
+      const pending = shifts.filter(s => s.swapRequest);
+      document.getElementById('pendingSwapsList').innerHTML = pending.length ? pending.map(s => {
         const typeInfo = SHIFT_TYPES[s.type];
         const locationInfo = getLocationInfo(s.location);
-        const isPending = !s.swapConfirmed;
-        const statusClass = isPending ? 'swap-status-pending' : 'swap-status-confirmed';
-        const statusText = isPending ? '🔄 Aguardando' : '✅ Confirmada';
-        
         return `
-        <div class="trade-card ${s.swapConfirmed ? 'confirmed' : ''}">
-          <div class="flex justify-between items-start mb-2">
-            <div>
-              <div class="flex items-center gap-2 mb-1">
-                <span class="font-bold">${formatFullDate(s.date)}</span>
-                <span class="text-xs px-2 py-1 rounded-full ${typeInfo.color} text-white">${typeInfo.name}</span>
-                <span class="text-xs px-2 py-1 rounded-full ${locationInfo.color} text-white">${s.location}</span>
-              </div>
-              <p class="text-sm text-gray-300">${s.location} ${locationInfo.icon}</p>
-            </div>
-            <span class="swap-status ${statusClass}">${statusText}</span>
+        <div class="bg-slate-800 rounded-lg p-2 text-xs">
+          <div class="flex justify-between items-center mb-1">
+            <span class="font-medium">${formatFullDate(s.date)}</span>
+            <span class="px-1.5 py-0.5 rounded-full ${typeInfo.color} text-white">${typeInfo.name}</span>
           </div>
-          
-          ${s.swapNotes ? `
-            <div class="mt-2 text-sm bg-yellow-500/10 p-2 rounded-lg border border-yellow-500/30">
-              <span class="text-yellow-500">📝 ${s.swapNotes}</span>
-            </div>
-          ` : ''}
-          
-          ${s.swapWith ? `
-            <div class="mt-2 text-sm bg-blue-500/10 p-2 rounded-lg border border-blue-500/30">
-              <span class="text-blue-500">🔄 Troca proposta com: ${getShiftById(s.swapWith) ? formatFullDate(getShiftById(s.swapWith).date) : 'Plantão'}</span>
-            </div>
-          ` : ''}
-          
-          <div class="flex gap-2 mt-3">
-            ${!s.swapConfirmed ? `
-              ${s.swapWith ? `
-                <button onclick="openConfirmSwapModal('${s.id}', '${s.swapWith}')" class="flex-1 bg-green-600 text-white py-2 rounded-lg text-sm font-medium hover:bg-green-700">
-                  ✅ Confirmar
-                </button>
-              ` : ''}
-            ` : ''}
-            <button onclick="openSwapProposal('${s.id}')" class="flex-1 ${s.swapConfirmed ? 'bg-blue-600' : 'bg-yellow-500'} text-${s.swapConfirmed ? 'white' : 'black'} py-2 rounded-lg text-sm font-medium hover:opacity-90">
-              ${s.swapConfirmed ? 'Ver' : 'Propor'}
-            </button>
-            <button onclick="openDetailModal('${s.id}')" class="flex-1 bg-slate-700 text-white py-2 rounded-lg text-sm font-medium hover:bg-slate-600">
-              Detalhes
+          <div class="flex justify-between items-center">
+            <span class="text-gray-400">${s.location}</span>
+            <button onclick="openSwapProposal('${s.id}')" class="bg-yellow-500 text-black px-2 py-1 rounded-lg text-xs font-medium">
+              Trocar
             </button>
           </div>
         </div>
-      `}).join('');
+      `}).join('') : '<p class="text-gray-400 text-center py-2 text-xs">Nenhuma</p>';
     }
 
     // HANDLE DAY CLICK
     function handleDayClick(dateStr) {
       const shift = shifts.find(s => s.date === dateStr);
-      if (shift) {
-        openDetailModal(shift.id);
-      } else {
+      if (shift) openDetailModal(shift.id);
+      else {
         document.getElementById('shiftDate').value = dateStr;
         openFormModal();
       }
     }
 
-    // MUDAR MÊS
     function changeMonth(delta) {
       currentDate.setMonth(currentDate.getMonth() + delta);
       renderCalendar();
     }
 
-    // MODAL FORM
+    // MODAIS
     function openFormModal() {
       document.getElementById('shiftId').value = '';
       document.getElementById('shiftForm').reset();
@@ -1105,10 +921,8 @@
       document.getElementById('formModal').style.display = 'none';
     }
 
-    // SALVAR PLANTÃO
     function saveShift(e) {
       e.preventDefault();
-      
       const id = document.getElementById('shiftId').value;
       const date = document.getElementById('shiftDate').value;
       const type = document.getElementById('shiftType').value;
@@ -1117,26 +931,15 @@
       const notes = document.getElementById('shiftNotes').value;
 
       if (!date || !type || !location) {
-        showToast('Preencha todos os campos obrigatórios!', 'error');
+        showToast('Preencha todos os campos!', 'error');
         return;
       }
 
       if (id) {
         const index = shifts.findIndex(s => s.id === id);
-        if (index !== -1) {
-          shifts[index] = { ...shifts[index], date, type, value, location, notes };
-          showToast('Plantão atualizado com sucesso!', 'success');
-        }
+        if (index !== -1) shifts[index] = { ...shifts[index], date, type, value, location, notes };
       } else {
-        shifts.push({
-          id: generateId(),
-          date, type, value, location, notes,
-          swapRequest: false,
-          swapWith: null,
-          swapConfirmed: false,
-          swapNotes: null
-        });
-        showToast('Plantão cadastrado com sucesso!', 'success');
+        shifts.push({ id: generateId(), date, type, value, location, notes, swapRequest: false });
       }
 
       saveData();
@@ -1145,96 +948,41 @@
       renderUpcoming();
       renderPendingSwaps();
       closeFormModal();
+      showToast('Plantão salvo!', 'success');
     }
 
-    // MODAL DETALHE
     function openDetailModal(id) {
       const shift = shifts.find(s => s.id === id);
       if (!shift) return;
-
+      
       const typeInfo = SHIFT_TYPES[shift.type];
       const locationInfo = getLocationInfo(shift.location);
-      const swapShift = shift.swapWith ? getShiftById(shift.swapWith) : null;
       
-      const html = `
+      document.getElementById('detailContent').innerHTML = `
         <div>
-          <div class="flex justify-between items-center mb-4">
-            <h2 class="text-xl font-bold">${formatFullDate(shift.date)}</h2>
-            <button onclick="closeDetailModal()" class="text-gray-400 text-xl">✕</button>
+          <h2 class="text-lg font-bold mb-3">${formatFullDate(shift.date)}</h2>
+          <div class="flex gap-1 mb-3">
+            <span class="px-2 py-1 rounded-full text-xs ${typeInfo.color} text-white">${typeInfo.name}</span>
+            <span class="px-2 py-1 rounded-full text-xs ${locationInfo.color} text-white">${shift.location}</span>
           </div>
-          
-          <div class="flex flex-wrap gap-2 mb-4">
-            <span class="px-3 py-1 rounded-full text-sm ${typeInfo.color} text-white">${typeInfo.name} (${typeInfo.hours}h)</span>
-            <span class="px-3 py-1 rounded-full text-sm ${locationInfo.color} text-white">${shift.location} ${locationInfo.icon}</span>
-            ${shift.swapRequest ? `
-              <span class="px-3 py-1 rounded-full text-sm ${shift.swapConfirmed ? 'bg-green-600' : 'bg-yellow-500'} text-white font-bold">
-                ${shift.swapConfirmed ? '✅ Troca Confirmada' : '🔄 Disponível para Troca'}
-              </span>
-            ` : ''}
-          </div>
-          
-          <div class="grid grid-cols-2 gap-3 mb-4">
-            <div class="bg-slate-800 p-4 rounded-xl">
-              <p class="text-xs text-gray-400 mb-1">Carga horária</p>
-              <p class="text-2xl font-bold">${typeInfo.hours}h</p>
+          <div class="grid grid-cols-2 gap-2 mb-3">
+            <div class="bg-slate-800 p-2 rounded-lg">
+              <p class="text-xs text-gray-400">Horas</p>
+              <p class="text-lg font-bold">${typeInfo.hours}h</p>
             </div>
             ${shift.value ? `
-              <div class="bg-slate-800 p-4 rounded-xl">
-                <p class="text-xs text-gray-400 mb-1">Valor</p>
-                <p class="text-2xl font-bold text-emerald-400">${formatCurrency(shift.value)}</p>
+              <div class="bg-slate-800 p-2 rounded-lg">
+                <p class="text-xs text-gray-400">Valor</p>
+                <p class="text-lg font-bold text-emerald-400">${formatCurrency(shift.value)}</p>
               </div>
             ` : ''}
           </div>
-          
-          ${shift.notes ? `
-            <div class="bg-slate-800 p-4 rounded-xl mb-4">
-              <p class="text-xs text-gray-400 mb-2">Observações</p>
-              <p>${shift.notes}</p>
-            </div>
-          ` : ''}
-          
-          ${shift.swapNotes ? `
-            <div class="bg-yellow-500/10 border border-yellow-500 p-4 rounded-xl mb-4">
-              <p class="text-xs text-yellow-500 font-bold mb-2">Motivo da troca:</p>
-              <p class="text-sm">${shift.swapNotes}</p>
-            </div>
-          ` : ''}
-          
-          ${swapShift ? `
-            <div class="bg-blue-500/10 border border-blue-500 p-4 rounded-xl mb-4">
-              <p class="text-xs text-blue-500 font-bold mb-2">Troca proposta com:</p>
-              <div class="flex items-center justify-between">
-                <div>
-                  <p class="font-medium">${formatFullDate(swapShift.date)}</p>
-                  <p class="text-sm text-gray-400">${swapShift.location} - ${SHIFT_TYPES[swapShift.type].name}</p>
-                </div>
-                ${!shift.swapConfirmed ? `
-                  <button onclick="openConfirmSwapModal('${shift.id}', '${swapShift.id}')" class="bg-green-600 text-white px-3 py-1 rounded-lg text-sm">
-                    Confirmar
-                  </button>
-                ` : ''}
-              </div>
-            </div>
-          ` : ''}
-          
-          <div class="flex flex-col gap-2">
-            <div class="grid grid-cols-2 gap-2">
-              <button onclick="editShift('${shift.id}')" class="bg-blue-600 text-white py-3 rounded-xl">Editar</button>
-              <button onclick="toggleSwap('${shift.id}')" class="${shift.swapRequest ? 'bg-emerald-600' : 'bg-yellow-600'} text-white py-3 rounded-xl">
-                ${shift.swapRequest ? 'Cancelar Troca' : 'Oferecer Troca'}
-              </button>
-            </div>
-            ${!shift.swapRequest ? `
-              <button onclick="openSwapWithAnother('${shift.id}')" class="bg-purple-600 text-white py-3 rounded-xl">
-                Trocar com outro plantão
-              </button>
-            ` : ''}
-            <button onclick="deleteShift('${shift.id}')" class="bg-red-600 text-white py-3 rounded-xl">Excluir Plantão</button>
+          <div class="flex gap-2">
+            <button onclick="editShift('${shift.id}')" class="flex-1 bg-blue-600 py-2 rounded-lg text-sm">Editar</button>
+            <button onclick="deleteShift('${shift.id}')" class="flex-1 bg-red-600 py-2 rounded-lg text-sm">Excluir</button>
           </div>
         </div>
       `;
-
-      document.getElementById('detailContent').innerHTML = html;
       document.getElementById('detailModal').style.display = 'flex';
     }
 
@@ -1244,7 +992,6 @@
 
     function editShift(id) {
       closeDetailModal();
-      
       const shift = shifts.find(s => s.id === id);
       if (shift) {
         document.getElementById('shiftId').value = shift.id;
@@ -1258,255 +1005,61 @@
       }
     }
 
-    function toggleSwap(id) {
-      const shift = shifts.find(s => s.id === id);
-      if (shift) {
-        if (!shift.swapRequest) {
-          const motivo = prompt('Por que você quer trocar este plantão? (opcional)');
-          shift.swapRequest = true;
-          shift.swapNotes = motivo || 'Disponível para troca';
-          shift.swapConfirmed = false;
-          showToast('Plantão disponível para troca!', 'warning');
-        } else {
-          shift.swapRequest = false;
-          shift.swapNotes = '';
-          shift.swapWith = null;
-          shift.swapConfirmed = false;
-          showToast('Troca cancelada', 'info');
-        }
-        saveData();
-        renderCalendar();
-        renderUpcoming();
-        renderPendingSwaps();
-        openDetailModal(id);
-      }
-    }
-
     function deleteShift(id) {
-      if (confirm('Tem certeza que deseja excluir este plantão?')) {
+      if (confirm('Excluir plantão?')) {
         shifts = shifts.filter(s => s.id !== id);
         saveData();
         renderCalendar();
         renderUpcoming();
         renderPendingSwaps();
         closeDetailModal();
-        showToast('Plantão excluído com sucesso!', 'success');
+        showToast('Plantão excluído!', 'success');
       }
     }
 
-    // SISTEMA DE TROCA - PROPOR TROCA
-    function openSwapWithAnother(id) {
-      const shift = shifts.find(s => s.id === id);
-      if (!shift) return;
-      
-      closeDetailModal();
-      
-      const otherShifts = shifts.filter(s => 
-        s.id !== id && 
-        !s.swapRequest && 
-        new Date(s.date + 'T12:00:00') > new Date()
-      ).sort((a, b) => a.date.localeCompare(b.date));
-      
-      if (otherShifts.length === 0) {
-        showToast('Não há outros plantões disponíveis para troca.', 'info');
-        return;
-      }
-
-      let html = `
-        <div class="mb-4">
-          <p class="mb-3">Selecione o plantão para trocar com:</p>
-          <div class="bg-yellow-500/10 p-4 rounded-xl border border-yellow-500 mb-4">
-            <div class="flex items-center gap-2 mb-2">
-              <span class="font-bold">${formatFullDate(shift.date)}</span>
-              <span class="text-xs px-2 py-1 rounded-full ${SHIFT_TYPES[shift.type].color} text-white">${SHIFT_TYPES[shift.type].name}</span>
-              <span class="text-xs px-2 py-1 rounded-full ${getLocationInfo(shift.location).color} text-white">${shift.location}</span>
-            </div>
-            <p class="text-sm text-gray-400">${shift.location}</p>
-          </div>
-        </div>
-        <div class="space-y-2 max-h-60 overflow-y-auto mb-4 pr-2">
-      `;
-
-      otherShifts.forEach(s => {
-        const typeInfo = SHIFT_TYPES[s.type];
-        const locationInfo = getLocationInfo(s.location);
-        html += `
-          <div onclick="selectSwapPair('${shift.id}', '${s.id}')" class="p-4 bg-slate-800 rounded-xl cursor-pointer hover:bg-slate-700 border border-gray-700">
-            <div class="flex justify-between items-center mb-1">
-              <span class="font-semibold">${formatFullDate(s.date)}</span>
-              <span class="text-xs px-2 py-1 rounded-full ${typeInfo.color} text-white">${typeInfo.name}</span>
-            </div>
-            <p class="text-sm text-gray-400">${s.location} ${locationInfo.icon}</p>
-            ${s.value ? `<p class="text-sm text-emerald-400 mt-1">${formatCurrency(s.value)}</p>` : ''}
-          </div>
-        `;
-      });
-
-      html += '</div><button onclick="closeSwapModal()" class="w-full bg-slate-600 text-white py-3 rounded-xl hover:bg-slate-500">Cancelar</button>';
-      
-      document.getElementById('swapModalContent').innerHTML = html;
-      document.getElementById('swapModal').style.display = 'flex';
-    }
-
+    // SISTEMA DE TROCA SIMPLIFICADO
     function openSwapProposal(targetId) {
       const targetShift = shifts.find(s => s.id === targetId);
       if (!targetShift) return;
       
-      const myShifts = shifts.filter(s => 
-        !s.swapRequest && 
-        s.id !== targetId &&
-        new Date(s.date + 'T12:00:00') > new Date()
-      ).sort((a, b) => a.date.localeCompare(b.date));
+      const myShifts = shifts.filter(s => !s.swapRequest && s.id !== targetId && new Date(s.date + 'T12:00:00') > new Date());
       
       if (myShifts.length === 0) {
-        showToast('Você não tem plantões disponíveis para troca.', 'info');
+        showToast('Sem plantões disponíveis', 'info');
         return;
       }
 
-      let html = `
-        <div class="mb-4">
-          <p class="mb-2">Propor troca para:</p>
-          <div class="bg-yellow-500/10 p-4 rounded-xl border border-yellow-500 mb-4">
-            <div class="flex items-center gap-2 mb-2">
-              <span class="font-bold">${formatFullDate(targetShift.date)}</span>
-              <span class="text-xs px-2 py-1 rounded-full ${SHIFT_TYPES[targetShift.type].color} text-white">${SHIFT_TYPES[targetShift.type].name}</span>
-              <span class="text-xs px-2 py-1 rounded-full ${getLocationInfo(targetShift.location).color} text-white">${targetShift.location}</span>
-            </div>
-            <p class="text-sm text-gray-300">${targetShift.location}</p>
-            ${targetShift.swapNotes ? `<p class="text-sm text-yellow-500 mt-2">"${targetShift.swapNotes}"</p>` : ''}
-          </div>
-          <p class="mb-2">Selecione seu plantão:</p>
-        </div>
-        <div class="space-y-2 max-h-60 overflow-y-auto mb-4 pr-2">
-      `;
-
+      let html = '<div class="space-y-2 max-h-60 overflow-y-auto mb-3">';
       myShifts.forEach(s => {
-        const typeInfo = SHIFT_TYPES[s.type];
-        const locationInfo = getLocationInfo(s.location);
         html += `
-          <div onclick="selectSwapPair('${s.id}', '${targetShift.id}')" class="p-4 bg-slate-800 rounded-xl cursor-pointer hover:bg-slate-700 border border-gray-700">
-            <div class="flex justify-between items-center mb-1">
-              <span class="font-semibold">${formatFullDate(s.date)}</span>
-              <span class="text-xs px-2 py-1 rounded-full ${typeInfo.color} text-white">${typeInfo.name}</span>
-            </div>
-            <p class="text-sm text-gray-400">${s.location} ${locationInfo.icon}</p>
+          <div onclick="proposeSwap('${s.id}', '${targetShift.id}')" class="p-3 bg-slate-800 rounded-lg">
+            <div class="font-medium">${formatFullDate(s.date)}</div>
+            <div class="text-xs text-gray-400">${s.location}</div>
           </div>
         `;
       });
-
-      html += '</div><button onclick="closeSwapModal()" class="w-full bg-slate-600 text-white py-3 rounded-xl hover:bg-slate-500">Cancelar</button>';
+      html += '</div><button onclick="closeSwapModal()" class="w-full bg-slate-600 py-2 rounded-lg text-sm">Cancelar</button>';
       
       document.getElementById('swapModalContent').innerHTML = html;
       document.getElementById('swapModal').style.display = 'flex';
     }
 
-    function selectSwapPair(shift1Id, shift2Id) {
-      pendingSwapSelection.shift1 = shift1Id;
-      pendingSwapSelection.shift2 = shift2Id;
-      closeSwapModal();
-      openConfirmSwapModal(shift1Id, shift2Id);
-    }
-
-    // MODAL DE CONFIRMAÇÃO DE TROCA
-    function openConfirmSwapModal(shift1Id, shift2Id) {
-      const shift1 = getShiftById(shift1Id);
-      const shift2 = getShiftById(shift2Id);
+    function proposeSwap(shift1Id, shift2Id) {
+      const shift1 = shifts.find(s => s.id === shift1Id);
+      const shift2 = shifts.find(s => s.id === shift2Id);
       
-      if (!shift1 || !shift2) return;
-
-      const typeInfo1 = SHIFT_TYPES[shift1.type];
-      const typeInfo2 = SHIFT_TYPES[shift2.type];
-      const locationInfo1 = getLocationInfo(shift1.location);
-      const locationInfo2 = getLocationInfo(shift2.location);
-
-      const html = `
-        <div class="mb-4">
-          <p class="text-center mb-4 text-gray-400">Você está prestes a confirmar a troca entre:</p>
-          
-          <div class="bg-yellow-500/10 p-4 rounded-xl border border-yellow-500 mb-3">
-            <div class="flex items-center gap-2 mb-2">
-              <span class="font-bold text-lg">${formatFullDate(shift1.date)}</span>
-              <span class="text-xs px-2 py-1 rounded-full ${typeInfo1.color} text-white">${typeInfo1.name}</span>
-              <span class="text-xs px-2 py-1 rounded-full ${locationInfo1.color} text-white">${shift1.location}</span>
-            </div>
-            <p class="text-sm text-gray-300">${shift1.location} ${locationInfo1.icon}</p>
-            ${shift1.value ? `<p class="text-sm text-emerald-400 mt-1">${formatCurrency(shift1.value)}</p>` : ''}
-          </div>
-          
-          <div class="text-center text-2xl mb-3">⬇️</div>
-          
-          <div class="bg-blue-500/10 p-4 rounded-xl border border-blue-500 mb-4">
-            <div class="flex items-center gap-2 mb-2">
-              <span class="font-bold text-lg">${formatFullDate(shift2.date)}</span>
-              <span class="text-xs px-2 py-1 rounded-full ${typeInfo2.color} text-white">${typeInfo2.name}</span>
-              <span class="text-xs px-2 py-1 rounded-full ${locationInfo2.color} text-white">${shift2.location}</span>
-            </div>
-            <p class="text-sm text-gray-300">${shift2.location} ${locationInfo2.icon}</p>
-            ${shift2.value ? `<p class="text-sm text-emerald-400 mt-1">${formatCurrency(shift2.value)}</p>` : ''}
-          </div>
-          
-          <p class="text-sm text-gray-400 mb-4 text-center">
-            Após confirmar, ambos os plantões serão marcados como trocados.
-          </p>
-          
-          <div class="flex gap-2">
-            <button onclick="confirmSwap('${shift1.id}', '${shift2.id}')" class="flex-1 bg-green-600 text-white py-3 rounded-xl font-bold hover:bg-green-700">
-              ✅ Confirmar Troca
-            </button>
-            <button onclick="closeConfirmSwapModal()" class="flex-1 bg-slate-600 text-white py-3 rounded-xl hover:bg-slate-700">
-              Cancelar
-            </button>
-          </div>
-        </div>
-      `;
-
-      document.getElementById('confirmSwapContent').innerHTML = html;
-      document.getElementById('confirmSwapModal').style.display = 'flex';
-    }
-
-    function closeConfirmSwapModal() {
-      document.getElementById('confirmSwapModal').style.display = 'none';
-      pendingSwapSelection = { shift1: null, shift2: null };
-    }
-
-    // FUNÇÃO PRINCIPAL DE CONFIRMAR TROCA
-    function confirmSwap(shift1Id, shift2Id) {
-      const shift1 = getShiftById(shift1Id);
-      const shift2 = getShiftById(shift2Id);
-      
-      if (!shift1 || !shift2) {
-        showToast('Erro ao encontrar os plantões', 'error');
-        return;
+      if (confirm(`Confirmar troca?\n${formatFullDate(shift1.date)} ⇄ ${formatFullDate(shift2.date)}`)) {
+        shift1.swapRequest = true;
+        shift1.swapNotes = `Troca com ${formatFullDate(shift2.date)}`;
+        shift2.swapRequest = true;
+        shift2.swapNotes = `Troca com ${formatFullDate(shift1.date)}`;
+        
+        saveData();
+        renderCalendar();
+        renderPendingSwaps();
+        closeSwapModal();
+        showToast('Troca proposta!', 'success');
       }
-
-      // Marcar ambos como trocados
-      shift1.swapRequest = true;
-      shift1.swapWith = shift2.id;
-      shift1.swapConfirmed = true;
-      shift1.swapNotes = shift1.swapNotes || `Trocado com ${formatFullDate(shift2.date)}`;
-      
-      shift2.swapRequest = true;
-      shift2.swapWith = shift1.id;
-      shift2.swapConfirmed = true;
-      shift2.swapNotes = shift2.swapNotes || `Trocado com ${formatFullDate(shift1.date)}`;
-
-      saveData();
-      
-      // Mostrar notificação de sucesso
-      showToast(
-        `✅ Troca confirmada com sucesso!\n\n${formatFullDate(shift1.date)} ⇄ ${formatFullDate(shift2.date)}`,
-        'success'
-      );
-      
-      // Atualizar todas as views
-      renderCalendar();
-      renderUpcoming();
-      renderPendingSwaps();
-      
-      // Fechar modais
-      closeConfirmSwapModal();
-      closeDetailModal();
-      closeSwapModal();
     }
 
     function closeSwapModal() {
@@ -1548,27 +1101,20 @@
 
         newShifts.push({
           id: generateId(),
-          date: dateStr,
-          type: type,
-          value: value,
-          location: location,
+          date: dateStr, type, value, location,
           notes: 'Gerado 24x72',
-          swapRequest: false,
-          swapWith: null,
-          swapConfirmed: false,
-          swapNotes: null
+          swapRequest: false
         });
       }
 
       if (newShifts.length > 0) {
         shifts = [...shifts, ...newShifts];
         saveData();
-        showToast(`${newShifts.length} plantões gerados! ${conflicts > 0 ? `(${conflicts} conflitos)` : ''}`, 'success');
+        showToast(`${newShifts.length} gerados!`, 'success');
       } else {
-        showToast('Todas as datas já possuem plantões!', 'warning');
+        showToast('Todos já existem!', 'warning');
       }
 
-      updateLocationFilter();
       renderCalendar();
       renderUpcoming();
       renderPendingSwaps();
@@ -1585,19 +1131,9 @@
       document.getElementById('filterType').addEventListener('change', applyFilters);
       document.getElementById('filterLocation').addEventListener('change', applyFilters);
       
-      // Fechar modais clicando fora
       window.onclick = function(event) {
-        if (event.target.classList.contains('modal')) {
-          event.target.style.display = 'none';
-          pendingSwapSelection = { shift1: null, shift2: null };
-        }
+        if (event.target.classList.contains('modal')) event.target.style.display = 'none';
       };
-      
-      // Esconder toast ao clicar no botão de fechar
-      const toastClose = document.querySelector('.toast-close');
-      if (toastClose) {
-        toastClose.addEventListener('click', hideToast);
-      }
     });
   </script>
 </body>
