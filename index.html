@@ -24,12 +24,12 @@
     /* Cores dos locais */
     .location-hrl { background: #ef4444; color: white; }
     .location-hto { background: #8b5cf6; color: white; }
-    .location-hcm { background: #3b82f6; color: white; }
+    .location-EXTRA { background: #3b82f6; color: white; }
     .location-cia { background: #f97316; color: white; }
     
     .border-hrl { border-left-color: #ef4444; }
     .border-hto { border-left-color: #8b5cf6; }
-    .border-hcm { border-left-color: #3b82f6; }
+    .border-EXTRA { border-left-color: #3b82f6; }
     .border-cia { border-left-color: #f97316; }
     
     /* Cards */
@@ -40,7 +40,7 @@
       padding: 12px;
     }
     
-    /* CALENDÁRIO - CORRIGIDO */
+    /* CALENDÁRIO */
     .calendar-grid {
       display: grid;
       grid-template-columns: repeat(7, 1fr);
@@ -65,7 +65,6 @@
       position: relative;
     }
     
-    /* Altura fixa para telas pequenas */
     @media (max-width: 380px) {
       .calendar-day {
         min-height: 42px;
@@ -98,7 +97,6 @@
       margin-bottom: 2px;
     }
     
-    /* BADGE DO TIPO DE PLANTAO - OTIMIZADO */
     .calendar-day .shift-badge {
       font-size: 0.6rem;
       padding: 2px 4px;
@@ -114,7 +112,6 @@
       line-height: 1.2;
     }
     
-    /* Em telas muito pequenas, mostrar apenas a primeira letra do tipo */
     @media (max-width: 340px) {
       .calendar-day .shift-badge {
         font-size: 0.55rem;
@@ -444,7 +441,7 @@
       <div class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-blue-500"></span><span>DN</span></div>
       <div class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-red-500"></span><span>HRL</span></div>
       <div class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-purple-500"></span><span>HTO</span></div>
-      <div class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-blue-500"></span><span>HCM</span></div>
+      <div class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-blue-500"></span><span>EXTRA</span></div>
       <div class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-orange-500"></span><span>CIA</span></div>
       <div class="flex items-center gap-1 ml-auto"><span class="w-2 h-2 rounded-full border border-emerald-500"></span><span>Hoje</span></div>
     </div>
@@ -499,11 +496,23 @@
     <div class="flex items-center justify-between mb-2">
       <h3 class="text-sm font-semibold flex items-center gap-1">
         <span class="text-yellow-500">🔄</span>
-        Trocas
+        Trocas em Andamento
       </h3>
       <span class="bg-yellow-500 text-black px-2 py-0.5 rounded-full text-xs font-bold" id="pendingSwapsCount">0</span>
     </div>
     <div id="pendingSwapsList" class="space-y-2"></div>
+  </div>
+
+  <!-- Trocas Confirmadas -->
+  <div class="card mb-3 border-l-4 border-emerald-500 p-3">
+    <div class="flex items-center justify-between mb-2">
+      <h3 class="text-sm font-semibold flex items-center gap-1">
+        <span class="text-emerald-500">✅</span>
+        Trocas Confirmadas
+      </h3>
+      <span class="bg-emerald-500 text-black px-2 py-0.5 rounded-full text-xs font-bold" id="confirmedSwapsCount">0</span>
+    </div>
+    <div id="confirmedSwapsList" class="space-y-2"></div>
   </div>
 
   <!-- Próximos Plantões -->
@@ -575,7 +584,7 @@
         <datalist id="locationList">
           <option value="HRL">HRL 🏥</option>
           <option value="HTO">HTO 🏥</option>
-          <option value="HCM">HCM 🏥</option>
+          <option value="EXTRA">EXTRA 🏥</option>
           <option value="CIA">CIA 🚑</option>
         </datalist>
 
@@ -601,7 +610,7 @@
         <select id="generatorLocation" required>
           <option value="HRL">HRL 🏥</option>
           <option value="HTO">HTO 🏥</option>
-          <option value="HCM">HCM 🏥</option>
+          <option value="EXTRA">EXTRA 🏥</option>
           <option value="CIA">CIA 🚑</option>
         </select>
 
@@ -632,7 +641,7 @@
 
   <div id="swapModal" class="modal">
     <div class="modal-content">
-      <h2 class="text-lg font-bold mb-3">🔄 Propor Troca</h2>
+      <h2 class="text-lg font-bold mb-3">🔄 Fazer Troca</h2>
       <div id="swapModalContent"></div>
     </div>
   </div>
@@ -655,15 +664,15 @@
     const LOCATIONS = [
       { id: 'HRL', name: 'HRL 🏥', icon: '🏥', color: 'bg-red-500', border: 'border-red-500' },
       { id: 'HTO', name: 'HTO 🏥', icon: '🏥', color: 'bg-purple-500', border: 'border-purple-500' },
-      { id: 'HCM', name: 'HCM 🏥', icon: '🏥', color: 'bg-blue-500', border: 'border-blue-500' },
+      { id: 'EXTRA', name: 'EXTRA 🏥', icon: '🏥', color: 'bg-blue-500', border: 'border-blue-500' },
       { id: 'CIA', name: 'CIA 🚑', icon: '🚑', color: 'bg-orange-500', border: 'border-orange-500' }
     ];
 
     // ESTADO
     let shifts = [];
+    let swaps = []; // Array separado para gerenciar trocas
     let currentDate = new Date();
     let currentFilters = { type: 'all', location: 'all' };
-    let pendingSwapSelection = { shift1: null, shift2: null };
 
     // FUNÇÕES DE TOAST
     function showToast(message, type = 'success') {
@@ -700,7 +709,7 @@
 
     function formatFullDate(dateStr) {
       const d = new Date(dateStr + 'T12:00:00');
-      return d.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' });
+      return d.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: '2-digit' });
     }
 
     function formatCurrency(value) {
@@ -721,9 +730,11 @@
 
     // CARREGAR DADOS
     function loadData() {
-      const saved = localStorage.getItem('minhaEscalaV3');
+      const saved = localStorage.getItem('minhaEscalaV4');
       if (saved) {
-        shifts = JSON.parse(saved);
+        const data = JSON.parse(saved);
+        shifts = data.shifts || [];
+        swaps = data.swaps || [];
       } else {
         const today = new Date();
         const dates = [];
@@ -734,19 +745,33 @@
         }
         
         shifts = [
-          { id: '1', date: dates[0], type: 'sd', location: 'HRL', value: 800, notes: 'UTI', swapRequest: false },
-          { id: '2', date: dates[1], type: 'sn', location: 'HTO', value: 850, notes: '', swapRequest: true, swapNotes: 'Preciso trocar' },
-          { id: '3', date: dates[3], type: 'dn', location: 'HCM', value: 1800, notes: 'Emergência', swapRequest: false },
-          { id: '4', date: dates[5], type: 'sd', location: 'CIA', value: 780, notes: '', swapRequest: true, swapNotes: 'Troco por qualquer data' },
-          { id: '5', date: dates[7], type: 'dn', location: 'HRL', value: 1900, notes: 'Final de semana', swapRequest: true, swapNotes: 'Preciso trocar' }
+          { id: '1', date: dates[0], type: 'sd', location: 'HRL', value: 800, notes: 'UTI' },
+          { id: '2', date: dates[1], type: 'sn', location: 'HTO', value: 850, notes: '' },
+          { id: '3', date: dates[3], type: 'dn', location: 'EXTRA', value: 1800, notes: 'Emergência' },
+          { id: '4', date: dates[5], type: 'sd', location: 'CIA', value: 780, notes: '' },
+          { id: '5', date: dates[7], type: 'dn', location: 'HRL', value: 1900, notes: 'Final de semana' }
         ];
+        
+        // Criar uma troca de exemplo
+        swaps = [
+          { 
+            id: generateId(), 
+            shift1Id: '1', 
+            shift2Id: '2', 
+            date1: dates[0], 
+            date2: dates[1], 
+            status: 'confirmed',
+            createdAt: new Date().toISOString()
+          }
+        ];
+        
         saveData();
       }
       updateLocationFilter();
     }
 
     function saveData() {
-      localStorage.setItem('minhaEscalaV3', JSON.stringify(shifts));
+      localStorage.setItem('minhaEscalaV4', JSON.stringify({ shifts, swaps }));
     }
 
     // FILTROS
@@ -762,7 +787,7 @@
       currentFilters.location = document.getElementById('filterLocation').value;
       renderCalendar();
       renderUpcoming();
-      renderPendingSwaps();
+      renderSwaps();
     }
 
     function clearFilters() {
@@ -771,7 +796,7 @@
       currentFilters = { type: 'all', location: 'all' };
       renderCalendar();
       renderUpcoming();
-      renderPendingSwaps();
+      renderSwaps();
     }
 
     function getFilteredShifts() {
@@ -782,7 +807,7 @@
       });
     }
 
-    // CALENDÁRIO - CORRIGIDO
+    // CALENDÁRIO
     function renderCalendar() {
       const year = currentDate.getFullYear();
       const month = currentDate.getMonth();
@@ -802,10 +827,13 @@
       for (let d = 1; d <= daysInMonth; d++) {
         const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
         const shift = filteredShifts.find(s => s.date === dateStr);
+        const hasSwap = swaps.some(s => 
+          (s.shift1Id === shift?.id || s.shift2Id === shift?.id) && s.status === 'pending'
+        );
         
         let classes = 'calendar-day';
         if (shift) {
-          if (shift.swapRequest) classes += ' has-swap';
+          if (hasSwap) classes += ' has-swap';
         }
         if (dateStr === todayStr) classes += ' today';
         
@@ -823,15 +851,14 @@
       }
 
       document.getElementById('calendarGrid').innerHTML = html;
-      updateStats(); // Atualiza as estatísticas com base no mês atual
+      updateStats();
     }
 
-    // STATS - CORRIGIDO: Agora usa o mês do calendário atual
+    // STATS
     function updateStats() {
       const year = currentDate.getFullYear();
       const month = currentDate.getMonth();
       
-      // Filtra plantões do mês atual do calendário
       const monthShifts = shifts.filter(s => {
         const d = new Date(s.date + 'T12:00:00');
         return d.getMonth() === month && d.getFullYear() === year;
@@ -848,9 +875,12 @@
       const nextShift = shifts.filter(s => s.date >= todayStr).sort((a, b) => a.date.localeCompare(b.date))[0];
       document.getElementById('nextShift').innerHTML = nextShift ? formatDisplayDate(nextShift.date) : '-';
 
-      const swapCount = shifts.filter(s => s.swapRequest).length;
-      document.getElementById('swapCount').innerHTML = swapCount;
-      document.getElementById('pendingSwapsCount').innerHTML = swapCount;
+      const pendingSwaps = swaps.filter(s => s.status === 'pending').length;
+      const confirmedSwaps = swaps.filter(s => s.status === 'confirmed').length;
+      
+      document.getElementById('swapCount').innerHTML = confirmedSwaps;
+      document.getElementById('pendingSwapsCount').innerHTML = pendingSwaps;
+      document.getElementById('confirmedSwapsCount').innerHTML = confirmedSwaps;
     }
 
     // PRÓXIMOS PLANTÕES
@@ -861,6 +891,10 @@
       document.getElementById('upcomingShifts').innerHTML = upcoming.length ? upcoming.map(s => {
         const typeInfo = SHIFT_TYPES[s.type];
         const locationInfo = getLocationInfo(s.location);
+        const hasPendingSwap = swaps.some(swap => 
+          (swap.shift1Id === s.id || swap.shift2Id === s.id) && swap.status === 'pending'
+        );
+        
         return `
         <div onclick="openDetailModal('${s.id}')" class="p-2 bg-slate-800 rounded-lg border-l-4 ${locationInfo.border} text-xs">
           <div class="flex justify-between">
@@ -869,32 +903,70 @@
           </div>
           <div class="flex justify-between mt-0.5">
             <span class="text-gray-400">${s.location}</span>
-            ${s.swapRequest ? '<span class="text-yellow-500">🔄</span>' : ''}
+            ${hasPendingSwap ? '<span class="text-yellow-500">🔄 Troca pendente</span>' : ''}
           </div>
         </div>
       `}).join('') : '<p class="text-gray-400 text-center py-2 text-xs">Nenhum</p>';
     }
 
-    // TROCAS PENDENTES
-    function renderPendingSwaps() {
-      const pending = shifts.filter(s => s.swapRequest);
-      document.getElementById('pendingSwapsList').innerHTML = pending.length ? pending.map(s => {
-        const typeInfo = SHIFT_TYPES[s.type];
-        const locationInfo = getLocationInfo(s.location);
+    // TROCAS
+    function renderSwaps() {
+      const pendingSwaps = swaps.filter(s => s.status === 'pending');
+      const confirmedSwaps = swaps.filter(s => s.status === 'confirmed');
+      
+      document.getElementById('pendingSwapsList').innerHTML = pendingSwaps.length ? pendingSwaps.map(s => {
+        const shift1 = getShiftById(s.shift1Id);
+        const shift2 = getShiftById(s.shift2Id);
+        
+        if (!shift1 || !shift2) return '';
+        
         return `
-        <div class="bg-slate-800 rounded-lg p-2 text-xs">
-          <div class="flex justify-between items-center mb-1">
-            <span class="font-medium">${formatFullDate(s.date)}</span>
-            <span class="px-1.5 py-0.5 rounded-full ${typeInfo.color} text-white">${typeInfo.name}</span>
+        <div class="bg-slate-800 rounded-lg p-2 text-xs trade-card">
+          <div class="flex justify-between items-center mb-2">
+            <span class="font-medium">Troca pendente</span>
+            <span class="swap-status swap-status-pending">⏳ Aguardando</span>
           </div>
-          <div class="flex justify-between items-center">
-            <span class="text-gray-400">${s.location}</span>
-            <button onclick="openSwapProposal('${s.id}')" class="bg-yellow-500 text-black px-2 py-1 rounded-lg text-xs font-medium">
-              Trocar
-            </button>
+          <div class="grid grid-cols-2 gap-2 mb-2">
+            <div class="text-center p-1 bg-slate-700 rounded">
+              <div class="font-bold">${formatDisplayDate(shift1.date)}</div>
+              <div class="text-gray-400">${shift1.location}</div>
+            </div>
+            <div class="text-center p-1 bg-slate-700 rounded">
+              <div class="font-bold">${formatDisplayDate(shift2.date)}</div>
+              <div class="text-gray-400">${shift2.location}</div>
+            </div>
+          </div>
+          <div class="flex gap-1">
+            <button onclick="confirmSwap('${s.id}')" class="flex-1 bg-emerald-600 py-1.5 rounded text-xs">✅ Confirmar</button>
+            <button onclick="cancelSwap('${s.id}')" class="flex-1 bg-red-600 py-1.5 rounded text-xs">❌ Cancelar</button>
           </div>
         </div>
-      `}).join('') : '<p class="text-gray-400 text-center py-2 text-xs">Nenhuma</p>';
+      `}).join('') : '<p class="text-gray-400 text-center py-2 text-xs">Nenhuma troca pendente</p>';
+
+      document.getElementById('confirmedSwapsList').innerHTML = confirmedSwaps.length ? confirmedSwaps.map(s => {
+        const shift1 = getShiftById(s.shift1Id);
+        const shift2 = getShiftById(s.shift2Id);
+        
+        if (!shift1 || !shift2) return '';
+        
+        return `
+        <div class="bg-slate-800 rounded-lg p-2 text-xs trade-card confirmed">
+          <div class="flex justify-between items-center mb-2">
+            <span class="font-medium">Troca confirmada</span>
+            <span class="swap-status swap-status-confirmed">✅ Realizada</span>
+          </div>
+          <div class="grid grid-cols-2 gap-2">
+            <div class="text-center p-1 bg-slate-700 rounded">
+              <div class="font-bold">${formatDisplayDate(shift1.date)}</div>
+              <div class="text-gray-400">${shift1.location}</div>
+            </div>
+            <div class="text-center p-1 bg-slate-700 rounded">
+              <div class="font-bold">${formatDisplayDate(shift2.date)}</div>
+              <div class="text-gray-400">${shift2.location}</div>
+            </div>
+          </div>
+        </div>
+      `}).join('') : '<p class="text-gray-400 text-center py-2 text-xs">Nenhuma troca confirmada</p>';
     }
 
     // HANDLE DAY CLICK
@@ -942,14 +1014,14 @@
         const index = shifts.findIndex(s => s.id === id);
         if (index !== -1) shifts[index] = { ...shifts[index], date, type, value, location, notes };
       } else {
-        shifts.push({ id: generateId(), date, type, value, location, notes, swapRequest: false });
+        shifts.push({ id: generateId(), date, type, value, location, notes });
       }
 
       saveData();
       updateLocationFilter();
       renderCalendar();
       renderUpcoming();
-      renderPendingSwaps();
+      renderSwaps();
       closeFormModal();
       showToast('Plantão salvo!', 'success');
     }
@@ -960,6 +1032,7 @@
       
       const typeInfo = SHIFT_TYPES[shift.type];
       const locationInfo = getLocationInfo(shift.location);
+      const swap = swaps.find(s => s.shift1Id === id || s.shift2Id === id);
       
       document.getElementById('detailContent').innerHTML = `
         <div>
@@ -980,8 +1053,15 @@
               </div>
             ` : ''}
           </div>
+          ${shift.notes ? `<p class="text-sm bg-slate-800 p-2 rounded-lg mb-3">📝 ${shift.notes}</p>` : ''}
+          ${swap ? `
+            <div class="mb-3 p-2 ${swap.status === 'confirmed' ? 'bg-emerald-900' : 'bg-yellow-900'} rounded-lg">
+              <p class="text-xs">Status da troca: ${swap.status === 'confirmed' ? '✅ Confirmada' : '⏳ Pendente'}</p>
+            </div>
+          ` : ''}
           <div class="flex gap-2">
             <button onclick="editShift('${shift.id}')" class="flex-1 bg-blue-600 py-2 rounded-lg text-sm">Editar</button>
+            ${!swap ? `<button onclick="initiateSwap('${shift.id}')" class="flex-1 bg-yellow-600 py-2 rounded-lg text-sm">🔄 Trocar</button>` : ''}
             <button onclick="deleteShift('${shift.id}')" class="flex-1 bg-red-600 py-2 rounded-lg text-sm">Excluir</button>
           </div>
         </div>
@@ -1010,37 +1090,70 @@
 
     function deleteShift(id) {
       if (confirm('Excluir plantão?')) {
+        // Verificar se o plantão está em alguma troca
+        const swap = swaps.find(s => s.shift1Id === id || s.shift2Id === id);
+        if (swap) {
+          if (confirm('Este plantão está em uma troca. Deseja excluir a troca também?')) {
+            swaps = swaps.filter(s => s.id !== swap.id);
+          } else {
+            return;
+          }
+        }
+        
         shifts = shifts.filter(s => s.id !== id);
         saveData();
         renderCalendar();
         renderUpcoming();
-        renderPendingSwaps();
+        renderSwaps();
         closeDetailModal();
         showToast('Plantão excluído!', 'success');
       }
     }
 
-    // SISTEMA DE TROCA SIMPLIFICADO
-    function openSwapProposal(targetId) {
-      const targetShift = shifts.find(s => s.id === targetId);
-      if (!targetShift) return;
+    // SISTEMA DE TROCA MELHORADO
+    function initiateSwap(shift1Id) {
+      closeDetailModal();
       
-      const myShifts = shifts.filter(s => !s.swapRequest && s.id !== targetId && new Date(s.date + 'T12:00:00') > new Date());
+      const shift1 = getShiftById(shift1Id);
+      if (!shift1) return;
       
-      if (myShifts.length === 0) {
-        showToast('Sem plantões disponíveis', 'info');
+      // Encontrar plantões disponíveis para troca (excluindo o próprio e plantões já em troca)
+      const unavailableShiftIds = new Set();
+      swaps.forEach(swap => {
+        if (swap.status === 'pending' || swap.status === 'confirmed') {
+          unavailableShiftIds.add(swap.shift1Id);
+          unavailableShiftIds.add(swap.shift2Id);
+        }
+      });
+      
+      const availableShifts = shifts.filter(s => 
+        s.id !== shift1Id && 
+        !unavailableShiftIds.has(s.id) &&
+        new Date(s.date + 'T12:00:00') > new Date()
+      );
+      
+      if (availableShifts.length === 0) {
+        showToast('Nenhum plantão disponível para troca', 'info');
         return;
       }
 
-      let html = '<div class="space-y-2 max-h-60 overflow-y-auto mb-3">';
-      myShifts.forEach(s => {
+      let html = `
+        <p class="text-sm mb-3">Selecione o plantão para trocar com <strong>${formatFullDate(shift1.date)}</strong>:</p>
+        <div class="space-y-2 max-h-60 overflow-y-auto mb-3">
+      `;
+      
+      availableShifts.forEach(s => {
         html += `
-          <div onclick="proposeSwap('${s.id}', '${targetShift.id}')" class="p-3 bg-slate-800 rounded-lg">
+          <div onclick="proposeSwap('${shift1Id}', '${s.id}')" class="p-3 bg-slate-800 rounded-lg border-l-4 ${getLocationInfo(s.location).border}">
             <div class="font-medium">${formatFullDate(s.date)}</div>
-            <div class="text-xs text-gray-400">${s.location}</div>
+            <div class="flex justify-between text-xs">
+              <span class="text-gray-400">${s.location} - ${SHIFT_TYPES[s.type].name}</span>
+              <span>${formatCurrency(s.value)}</span>
+            </div>
           </div>
         `;
       });
+      
       html += '</div><button onclick="closeSwapModal()" class="w-full bg-slate-600 py-2 rounded-lg text-sm">Cancelar</button>';
       
       document.getElementById('swapModalContent').innerHTML = html;
@@ -1048,20 +1161,61 @@
     }
 
     function proposeSwap(shift1Id, shift2Id) {
-      const shift1 = shifts.find(s => s.id === shift1Id);
-      const shift2 = shifts.find(s => s.id === shift2Id);
+      const shift1 = getShiftById(shift1Id);
+      const shift2 = getShiftById(shift2Id);
       
-      if (confirm(`Confirmar troca?\n${formatFullDate(shift1.date)} ⇄ ${formatFullDate(shift2.date)}`)) {
-        shift1.swapRequest = true;
-        shift1.swapNotes = `Troca com ${formatFullDate(shift2.date)}`;
-        shift2.swapRequest = true;
-        shift2.swapNotes = `Troca com ${formatFullDate(shift1.date)}`;
+      if (!shift1 || !shift2) return;
+      
+      if (confirm(`Confirmar proposta de troca?\n${formatFullDate(shift1.date)} ⇄ ${formatFullDate(shift2.date)}`)) {
+        // Criar nova troca pendente
+        const newSwap = {
+          id: generateId(),
+          shift1Id: shift1Id,
+          shift2Id: shift2Id,
+          date1: shift1.date,
+          date2: shift2.date,
+          status: 'pending',
+          createdAt: new Date().toISOString()
+        };
         
+        swaps.push(newSwap);
         saveData();
+        
         renderCalendar();
-        renderPendingSwaps();
+        renderUpcoming();
+        renderSwaps();
         closeSwapModal();
-        showToast('Troca proposta!', 'success');
+        showToast('Troca proposta com sucesso!', 'success');
+      }
+    }
+
+    function confirmSwap(swapId) {
+      const swap = swaps.find(s => s.id === swapId);
+      if (!swap) return;
+      
+      if (confirm('Confirmar esta troca? Esta ação não pode ser desfeita.')) {
+        swap.status = 'confirmed';
+        saveData();
+        
+        renderCalendar();
+        renderUpcoming();
+        renderSwaps();
+        showToast('Troca confirmada!', 'success');
+      }
+    }
+
+    function cancelSwap(swapId) {
+      const swap = swaps.find(s => s.id === swapId);
+      if (!swap) return;
+      
+      if (confirm('Cancelar esta troca?')) {
+        swaps = swaps.filter(s => s.id !== swapId);
+        saveData();
+        
+        renderCalendar();
+        renderUpcoming();
+        renderSwaps();
+        showToast('Troca cancelada!', 'info');
       }
     }
 
@@ -1104,23 +1258,25 @@
 
         newShifts.push({
           id: generateId(),
-          date: dateStr, type, value, location,
-          notes: 'Gerado 24x72',
-          swapRequest: false
+          date: dateStr, 
+          type, 
+          value, 
+          location,
+          notes: 'Gerado 24x72'
         });
       }
 
       if (newShifts.length > 0) {
         shifts = [...shifts, ...newShifts];
         saveData();
-        showToast(`${newShifts.length} gerados!`, 'success');
+        showToast(`${newShifts.length} plantões gerados!`, 'success');
       } else {
-        showToast('Todos já existem!', 'warning');
+        showToast('Todos os plantões já existem!', 'warning');
       }
 
       renderCalendar();
       renderUpcoming();
-      renderPendingSwaps();
+      renderSwaps();
       closeGeneratorModal();
     }
 
@@ -1129,7 +1285,7 @@
       loadData();
       renderCalendar();
       renderUpcoming();
-      renderPendingSwaps();
+      renderSwaps();
       
       document.getElementById('filterType').addEventListener('change', applyFilters);
       document.getElementById('filterLocation').addEventListener('change', applyFilters);
