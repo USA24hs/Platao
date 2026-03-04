@@ -1,3446 +1,1080 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#3498db">
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Bloco de Notas com Calendário</title>
-    <style>
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            -webkit-tap-highlight-color: transparent;
-        }
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            line-height: 1.6;
-            background: linear-gradient(135deg, #f5f7fa 0%, #e4edf5 100%);
-            color: #333;
-            padding: 10px;
-            min-height: 100vh;
-            overflow-x: hidden;
-            display: flex;
-            flex-direction: column;
-        }
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-            flex: 1;
-        }
-        header {
-            text-align: center;
-            margin-bottom: 15px;
-            width: 100%;
-        }
-        h1 {
-            color: #2c3e50;
-            font-size: 1.8rem;
-            margin-bottom: 5px;
-            text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
-        }
-        .subtitle {
-            color: #7f8c8d;
-            font-size: 0.9rem;
-        }
-        .calendar-section, .notes-section, .stats-section {
-            width: 100%;
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 8px 20px rgba(0,0,0,0.08);
-            padding: 15px;
-            transition: transform 0.3s ease;
-        }
-        .calendar-section:hover, .notes-section:hover, .stats-section:hover {
-            transform: translateY(-5px);
-        }
-        .calendar-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 10px;
-            padding-bottom: 8px;
-            border-bottom: 1px solid #eee;
-        }
-        .calendar-title {
-            font-size: 1.1rem;
-            color: #2c3e50;
-        }
-        .calendar-controls {
-            display: flex;
-            gap: 8px;
-        }
-        .calendar-control {
-            background: #3498db;
-            color: white;
-            border: none;
-            width: 36px;
-            height: 36px;
-            border-radius: 50%;
-            cursor: pointer;
-            font-size: 1.1rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.2s;
-            touch-action: manipulation;
-            box-shadow: 0 2px 5px rgba(52, 152, 219, 0.3);
-        }
-        .calendar-control:hover {
-            background: #2980b9;
-            transform: scale(1.1);
-            box-shadow: 0 4px 8px rgba(52, 152, 219, 0.4);
-        }
-        .calendar-control:active {
-            transform: scale(0.95);
-        }
-        #calendar {
-            width: 100%;
-            border-collapse: collapse;
-        }
-        #calendar th, #calendar td {
-            padding: 4px 2px;
-            text-align: center;
-            border: 1px solid #eee;
-        }
-        #calendar th {
-            background-color: #f8f9fa;
-            color: #2c3e50;
-            font-weight: 600;
-            font-size: 0.75rem;
-        }
-        #calendar td {
-            height: 45px;
-            vertical-align: top;
-            position: relative;
-            cursor: pointer;
-            transition: background-color 0.2s;
-        }
-        #calendar td:hover {
-            background-color: #f5f7fa;
-        }
-        .today {
-            background-color: #3498db;
-            color: white;
-            border-radius: 50%;
-            width: 28px;
-            height: 28px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto 3px;
-            font-size: 0.9rem;
-            font-weight: bold;
-            box-shadow: 0 2px 5px rgba(52, 152, 219, 0.5);
-            border: 2px solid #2980b9;
-        }
-        .day-number {
-            font-weight: bold;
-            margin-bottom: 2px;
-            font-size: 0.8rem;
-        }
-        .event {
-            border-radius: 4px;
-            padding: 1px;
-            font-size: 0.65rem;
-            margin-top: 1px;
-            text-align: center;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            cursor: pointer;
-            max-width: 100%;
-        }
-        .event:hover {
-            opacity: 0.8;
-        }
-        .event:active {
-            opacity: 0.7;
-        }
-        /* Cores mais vivas para eventos */
-        .event-blue {
-            background-color: #2196F3;
-            color: white;
-        }
-        .event-green {
-            background-color: #4CAF50;
-            color: white;
-        }
-        .event-red {
-            background-color: #F44336;
-            color: white;
-        }
-        .event-yellow {
-            background-color: #FFEB3B;
-            color: #333;
-        }
-        .event-purple {
-            background-color: #9C27B0;
-            color: white;
-        }
-        .event-orange {
-            background-color: #FF9800;
-            color: white;
-        }
-        
-        .notes-section h2, .stats-section h2 {
-            margin-bottom: 15px;
-            color: #2c3e50;
-            border-bottom: 2px solid #3498db;
-            padding-bottom: 8px;
-        }
-        
-        /* Mosaico de notas coloridas */
-        .notes-mosaic {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-            gap: 10px;
-            margin-bottom: 15px;
-            max-height: 400px;
-            overflow-y: auto;
-        }
-        .note-card {
-            border-radius: 8px;
-            padding: 10px;
-            min-height: 120px;
-            position: relative;
-            cursor: pointer;
-            transition: transform 0.2s, box-shadow 0.2s;
-            display: flex;
-            flex-direction: column;
-        }
-        .note-card:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-        }
-        .note-title {
-            font-weight: bold;
-            margin-bottom: 5px;
-            font-size: 0.9rem;
-            border-bottom: 1px solid rgba(0,0,0,0.1);
-            padding-bottom: 3px;
-        }
-        .note-content {
-            flex: 1;
-            overflow: hidden;
-            font-size: 0.8rem;
-            white-space: pre-wrap;
-            word-break: break-word;
-        }
-        .note-date {
-            font-size: 0.7rem;
-            opacity: 0.7;
-            margin-top: 5px;
-            text-align: right;
-        }
-        .note-delete {
-            position: absolute;
-            top: 5px;
-            right: 5px;
-            background: rgba(255,255,255,0.7);
-            border: none;
-            border-radius: 50%;
-            width: 20px;
-            height: 20px;
-            font-size: 0.7rem;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            opacity: 0;
-            transition: opacity 0.2s;
-        }
-        .note-card:hover .note-delete {
-            opacity: 1;
-        }
-        /* Cores para as notas */
-        .note-yellow {
-            background-color: #FFEB3B;
-        }
-        .note-pink {
-            background-color: #FF80AB;
-        }
-        .note-blue {
-            background-color: #80D8FF;
-        }
-        .note-green {
-            background-color: #B9F6CA;
-        }
-        .note-purple {
-            background-color: #EA80FC;
-        }
-        .note-orange {
-            background-color: #FFD180;
-        }
-        
-        /* Seção de estatísticas */
-        .stats-container {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-        }
-        .stats-summary {
-            display: flex;
-            gap: 15px;
-            justify-content: space-around;
-            flex-wrap: wrap;
-        }
-        .stat-card {
-            background: #f8f9fa;
-            border-radius: 8px;
-            padding: 15px;
-            text-align: center;
-            flex: 1;
-            min-width: 120px;
-        }
-        .stat-card h3 {
-            margin-bottom: 10px;
-            color: #2c3e50;
-            font-size: 1rem;
-        }
-        .stat-value {
-            font-size: 1.5rem;
-            font-weight: bold;
-            color: #3498db;
-        }
-        .chart-container {
-            height: 200px;
-            position: relative;
-            margin: 10px 0;
-        }
-        .shifts-details {
-            margin-top: 10px;
-        }
-        .shifts-details h3 {
-            margin-bottom: 10px;
-            color: #2c3e50;
-            font-size: 1rem;
-        }
-        .shift-detail-item {
-            display: flex;
-            justify-content: space-between;
-            padding: 8px 0;
-            border-bottom: 1px solid #eee;
-        }
-        .shift-detail-name {
-            font-weight: 600;
-        }
-        .shift-detail-count {
-            color: #7f8c8d;
-        }
-        .shift-detail-value {
-            color: #27ae60;
-            font-weight: 600;
-        }
-        
-        /* Seletor de ano */
-        .year-selector {
-            margin-bottom: 15px;
-            text-align: center;
-        }
-        .year-selector label {
-            margin-right: 10px;
-            font-weight: 600;
-            color: #2c3e50;
-        }
-        
-        /* Botão flutuante oval */
-        .fab-container {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            z-index: 100;
-        }
-        .fab {
-            width: 70px;
-            height: 40px;
-            border-radius: 20px;
-            background-color: #3498db;
-            color: white;
-            border: none;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 20px;
-            transition: all 0.3s ease;
-            outline: none;
-        }
-        .fab:hover {
-            background-color: #2980b9;
-            transform: scale(1.1);
-        }
-        .fab:active {
-            transform: scale(0.95);
-        }
-        .fab-menu {
-            position: absolute;
-            bottom: 50px;
-            right: 0;
-            background-color: white;
-            border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-            padding: 8px 0;
-            width: 200px;
-            opacity: 0;
-            visibility: hidden;
-            transform: translateY(10px);
-            transition: all 0.3s ease;
-        }
-        .fab-menu.show {
-            opacity: 1;
-            visibility: visible;
-            transform: translateY(0);
-        }
-        .fab-menu-item {
-            display: flex;
-            align-items: center;
-            padding: 12px 16px;
-            cursor: pointer;
-            transition: background-color 0.2s;
-        }
-        .fab-menu-item:hover {
-            background-color: #f5f7fa;
-        }
-        .fab-menu-icon {
-            margin-right: 12px;
-            font-size: 20px;
-            width: 24px;
-            text-align: center;
-        }
-        .fab-menu-text {
-            font-size: 16px;
-            color: #333;
-        }
-        
-        .notes-actions {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-top: 15px;
-        }
-        .btn {
-            padding: 8px 12px;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            font-weight: 600;
-            transition: all 0.3s;
-            touch-action: manipulation;
-            font-size: 0.85rem;
-        }
-        .btn-clear {
-            background-color: #e74c3c;
-            color: white;
-            padding: 6px 10px;
-            font-size: 0.8rem;
-        }
-        .btn-clear:hover {
-            background-color: #c0392b;
-        }
-        .btn-clear:active {
-            background-color: #a93226;
-        }
-        .btn-save {
-            background-color: #4CAF50;
-            color: white;
-        }
-        .btn-save:hover {
-            background-color: #45a049;
-        }
-        .btn-save:active {
-            background-color: #3d8b40;
-        }
-        .notes-count {
-            font-size: 0.8rem;
-            color: #7f8c8d;
-        }
-        footer {
-            text-align: center;
-            margin-top: 15px;
-            color: #7f8c8d;
-            font-size: 0.8rem;
-            width: 100%;
-            padding-bottom: 70px; /* Espaço para o botão flutuante */
-        }
-        
-        /* Modal para adicionar/editar eventos */
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.5);
-            z-index: 1000;
-            justify-content: center;
-            align-items: center;
-            padding: 10px;
-        }
-        .modal-content {
-            background-color: white;
-            padding: 15px;
-            border-radius: 12px;
-            width: 100%;
-            max-width: 500px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-            max-height: 90vh;
-            overflow-y: auto;
-        }
-        .modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 12px;
-            padding-bottom: 8px;
-            border-bottom: 1px solid #eee;
-        }
-        .modal-title {
-            font-size: 1.2rem;
-            color: #2c3e50;
-        }
-        .close-modal {
-            background: none;
-            border: none;
-            font-size: 1.4rem;
-            cursor: pointer;
-            color: #7f8c8d;
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            touch-action: manipulation;
-        }
-        .close-modal:hover {
-            background-color: #f0f0f0;
-        }
-        .close-modal:active {
-            background-color: #e0e0e0;
-        }
-        .form-group {
-            margin-bottom: 12px;
-        }
-        .form-group label {
-            display: block;
-            margin-bottom: 4px;
-            font-weight: 600;
-            color: #2c3e50;
-            font-size: 0.9rem;
-        }
-        .form-control {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 6px;
-            font-family: inherit;
-            font-size: 0.9rem;
-            touch-action: manipulation;
-        }
-        .form-control:focus {
-            outline: none;
-            border-color: #3498db;
-            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
-        }
-        .modal-actions {
-            display: flex;
-            justify-content: space-between;
-            gap: 8px;
-            margin-top: 15px;
-            flex-wrap: wrap;
-        }
-        .btn-delete {
-            background-color: #e74c3c;
-            color: white;
-        }
-        .btn-delete:hover {
-            background-color: #c0392b;
-        }
-        .btn-delete:active {
-            background-color: #a93226;
-        }
-        .btn-shift {
-            background-color: #9b59b6;
-            color: white;
-        }
-        .btn-shift:hover {
-            background-color: #8e44ad;
-        }
-        .btn-shift:active {
-            background-color: #7d3c98;
-        }
-        .btn-edit-shift {
-            background-color: #e67e22;
-            color: white;
-        }
-        .btn-edit-shift:hover {
-            background-color: #d35400;
-        }
-        .btn-edit-shift:active {
-            background-color: #ba4a00;
-        }
-        
-        /* Seletor de cores */
-        .color-selector {
-            display: flex;
-            gap: 8px;
-            margin-top: 6px;
-            flex-wrap: wrap;
-        }
-        .color-option {
-            width: 28px;
-            height: 28px;
-            border-radius: 50%;
-            cursor: pointer;
-            border: 2px solid transparent;
-            transition: all 0.2s;
-        }
-        .color-option:hover {
-            transform: scale(1.1);
-        }
-        .color-option.selected {
-            border-color: #333;
-            box-shadow: 0 0 0 2px white, 0 0 0 4px #333;
-        }
-        .color-blue {
-            background-color: #2196F3;
-        }
-        .color-green {
-            background-color: #4CAF50;
-        }
-        .color-red {
-            background-color: #F44336;
-        }
-        .color-yellow {
-            background-color: #FFEB3B;
-        }
-        .color-purple {
-            background-color: #9C27B0;
-        }
-        .color-orange {
-            background-color: #FF9800;
-        }
-        
-        /* Lista de eventos do dia */
-        .day-events {
-            margin-top: 12px;
-            border-top: 1px solid #eee;
-            padding-top: 12px;
-        }
-        .day-events-title {
-            font-size: 0.95rem;
-            margin-bottom: 8px;
-            color: #2c3e50;
-        }
-        .event-list {
-            max-height: 200px;
-            overflow-y: auto;
-        }
-        .event-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 6px;
-            margin-bottom: 6px;
-            border-radius: 6px;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-        .event-item:hover {
-            transform: translateX(5px);
-        }
-        .event-info {
-            flex: 1;
-        }
-        .event-title {
-            font-weight: 600;
-            margin-bottom: 2px;
-            font-size: 0.85rem;
-        }
-        .event-time {
-            font-size: 0.75rem;
-            opacity: 0.8;
-        }
-        .event-actions {
-            display: flex;
-            gap: 4px;
-        }
-        .event-action {
-            background: none;
-            border: none;
-            cursor: pointer;
-            color: #7f8c8d;
-            font-size: 0.9rem;
-            width: 24px;
-            height: 24px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.2s;
-        }
-        .event-action:hover {
-            background-color: rgba(0, 0, 0, 0.1);
-        }
-        
-        /* Modal para notas */
-        .note-modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.5);
-            z-index: 1000;
-            justify-content: center;
-            align-items: center;
-            padding: 10px;
-        }
-        .note-modal-content {
-            background-color: white;
-            padding: 15px;
-            border-radius: 12px;
-            width: 100%;
-            max-width: 500px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-        }
-        
-        /* Seletor de dias alternados */
-        .alternate-days-selector {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-            margin-top: 8px;
-        }
-        .alternate-day-option {
-            flex: 1;
-            min-width: 100px;
-            padding: 8px;
-            border: 1px solid #ddd;
-            border-radius: 6px;
-            background-color: white;
-            cursor: pointer;
-            transition: all 0.2s;
-            text-align: center;
-            font-size: 0.85rem;
-        }
-        .alternate-day-option:hover {
-            background-color: #f5f7fa;
-            border-color: #3498db;
-        }
-        .alternate-day-option.selected {
-            background-color: #3498db;
-            color: white;
-            border-color: #3498db;
-        }
-        
-        /* Notificação toast para feedback em dispositivos móveis */
-        .toast {
-            position: fixed;
-            bottom: 80px;
-            left: 50%;
-            transform: translateX(-50%) translateY(100px);
-            background-color: #333;
-            color: white;
-            padding: 10px 20px;
-            border-radius: 30px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-            opacity: 0;
-            transition: transform 0.3s, opacity 0.3s;
-            z-index: 2000;
-            max-width: 90%;
-            text-align: center;
-            font-size: 0.9rem;
-        }
-        .toast.show {
-            transform: translateX(-50%) translateY(0);
-            opacity: 1;
-        }
-        
-        /* Modal de visualização de notas */
-        .note-view-modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.5);
-            z-index: 1000;
-            justify-content: center;
-            align-items: center;
-            padding: 10px;
-        }
-        .note-view-content {
-            background-color: white;
-            padding: 15px;
-            border-radius: 12px;
-            width: 100%;
-            max-width: 500px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-            max-height: 90vh;
-            overflow-y: auto;
-        }
-        .note-view-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 12px;
-            padding-bottom: 8px;
-            border-bottom: 1px solid #eee;
-        }
-        .note-view-title {
-            font-size: 1.2rem;
-            color: #2c3e50;
-            font-weight: bold;
-        }
-        .note-view-body {
-            margin-bottom: 15px;
-        }
-        .note-view-content-text {
-            white-space: pre-wrap;
-            word-break: break-word;
-            font-size: 0.9rem;
-            line-height: 1.5;
-            color: #333;
-        }
-        .note-view-footer {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-top: 15px;
-            padding-top: 10px;
-            border-top: 1px solid #eee;
-            font-size: 0.8rem;
-            color: #7f8c8d;
-        }
-        .note-view-actions {
-            display: flex;
-            gap: 8px;
-        }
-        .btn-view {
-            padding: 6px 10px;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            font-weight: 600;
-            transition: all 0.3s;
-            font-size: 0.8rem;
-        }
-        .btn-edit-view {
-            background-color: #3498db;
-            color: white;
-        }
-        .btn-edit-view:hover {
-            background-color: #2980b9;
-        }
-        .btn-delete-view {
-            background-color: #e74c3c;
-            color: white;
-        }
-        .btn-delete-view:hover {
-            background-color: #c0392b;
-        }
-        
-        /* Modal de visualização de eventos */
-        .event-view-modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.5);
-            z-index: 1000;
-            justify-content: center;
-            align-items: center;
-            padding: 10px;
-        }
-        .event-view-content {
-            background-color: white;
-            padding: 15px;
-            border-radius: 12px;
-            width: 100%;
-            max-width: 500px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-            max-height: 90vh;
-            overflow-y: auto;
-        }
-        .event-view-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 12px;
-            padding-bottom: 8px;
-            border-bottom: 1px solid #eee;
-        }
-        .event-view-title {
-            font-size: 1.2rem;
-            color: #2c3e50;
-            font-weight: bold;
-        }
-        .event-view-body {
-            margin-bottom: 15px;
-        }
-        .event-view-description {
-            white-space: pre-wrap;
-            word-break: break-word;
-            font-size: 0.9rem;
-            line-height: 1.5;
-            color: #333;
-            margin-bottom: 10px;
-        }
-        .event-view-time {
-            font-size: 0.85rem;
-            color: #7f8c8d;
-            margin-bottom: 10px;
-        }
-        .event-view-color {
-            display: inline-block;
-            width: 16px;
-            height: 16px;
-            border-radius: 50%;
-            margin-right: 8px;
-            vertical-align: middle;
-        }
-        .event-view-footer {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-top: 15px;
-            padding-top: 10px;
-            border-top: 1px solid #eee;
-            font-size: 0.8rem;
-            color: #7f8c8d;
-        }
-        .event-view-actions {
-            display: flex;
-            gap: 8px;
-        }
-        .btn-new-view {
-            background-color: #4CAF50;
-            color: white;
-        }
-        .btn-new-view:hover {
-            background-color: #45a049;
-        }
-        
-        /* Modal de configurações */
-        .settings-content {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-        }
-        
-        /* Estilos para a lista de plantões pré-definidos */
-        .shifts-list {
-            margin-top: 10px;
-            max-height: 200px;
-            overflow-y: auto;
-            border: 1px solid #ddd;
-            border-radius: 6px;
-            padding: 8px;
-        }
-        .shift-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 8px;
-            margin-bottom: 6px;
-            background-color: #f9f9f9;
-            border-radius: 6px;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-        .shift-item:hover {
-            background-color: #f0f0f0;
-        }
-        .shift-info {
-            flex: 1;
-        }
-        .shift-name {
-            font-weight: 600;
-            margin-bottom: 2px;
-            font-size: 0.9rem;
-        }
-        .shift-hours {
-            font-size: 0.8rem;
-            color: #7f8c8d;
-        }
-        .shift-value {
-            font-size: 0.8rem;
-            color: #27ae60;
-            font-weight: 600;
-        }
-        .shift-actions {
-            display: flex;
-            gap: 4px;
-        }
-        .shift-action {
-            background: none;
-            border: none;
-            cursor: pointer;
-            color: #7f8c8d;
-            font-size: 0.9rem;
-            width: 24px;
-            height: 24px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.2s;
-        }
-        .shift-action:hover {
-            background-color: rgba(0, 0, 0, 0.1);
-        }
-        .add-shift-form {
-            margin-top: 10px;
-            padding: 10px;
-            background-color: #f9f9f9;
-            border-radius: 6px;
-        }
-        .form-row {
-            display: flex;
-            gap: 8px;
-            margin-bottom: 8px;
-            flex-wrap: wrap;
-        }
-        .form-row .form-group {
-            flex: 1;
-            margin-bottom: 0;
-            min-width: 120px;
-        }
-        
-        /* Lista de plantões no modal de eventos */
-        .shifts-selector {
-            margin-top: 8px;
-            max-height: 150px;
-            overflow-y: auto;
-            border: 1px solid #ddd;
-            border-radius: 6px;
-            padding: 8px;
-        }
-        .shift-option {
-            padding: 8px;
-            margin-bottom: 6px;
-            background-color: #f9f9f9;
-            border-radius: 6px;
-            cursor: pointer;
-            transition: all 0.2s;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .shift-option:hover {
-            background-color: #e9f5ff;
-            border-color: #3498db;
-        }
-        .shift-option.selected {
-            background-color: #e9f5ff;
-            border: 1px solid #3498db;
-        }
-        .shift-option-info {
-            flex: 1;
-        }
-        .shift-option-name {
-            font-weight: 600;
-            margin-bottom: 2px;
-            font-size: 0.9rem;
-        }
-        .shift-option-hours {
-            font-size: 0.8rem;
-            color: #7f8c8d;
-        }
-        .shift-option-value {
-            font-size: 0.8rem;
-            color: #27ae60;
-            font-weight: 600;
-        }
-        
-        @media (max-width: 768px) {
-            .container {
-                flex-direction: column;
-            }
-            .calendar-controls {
-                flex-direction: row;
-                align-items: center;
-            }
-            .calendar-control {
-                width: 36px;
-                height: 36px;
-                font-size: 1.1rem;
-            }
-            .modal-content, .note-modal-content, .note-view-content, .event-view-content {
-                width: 100%;
-                padding: 12px;
-            }
-            h1 {
-                font-size: 1.6rem;
-            }
-            .subtitle {
-                font-size: 0.85rem;
-            }
-            #calendar th, #calendar td {
-                padding: 3px 1px;
-            }
-            #calendar td {
-                height: 40px;
-            }
-            .today {
-                width: 24px;
-                height: 24px;
-                font-size: 0.8rem;
-            }
-            .event {
-                font-size: 0.6rem;
-            }
-            .btn {
-                padding: 10px 12px;
-                font-size: 0.8rem;
-            }
-            .btn-clear {
-                padding: 5px 8px;
-                font-size: 0.75rem;
-            }
-            .modal-actions {
-                flex-direction: column;
-            }
-            .modal-actions .btn {
-                width: 100%;
-            }
-            .color-option {
-                width: 32px;
-                height: 32px;
-            }
-            .notes-mosaic {
-                grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-            }
-            .fab {
-                width: 66px;
-                height: 38px;
-                font-size: 18px;
-            }
-            .fab-menu {
-                width: 180px;
-            }
-            .alternate-day-option {
-                min-width: 80px;
-                font-size: 0.8rem;
-            }
-            .form-row {
-                flex-direction: column;
-            }
-            .stats-summary {
-                flex-direction: column;
-            }
-            .stat-card {
-                margin-bottom: 10px;
-            }
-        }
-        
-        /* Para telas muito pequenas */
-        @media (max-width: 480px) {
-            body {
-                padding: 8px;
-            }
-            .calendar-section, .notes-section, .stats-section {
-                padding: 12px;
-            }
-            #calendar th {
-                font-size: 0.7rem;
-                padding: 2px 1px;
-            }
-            #calendar td {
-                height: 35px;
-                padding: 2px 1px;
-            }
-            .today {
-                width: 20px;
-                height: 20px;
-                font-size: 0.75rem;
-            }
-            .day-number {
-                font-size: 0.75rem;
-            }
-            .event {
-                font-size: 0.55rem;
-            }
-            .modal-title {
-                font-size: 1rem;
-            }
-            .notes-mosaic {
-                grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-                gap: 8px;
-            }
-            .note-card {
-                min-height: 100px;
-                padding: 8px;
-            }
-            .fab {
-                width: 62px;
-                height: 36px;
-                font-size: 16px;
-            }
-            .fab-menu {
-                width: 160px;
-            }
-            .btn-clear {
-                padding: 4px 6px;
-                font-size: 0.7rem;
-            }
-            .alternate-day-option {
-                min-width: 70px;
-                font-size: 0.75rem;
-                padding: 6px;
-            }
-            .chart-container {
-                height: 150px;
-            }
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Minha Escala | Sistema de Trocas</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    * { font-family: system-ui, -apple-system, sans-serif; }
+    body { 
+      background: #0a0f1a; 
+      color: #f1f5f9;
+      min-height: 100vh;
+    }
+    
+    /* Cards e containers */
+    .card { 
+      background: #1e293b; 
+      border: 1px solid #334155; 
+      border-radius: 1rem; 
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+    }
+    
+    /* Botões */
+    .btn-primary { 
+      background: linear-gradient(135deg, #10b981, #059669); 
+      color: white; 
+      padding: 0.5rem 1rem; 
+      border-radius: 0.5rem; 
+      transition: all 0.2s;
+    }
+    .btn-primary:hover { 
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+    }
+    
+    .btn-warning { 
+      background: linear-gradient(135deg, #f59e0b, #d97706); 
+      color: white; 
+      padding: 0.5rem 1rem; 
+      border-radius: 0.5rem; 
+    }
+    
+    /* Calendário */
+    .calendar-container {
+      background: linear-gradient(145deg, #1e293b, #0f172a);
+      border: 1px solid #334155;
+    }
+    
+    .calendar-day { 
+      aspect-ratio: 1; 
+      display: flex; 
+      flex-direction: column;
+      align-items: center; 
+      justify-content: center; 
+      background: #0f172a; 
+      border-radius: 0.75rem; 
+      cursor: pointer; 
+      border: 2px solid transparent;
+      font-size: 0.9rem;
+      position: relative;
+      transition: all 0.2s;
+      padding: 4px;
+    }
+    
+    .calendar-day:hover { 
+      border-color: #10b981; 
+      background: #1e293b;
+      transform: scale(1.02);
+    }
+    
+    .calendar-day.has-shift { 
+      background: linear-gradient(145deg, #10b98120, #05966920); 
+      border-color: #10b981; 
+    }
+    
+    .calendar-day.has-swap { 
+      background: linear-gradient(145deg, #f59e0b20, #d9770620); 
+      border-color: #f59e0b; 
+    }
+    
+    .calendar-day.today { 
+      border: 2px solid #10b981;
+      box-shadow: 0 0 15px #10b98140;
+    }
+    
+    .calendar-day .day-number {
+      font-weight: bold;
+      font-size: 1.1rem;
+    }
+    
+    .calendar-day .shift-badge {
+      font-size: 0.65rem;
+      padding: 2px 6px;
+      border-radius: 12px;
+      background: #1e293b;
+      margin-top: 2px;
+      white-space: nowrap;
+      max-width: 100%;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    
+    /* Indicadores de tipo */
+    .type-sd { background: #10b981; color: white; }
+    .type-sn { background: #8b5cf6; color: white; }
+    .type-dn { background: #3b82f6; color: white; }
+    
+    /* Cards de troca */
+    .trade-card { 
+      background: linear-gradient(145deg, #2d3748, #1e293b);
+      border-left: 4px solid #f59e0b;
+      transition: all 0.2s;
+    }
+    .trade-card:hover {
+      transform: translateX(4px);
+      box-shadow: -4px 0 12px #f59e0b40;
+    }
+    
+    /* Modais */
+    .modal { 
+      position: fixed; 
+      inset: 0; 
+      display: none; 
+      align-items: center; 
+      justify-content: center; 
+      background: rgba(0,0,0,0.8); 
+      backdrop-filter: blur(4px);
+      z-index: 50; 
+    }
+    
+    .modal-content { 
+      background: linear-gradient(145deg, #1e293b, #0f172a);
+      padding: 1.5rem; 
+      border-radius: 1.5rem; 
+      border: 1px solid #334155;
+      max-width: 500px; 
+      width: 90%; 
+      max-height: 90vh; 
+      overflow-y: auto; 
+      box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+    }
+    
+    /* Formulários */
+    input, select, textarea { 
+      background: #0f172a; 
+      border: 1px solid #334155; 
+      color: white; 
+      padding: 0.75rem; 
+      border-radius: 0.75rem; 
+      width: 100%; 
+      transition: all 0.2s;
+    }
+    
+    input:focus, select:focus, textarea:focus {
+      border-color: #10b981;
+      box-shadow: 0 0 0 3px #10b98140;
+      outline: none;
+    }
+    
+    /* Badges */
+    .swap-badge { 
+      background: #f59e0b; 
+      color: black; 
+      font-size: 0.7rem; 
+      padding: 0.2rem 0.5rem; 
+      border-radius: 1rem; 
+      font-weight: bold;
+    }
+    
+    /* Stats cards */
+    .stat-card {
+      background: linear-gradient(145deg, #1e293b, #0f172a);
+      border: 1px solid #334155;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .stat-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, #10b981, #3b82f6);
+    }
+    
+    /* Scrollbar personalizada */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: #0f172a; }
+    ::-webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: #10b981; }
+    
+    /* Animações */
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .animate-slide-up {
+      animation: slideUp 0.3s ease-out forwards;
+    }
+  </style>
 </head>
-<body>
-    <header>
-        <h1>Bloco de Notas Calendário</h1>
-        <p class="subtitle">Organize suas tarefas e anotações com este bloco de notas interativo</p>
-    </header>
-    <div class="container">
-        <div class="calendar-section">
-            <div class="calendar-header">
-                <h2 class="calendar-title" id="calendar-title">Janeiro 2025</h2>
-                <div class="calendar-controls">
-                    <button class="calendar-control" id="prev-month">❮</button>
-                    <button class="calendar-control" id="next-month">❯</button>
-                </div>
-            </div>
-            <table id="calendar">
-                <thead>
-                    <tr>
-                        <th>Dom</th>
-                        <th>Seg</th>
-                        <th>Ter</th>
-                        <th>Qua</th>
-                        <th>Qui</th>
-                        <th>Sex</th>
-                        <th>Sáb</th>
-                    </tr>
-                </thead>
-                <tbody id="calendar-body">
-                    <!-- Calendário será gerado aqui via JavaScript -->
-                </tbody>
-            </table>
-        </div>
-        <div class="notes-section">
-            <h2>Minhas Notas</h2>
-            <div class="notes-mosaic" id="notes-mosaic">
-                <!-- Notas serão geradas aqui via JavaScript -->
-            </div>
-            <div class="notes-actions">
-                <div class="notes-count" id="notes-count">0 notas</div>
-                <button class="btn btn-clear" id="clear-notes">Limpar</button>
-            </div>
-        </div>
-        <div class="stats-section">
-            <h2>Estatísticas de Plantões</h2>
-            <div class="stats-container">
-                <div class="stats-summary">
-                    <div class="stat-card">
-                        <h3>Total de Plantões</h3>
-                        <div class="stat-value" id="total-shifts">0</div>
-                    </div>
-                    <div class="stat-card">
-                        <h3>Valor Total</h3>
-                        <div class="stat-value" id="total-value">R$ 0,00</div>
-                    </div>
-                </div>
-                <div class="chart-container">
-                    <canvas id="shifts-chart"></canvas>
-                </div>
-                <div class="shifts-details">
-                    <h3>Detalhes por Tipo</h3>
-                    <div id="shifts-details-list">
-                        <!-- Lista será preenchida via JavaScript -->
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="stats-section">
-            <h2>Estatísticas Anuais de Plantões</h2>
-            <div class="stats-container">
-                <div class="year-selector">
-                    <label for="year-select">Ano:</label>
-                    <select id="year-select" class="form-control" style="width: auto; display: inline-block;">
-                        <!-- Opções de ano serão preenchidas via JavaScript -->
-                    </select>
-                </div>
-                <div class="stats-summary">
-                    <div class="stat-card">
-                        <h3>Total de Plantões no Ano</h3>
-                        <div class="stat-value" id="total-year-shifts">0</div>
-                    </div>
-                    <div class="stat-card">
-                        <h3>Valor Total no Ano</h3>
-                        <div class="stat-value" id="total-year-value">R$ 0,00</div>
-                    </div>
-                </div>
-                <div class="chart-container">
-                    <canvas id="year-shifts-chart"></canvas>
-                </div>
-                <div class="shifts-details">
-                    <h3>Detalhes por Mês</h3>
-                    <div id="year-shifts-details-list">
-                        <!-- Lista será preenchida via JavaScript -->
-                    </div>
-                </div>
-            </div>
-        </div>
+<body class="p-4 md:p-6">
+  <!-- Header -->
+  <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
+    <div class="flex items-center gap-3">
+      <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-emerald-700 flex items-center justify-center">
+        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+        </svg>
+      </div>
+      <div>
+        <h1 class="text-2xl font-bold tracking-tight">Minha Escala</h1>
+        <p class="text-sm text-gray-400">Sistema de Gerenciamento de Plantões</p>
+      </div>
     </div>
-    <footer>
-        <p>&copy; 2025 Bloco de Notas Interativo | Feito com HTML, CSS e JavaScript</p>
-    </footer>
+    <button onclick="openFormModal()" class="btn-primary flex items-center gap-2 px-6 py-3">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+      </svg>
+      Novo Plantão
+    </button>
+  </div>
 
-    <!-- Botão flutuante -->
-    <div class="fab-container">
-        <div class="fab-menu" id="fab-menu">
-            <div class="fab-menu-item" id="home-btn">
-                <span class="fab-menu-icon">🏠</span>
-                <span class="fab-menu-text">Início</span>
-            </div>
-            <div class="fab-menu-item" id="add-shift-btn">
-                <span class="fab-menu-icon">📅</span>
-                <span class="fab-menu-text">Plantão</span>
-            </div>
-            <div class="fab-menu-item" id="add-note-btn">
-                <span class="fab-menu-icon">📝</span>
-                <span class="fab-menu-text">Nota</span>
-            </div>
-            <div class="fab-menu-item" id="settings-btn">
-                <span class="fab-menu-icon">⚙️</span>
-                <span class="fab-menu-text">Ajustes</span>
-            </div>
-        </div>
-        <button class="fab" id="fab-btn">👆🏻</button>
+  <!-- CALENDÁRIO NO TOPO -->
+  <div class="calendar-container rounded-2xl p-6 mb-6 animate-slide-up">
+    <!-- Cabeçalho do Calendário -->
+    <div class="flex flex-col sm:flex-row justify-between items-center mb-6">
+      <h2 class="text-xl font-semibold flex items-center gap-2">
+        <svg class="w-6 h-6 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+        </svg>
+        <span id="calendarTitle"></span>
+      </h2>
+      <div class="flex gap-2 mt-2 sm:mt-0">
+        <button onclick="changeMonth(-1)" class="px-4 py-2 bg-slate-700 rounded-lg hover:bg-slate-600 transition-colors flex items-center gap-1">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+          Anterior
+        </button>
+        <button onclick="changeMonth(1)" class="px-4 py-2 bg-slate-700 rounded-lg hover:bg-slate-600 transition-colors flex items-center gap-1">
+          Próximo
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+        </button>
+      </div>
     </div>
 
-    <!-- Modal para adicionar/editar eventos -->
-    <div class="modal" id="event-modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3 class="modal-title" id="modal-title">Adicionar Plantão</h3>
-                <button class="close-modal" id="close-modal">&times;</button>
-            </div>
-            <form id="event-form">
-                <input type="hidden" id="event-date">
-                <input type="hidden" id="event-id">
-                <div class="form-group">
-                    <label for="event-date-picker">Data do Plantão</label>
-                    <input type="date" id="event-date-picker" class="form-control" required>
-                </div>
-                <div class="form-group">
-                    <label for="event-title">Título do Plantão</label>
-                    <input type="text" id="event-title" class="form-control" maxlength="10" placeholder="Máx. 10 caracteres" required>
-                </div>
-                <div class="form-group">
-                    <label>Selecione um Plantão Pré-definido</label>
-                    <div class="shifts-selector" id="shifts-selector">
-                        <!-- Plantões pré-definidos serão listados aqui -->
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label for="event-description">Descrição</label>
-                    <textarea id="event-description" class="form-control" rows="2"></textarea>
-                </div>
-                <div class="form-group">
-                    <label for="event-time">Hora (opcional)</label>
-                    <input type="time" id="event-time" class="form-control">
-                </div>
-                <div class="form-group">
-                    <label>Cor do Evento</label>
-                    <div class="color-selector">
-                        <div class="color-option color-blue selected" data-color="blue"></div>
-                        <div class="color-option color-green" data-color="green"></div>
-                        <div class="color-option color-red" data-color="red"></div>
-                        <div class="color-option color-yellow" data-color="yellow"></div>
-                        <div class="color-option color-purple" data-color="purple"></div>
-                        <div class="color-option color-orange" data-color="orange"></div>
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label>Dias Alternados (opcional)</label>
-                    <div class="alternate-days-selector">
-                        <div class="alternate-day-option" data-type="odd">Dias Ímpares</div>
-                        <div class="alternate-day-option" data-type="even">Dias Pares</div>
-                        <div class="alternate-day-option" data-type="every3">A cada 3 dias</div>
-                        <div class="alternate-day-option" data-type="every4">A cada 4 dias</div>
-                    </div>
-                </div>
-                <div class="modal-actions">
-                    <div>
-                        <button type="button" class="btn btn-shift" id="new-shift-btn">Novo Plantão</button>
-                    </div>
-                    <div>   
-                        <button type="button" class="btn btn-edit-shift" id="edit-shift-btn">Editar Plantão</button>
-                    </div>
-                    <div>
-                        <button type="button" class="btn btn-delete" id="delete-event" style="display: none;">Excluir</button>
-                    </div>
-                    <div>
-                        <button type="submit" class="btn btn-save">Salvar</button>
-                    </div>
-                </div>
-            </form>
-            
-            <!-- Lista de eventos do dia -->
-            <div class="day-events" id="day-events">
-                <h4 class="day-events-title">Eventos deste dia</h4>
-                <div class="event-list" id="event-list">
-                    <!-- Eventos do dia serão listados aqui -->
-                </div>
-            </div>
-        </div>
+    <!-- Dias da Semana -->
+    <div class="grid grid-cols-7 gap-1 mb-3">
+      <div class="text-center text-sm font-medium text-gray-400 py-2">DOM</div>
+      <div class="text-center text-sm font-medium text-gray-400 py-2">SEG</div>
+      <div class="text-center text-sm font-medium text-gray-400 py-2">TER</div>
+      <div class="text-center text-sm font-medium text-gray-400 py-2">QUA</div>
+      <div class="text-center text-sm font-medium text-gray-400 py-2">QUI</div>
+      <div class="text-center text-sm font-medium text-gray-400 py-2">SEX</div>
+      <div class="text-center text-sm font-medium text-gray-400 py-2">SÁB</div>
     </div>
 
-    <!-- Modal para adicionar/editar notas -->
-    <div class="note-modal" id="note-modal">
-        <div class="note-modal-content">
-            <div class="modal-header">
-                <h3 class="modal-title" id="note-modal-title">Adicionar Nota</h3>
-                <button class="close-modal" id="close-note-modal">&times;</button>
-            </div>
-            <form id="note-form">
-                <input type="hidden" id="note-id">
-                <div class="form-group">
-                    <label for="note-title">Título da Nota</label>
-                    <input type="text" id="note-title" class="form-control" placeholder="Título da nota" required>
-                </div>
-                <div class="form-group">
-                    <label for="note-content">Conteúdo da Nota</label>
-                    <textarea id="note-content" class="form-control" rows="5" placeholder="Escreva sua nota aqui..." required></textarea>
-                </div>
-                <div class="form-group">
-                    <label>Cor da Nota</label>
-                    <div class="color-selector">
-                        <div class="color-option color-yellow selected" data-color="yellow"></div>
-                        <div class="color-option color-pink" data-color="pink"></div>
-                        <div class="color-option color-blue" data-color="blue"></div>
-                        <div class="color-option color-green" data-color="green"></div>
-                        <div class="color-option color-purple" data-color="purple"></div>
-                        <div class="color-option color-orange" data-color="orange"></div>
-                    </div>
-                </div>
-                <div class="modal-actions">
-                    <button type="submit" class="btn btn-save">Salvar</button>
-                </div>
-            </form>
-        </div>
+    <!-- Grid do Calendário -->
+    <div id="calendarGrid" class="grid grid-cols-7 gap-2 mb-6"></div>
+
+    <!-- Legenda -->
+    <div class="flex flex-wrap items-center gap-4 pt-4 border-t border-gray-700">
+      <div class="flex items-center gap-2"><div class="w-3 h-3 rounded-full bg-emerald-500"></div><span class="text-sm">SD (12h)</span></div>
+      <div class="flex items-center gap-2"><div class="w-3 h-3 rounded-full bg-purple-500"></div><span class="text-sm">SN (12h)</span></div>
+      <div class="flex items-center gap-2"><div class="w-3 h-3 rounded-full bg-blue-500"></div><span class="text-sm">DN (24h)</span></div>
+      <div class="flex items-center gap-2"><div class="w-3 h-3 rounded-full bg-yellow-500"></div><span class="text-sm">Disponível p/ Troca</span></div>
+      <div class="flex items-center gap-2 ml-auto">
+        <div class="w-3 h-3 rounded-full border-2 border-emerald-500"></div>
+        <span class="text-sm">Hoje</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filtros -->
+  <div class="card p-5 mb-6 animate-slide-up">
+    <div class="flex flex-col md:flex-row gap-4">
+      <div class="flex-1">
+        <label class="block text-sm text-gray-400 mb-1">Tipo de Plantão</label>
+        <select id="filterType" class="w-full">
+          <option value="all">Todos os tipos</option>
+          <option value="sd">SD (12h)</option>
+          <option value="sn">SN (12h)</option>
+          <option value="dn">DN (24h)</option>
+        </select>
+      </div>
+      <div class="flex-1">
+        <label class="block text-sm text-gray-400 mb-1">Local</label>
+        <select id="filterLocation" class="w-full">
+          <option value="all">Todos locais</option>
+        </select>
+      </div>
+      <div class="flex items-end">
+        <button onclick="clearFilters()" class="bg-slate-700 text-white px-6 py-2.5 rounded-lg hover:bg-slate-600 transition-colors flex items-center gap-2">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+          Limpar Filtros
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Grid de Conteúdo Principal -->
+  <div class="grid lg:grid-cols-2 gap-6 mb-6">
+    <!-- Trocas Pendentes -->
+    <div class="card p-6 animate-slide-up">
+      <h3 class="text-lg font-semibold mb-4 flex items-center gap-2">
+        <span>🔄 Trocas Pendentes</span>
+        <span class="bg-yellow-500 text-black px-2 py-1 rounded-full text-sm font-bold" id="pendingSwapsCount">0</span>
+      </h3>
+      <div id="pendingSwapsList" class="space-y-3 max-h-96 overflow-y-auto pr-2">
+        <p class="text-gray-400 text-center py-8">Nenhuma troca pendente</p>
+      </div>
     </div>
 
-    <!-- Modal de visualização de notas -->
-    <div class="note-view-modal" id="note-view-modal">
-        <div class="note-view-content">
-            <div class="note-view-header">
-                <h3 class="note-view-title" id="note-view-title">Título da Nota</h3>
-                <button class="close-modal" id="close-note-view-modal">&times;</button>
-            </div>
-            <div class="note-view-body">
-                <div class="note-view-content-text" id="note-view-content-text">
-                    Conteúdo da nota
-                </div>
-            </div>
-            <div class="note-view-footer">
-                <div class="note-view-date" id="note-view-date">Data da nota</div>
-                <div class="note-view-actions">
-                    <button class="btn-view btn-edit-view" id="edit-note-view-btn">Editar</button>
-                    <button class="btn-view btn-delete-view" id="delete-note-view-btn">Excluir</button>
-                </div>
-            </div>
-        </div>
+    <!-- Próximos Plantões -->
+    <div class="card p-6 animate-slide-up">
+      <h3 class="text-lg font-semibold mb-4 flex items-center gap-2">
+        <svg class="w-5 h-5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+        </svg>
+        Próximos Plantões
+      </h3>
+      <div id="upcomingShifts" class="space-y-3 max-h-96 overflow-y-auto pr-2"></div>
     </div>
+  </div>
 
-    <!-- Modal de visualização de eventos -->
-    <div class="event-view-modal" id="event-view-modal">
-        <div class="event-view-content">
-            <div class="event-view-header">
-                <h3 class="event-view-title" id="event-view-title">Título do Plantão</h3>
-                <button class="close-modal" id="close-event-view-modal">&times;</button>
-            </div>
-            <div class="event-view-body">
-                <div class="event-view-time" id="event-view-time">
-                    <span class="event-view-color" id="event-view-color"></span>
-                    <span id="event-view-time-text">Hora do evento</span>
-                </div>
-                <div class="event-view-description" id="event-view-description">
-                    Descrição do evento
-                </div>
-            </div>
-            <div class="event-view-footer">
-                <div class="event-view-date" id="event-view-date">Data do evento</div>
-                <div class="event-view-actions">
-                    <button class="btn-view btn-new-view" id="new-event-view-btn">Novo</button>
-                    <button class="btn-view btn-edit-view" id="edit-event-view-btn">Editar</button>
-                    <button class="btn-view btn-delete-view" id="delete-event-view-btn">Excluir</button>
-                </div>
-            </div>
-        </div>
+  <!-- Dados (Mês, Horas, Receitas, Próximo, Trocas) - AGORA DEPOIS DOS PRÓXIMOS PLANTÕES -->
+  <div class="grid grid-cols-2 lg:grid-cols-5 gap-4 mb-6 animate-slide-up">
+    <div class="stat-card rounded-xl p-4">
+      <div class="text-sm text-gray-400">Este Mês</div>
+      <div class="text-3xl font-bold" id="totalShifts">0</div>
+      <div class="text-xs text-gray-500">plantões</div>
     </div>
-
-    <!-- Modal de configurações -->
-    <div class="modal" id="settings-modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3 class="modal-title">Configurações</h3>
-                <button class="close-modal" id="close-settings-modal">&times;</button>
-            </div>
-            
-            <div class="settings-content">
-                <div class="form-group">
-                    <label>Gerenciar Plantões Pré-definidos</label>
-                    <p style="font-size: 0.85rem; color: #7f8c8d; margin-bottom: 10px;">Adicione, edite ou remova plantões pré-definidos para uso rápido.</p>
-                    
-                    <div class="shifts-list" id="settings-shifts-list">
-                        <!-- Lista de plantões pré-definidos -->
-                    </div>
-                    
-                    <div class="add-shift-form" id="add-shift-form" style="display: none;">
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label for="new-shift-name">Nome do Plantão</label>
-                                <input type="text" id="new-shift-name" class="form-control" placeholder="Ex: Plantão DN">
-                            </div>
-                            <div class="form-group">
-                                <label for="new-shift-start">Horário de Entrada</label>
-                                <input type="time" id="new-shift-start" class="form-control">
-                            </div>
-                            <div class="form-group">
-                                <label for="new-shift-end">Horário de Saída</label>
-                                <input type="time" id="new-shift-end" class="form-control">
-                            </div>
-                            <div class="form-group">
-                                <label for="new-shift-value">Valor (R$)</label>
-                                <input type="text" id="new-shift-value" class="form-control" placeholder="Ex: 100,00">
-                            </div>
-                        </div>
-                        <div class="modal-actions">
-                            <button type="button" class="btn btn-save" id="save-new-shift">Salvar Plantão</button>
-                            <button type="button" class="btn btn-clear" id="cancel-new-shift">Cancelar</button>
-                        </div>
-                    </div>
-                    
-                    <button class="btn btn-save" id="add-new-shift-btn" style="margin-top: 10px;">Adicionar Novo Plantão</button>
-                </div>
-                
-                <div class="form-group" style="margin-top: 20px;">
-                    <label>Exportar Dados</label>
-                    <p style="font-size: 0.85rem; color: #7f8c8d; margin-bottom: 10px;">Exporte todos os seus eventos e notas para um arquivo JSON.</p>
-                    <button class="btn btn-save" id="export-data">Exportar Dados</button>
-                </div>
-                
-                <div class="form-group">
-                    <label>Importar Dados</label>
-                    <p style="font-size: 0.85rem; color: #7f8c8d; margin-bottom: 10px;">Importe eventos e notas de um arquivo JSON.</p>
-                    <input type="file" id="import-file" accept=".json" style="display: none;">
-                    <button class="btn btn-save" id="import-data">Importar Dados</button>
-                </div>
-                
-                <div class="form-group">
-                    <label>Limpar todos os dados</label>
-                    <p style="font-size: 0.85rem; color: #7f8c8d; margin-bottom: 10px;">Esta ação irá apagar todos os eventos e notas permanentemente.</p>
-                    <button class="btn btn-clear" id="clear-all-data">Limpar Tudo</button>
-                </div>
-            </div>
-        </div>
+    <div class="stat-card rounded-xl p-4">
+      <div class="text-sm text-gray-400">Horas</div>
+      <div class="text-3xl font-bold" id="totalHours">0</div>
+      <div class="text-xs text-gray-500">trabalhadas</div>
     </div>
+    <div class="stat-card rounded-xl p-4">
+      <div class="text-sm text-gray-400">Receita</div>
+      <div class="text-2xl font-bold text-emerald-400" id="totalRevenue">R$ 0</div>
+      <div class="text-xs text-gray-500">estimado</div>
+    </div>
+    <div class="stat-card rounded-xl p-4">
+      <div class="text-sm text-gray-400">Próximo</div>
+      <div class="text-xl font-bold" id="nextShift">-</div>
+      <div class="text-xs text-gray-500" id="nextShiftLabel"></div>
+    </div>
+    <div class="stat-card rounded-xl p-4">
+      <div class="text-sm text-gray-400">Trocas</div>
+      <div class="text-3xl font-bold text-yellow-500" id="swapCount">0</div>
+      <div class="text-xs text-gray-500">pendentes</div>
+    </div>
+  </div>
 
-    <!-- Notificação toast -->
-    <div class="toast" id="toast"></div>
+  <!-- Modais -->
+  <div id="formModal" class="modal">
+    <div class="modal-content">
+      <h2 class="text-xl font-bold mb-4" id="formTitle">Novo Plantão</h2>
+      <form id="shiftForm" onsubmit="saveShift(event)">
+        <input type="hidden" id="shiftId">
+        
+        <div class="mb-3">
+          <label class="block text-sm mb-1">Data</label>
+          <input type="date" id="shiftDate" required>
+        </div>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // Configurações iniciais
-            let currentMonth = new Date().getMonth();
-            let currentYear = new Date().getFullYear();
-            const monthNames = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
-            
-            // Função para formatar valores monetários no padrão brasileiro
-            function formatCurrency(value) {
-                // Garantir que o valor seja um número
-                const numValue = parseFloat(value);
-                if (isNaN(numValue)) return "R$ 0,00";
-                
-                // Formatar com duas casas decimais
-                const formattedValue = numValue.toFixed(2);
-                
-                // Separar parte inteira da decimal
-                const parts = formattedValue.split('.');
-                let integerPart = parts[0];
-                const decimalPart = parts[1];
-                
-                // Adicionar separador de milhar
-                integerPart = integerPart.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
-                
-                // Juntar as partes com vírgula como separador decimal
-                return `R$ ${integerPart},${decimalPart}`;
-            }
-            
-            // Elementos do DOM
-            const calendarBody = document.getElementById('calendar-body');
-            const calendarTitle = document.getElementById('calendar-title');
-            const prevMonthBtn = document.getElementById('prev-month');
-            const nextMonthBtn = document.getElementById('next-month');
-            
-            // Elementos do mosaico de notas
-            const notesMosaic = document.getElementById('notes-mosaic');
-            const clearNotesBtn = document.getElementById('clear-notes');
-            const notesCount = document.getElementById('notes-count');
-            
-            // Elementos do botão flutuante
-            const fabBtn = document.getElementById('fab-btn');
-            const fabMenu = document.getElementById('fab-menu');
-            const homeBtn = document.getElementById('home-btn');
-            const addShiftBtn = document.getElementById('add-shift-btn');
-            const addNoteBtn = document.getElementById('add-note-btn');
-            const settingsBtn = document.getElementById('settings-btn');
-            
-            // Elementos do modal de eventos
-            const eventModal = document.getElementById('event-modal');
-            const modalTitle = document.getElementById('modal-title');
-            const eventForm = document.getElementById('event-form');
-            const eventDateInput = document.getElementById('event-date');
-            const eventIdInput = document.getElementById('event-id');
-            const eventDatePickerInput = document.getElementById('event-date-picker');
-            const eventTitleInput = document.getElementById('event-title');
-            const eventDescriptionInput = document.getElementById('event-description');
-            const eventTimeInput = document.getElementById('event-time');
-            const deleteEventBtn = document.getElementById('delete-event');
-            const closeModalBtn = document.getElementById('close-modal');
-            const newShiftBtn = document.getElementById('new-shift-btn');
-            const editShiftBtn = document.getElementById('edit-shift-btn');
-            const dayEventsSection = document.getElementById('day-events');
-            const eventList = document.getElementById('event-list');
-            const shiftsSelector = document.getElementById('shifts-selector');
-            
-            // Elementos do modal de notas
-            const noteModal = document.getElementById('note-modal');
-            const noteModalTitle = document.getElementById('note-modal-title');
-            const noteForm = document.getElementById('note-form');
-            const noteIdInput = document.getElementById('note-id');
-            const noteTitleInput = document.getElementById('note-title');
-            const noteContentInput = document.getElementById('note-content');
-            const closeNoteModalBtn = document.getElementById('close-note-modal');
-            
-            // Elementos do modal de visualização de notas
-            const noteViewModal = document.getElementById('note-view-modal');
-            const noteViewTitle = document.getElementById('note-view-title');
-            const noteViewContentText = document.getElementById('note-view-content-text');
-            const noteViewDate = document.getElementById('note-view-date');
-            const closeNoteViewModalBtn = document.getElementById('close-note-view-modal');
-            const editNoteViewBtn = document.getElementById('edit-note-view-btn');
-            const deleteNoteViewBtn = document.getElementById('delete-note-view-btn');
-            
-            // Elementos do modal de visualização de eventos
-            const eventViewModal = document.getElementById('event-view-modal');
-            const eventViewTitle = document.getElementById('event-view-title');
-            const eventViewDescription = document.getElementById('event-view-description');
-            const eventViewTimeText = document.getElementById('event-view-time-text');
-            const eventViewColor = document.getElementById('event-view-color');
-            const eventViewDate = document.getElementById('event-view-date');
-            const closeEventViewModalBtn = document.getElementById('close-event-view-modal');
-            const newEventViewBtn = document.getElementById('new-event-view-btn');
-            const editEventViewBtn = document.getElementById('edit-event-view-btn');
-            const deleteEventViewBtn = document.getElementById('delete-event-view-btn');
-            
-            // Elementos do modal de configurações
-            const settingsModal = document.getElementById('settings-modal');
-            const closeSettingsModalBtn = document.getElementById('close-settings-modal');
-            const clearAllDataBtn = document.getElementById('clear-all-data');
-            const exportDataBtn = document.getElementById('export-data');
-            const importDataBtn = document.getElementById('import-data');
-            const importFileInput = document.getElementById('import-file');
-            const settingsShiftsList = document.getElementById('settings-shifts-list');
-            const addNewShiftBtn = document.getElementById('add-new-shift-btn');
-            const addShiftForm = document.getElementById('add-shift-form');
-            const saveNewShiftBtn = document.getElementById('save-new-shift');
-            const cancelNewShiftBtn = document.getElementById('cancel-new-shift');
-            const newShiftName = document.getElementById('new-shift-name');
-            const newShiftStart = document.getElementById('new-shift-start');
-            const newShiftEnd = document.getElementById('new-shift-end');
-            const newShiftValue = document.getElementById('new-shift-value');
-            
-            // Elementos do seletor de cores
-            const eventColorOptions = document.querySelectorAll('#event-modal .color-option');
-            const noteColorOptions = document.querySelectorAll('#note-modal .color-option');
-            let selectedEventColor = 'blue';
-            let selectedNoteColor = 'yellow';
-            
-            // Elementos do seletor de dias alternados
-            const alternateDayOptions = document.querySelectorAll('.alternate-day-option');
-            let selectedAlternateDaysType = null;
-            
-            // Elemento de notificação toast
-            const toast = document.getElementById('toast');
-            
-            // Elementos da seção de estatísticas
-            const totalShiftsElement = document.getElementById('total-shifts');
-            const totalValueElement = document.getElementById('total-value');
-            const shiftsDetailsList = document.getElementById('shifts-details-list');
-            const shiftsChart = document.getElementById('shifts-chart');
-            
-            // Elementos para estatísticas anuais
-            const yearSelect = document.getElementById('year-select');
-            const totalYearShiftsElement = document.getElementById('total-year-shifts');
-            const totalYearValueElement = document.getElementById('total-year-value');
-            const yearShiftsChart = document.getElementById('year-shifts-chart');
-            const yearShiftsDetailsList = document.getElementById('year-shifts-details-list');
-            
-            // Variáveis para armazenar os itens atuais em visualização
-            let currentViewingNote = null;
-            let currentViewingEvent = null;
-            let currentViewingEventDate = null;
-            let selectedShift = null;
-            let editingShiftId = null;
-            
-            // Função para formatar data como YYYY-MM-DD sem problemas de fuso horário
-            function formatDateToYYYYMMDD(date) {
-                const year = date.getFullYear();
-                const month = String(date.getMonth() + 1).padStart(2, '0');
-                const day = String(date.getDate()).padStart(2, '0');
-                return `${year}-${month}-${day}`;
-            }
-            
-            // Função para mostrar notificação toast
-            function showToast(message, duration = 3000) {
-                toast.textContent = message;
-                toast.classList.add('show');
-                
-                setTimeout(() => {
-                    toast.classList.remove('show');
-                }, duration);
-            }
-            
-            // Carregar plantões pré-definidos
-            function loadShifts() {
-                const savedShifts = localStorage.getItem('predefinedShifts');
-                if (savedShifts) {
-                    return JSON.parse(savedShifts);
-                } else {
-                    // Plantões padrão se não houver nenhum salvo
-                    return [
-                        { id: '1', name: 'DN', startTime: '00:00', endTime: '23:59', value: '200,00' },
-                        { id: '2', name: 'SD', startTime: '07:00', endTime: '19:00', value: '100,00' },
-                        { id: '3', name: 'SN', startTime: '19:00', endTime: '07:00', value: '100,00' },
-                        { id: '4', name: 'TC', startTime: '00:00', endTime: '23:59', value: '0,000' }
-                    ];
-                }
-            }
-            
-            // Salvar plantões pré-definidos
-            function saveShifts(shifts) {
-                localStorage.setItem('predefinedShifts', JSON.stringify(shifts));
-            }
-            
-            // Renderizar lista de plantões no modal de configurações
-            function renderSettingsShiftsList() {
-                const shifts = loadShifts();
-                settingsShiftsList.innerHTML = '';
-                
-                if (shifts.length === 0) {
-                    settingsShiftsList.innerHTML = '<p style="text-align: center; color: #7f8c8d; padding: 10px;">Nenhum plantão pré-definido. Adicione um novo plantão.</p>';
-                    return;
-                }
-                
-                shifts.forEach(shift => {
-                    const shiftItem = document.createElement('div');
-                    shiftItem.className = 'shift-item';
-                    
-                    const shiftInfo = document.createElement('div');
-                    shiftInfo.className = 'shift-info';
-                    
-                    const shiftName = document.createElement('div');
-                    shiftName.className = 'shift-name';
-                    shiftName.textContent = shift.name;
-                    
-                    const shiftHours = document.createElement('div');
-                    shiftHours.className = 'shift-hours';
-                    shiftHours.textContent = `${shift.startTime} - ${shift.endTime}`;
-                    
-                    const shiftValue = document.createElement('div');
-                    shiftValue.className = 'shift-value';
-                    shiftValue.textContent = formatCurrency(shift.value);
-                    
-                    shiftInfo.appendChild(shiftName);
-                    shiftInfo.appendChild(shiftHours);
-                    shiftInfo.appendChild(shiftValue);
-                    
-                    const shiftActions = document.createElement('div');
-                    shiftActions.className = 'shift-actions';
-                    
-                    const editBtn = document.createElement('button');
-                    editBtn.className = 'shift-action';
-                    editBtn.innerHTML = '✏️';
-                    editBtn.addEventListener('click', () => {
-                        editShift(shift);
-                    });
-                    
-                    const deleteBtn = document.createElement('button');
-                    deleteBtn.className = 'shift-action';
-                    deleteBtn.innerHTML = '🗑️';
-                    deleteBtn.addEventListener('click', () => {
-                        if (confirm('Tem certeza que deseja excluir este plantão?')) {
-                            deleteShift(shift.id);
-                            renderSettingsShiftsList();
-                            renderShiftsSelector();
-                            showToast('Plantão excluído com sucesso!');
-                        }
-                    });
-                    
-                    shiftActions.appendChild(editBtn);
-                    shiftActions.appendChild(deleteBtn);
-                    
-                    shiftItem.appendChild(shiftInfo);
-                    shiftItem.appendChild(shiftActions);
-                    
-                    settingsShiftsList.appendChild(shiftItem);
-                });
-            }
-            
-            // Renderizar lista de plantões no modal de eventos
-            function renderShiftsSelector() {
-                const shifts = loadShifts();
-                shiftsSelector.innerHTML = '';
-                
-                if (shifts.length === 0) {
-                    shiftsSelector.innerHTML = '<p style="text-align: center; color: #7f8c8d; padding: 10px;">Nenhum plantão pré-definido. Adicione plantões nas configurações.</p>';
-                    return;
-                }
-                
-                shifts.forEach(shift => {
-                    const shiftOption = document.createElement('div');
-                    shiftOption.className = 'shift-option';
-                    if (selectedShift && selectedShift.id === shift.id) {
-                        shiftOption.classList.add('selected');
-                    }
-                    
-                    const shiftOptionInfo = document.createElement('div');
-                    shiftOptionInfo.className = 'shift-option-info';
-                    
-                    const shiftOptionName = document.createElement('div');
-                    shiftOptionName.className = 'shift-option-name';
-                    shiftOptionName.textContent = shift.name;
-                    
-                    const shiftOptionHours = document.createElement('div');
-                    shiftOptionHours.className = 'shift-option-hours';
-                    shiftOptionHours.textContent = `${shift.startTime} - ${shift.endTime}`;
-                    
-                    const shiftOptionValue = document.createElement('div');
-                    shiftOptionValue.className = 'shift-option-value';
-                    shiftOptionValue.textContent = formatCurrency(shift.value);
-                    
-                    shiftOptionInfo.appendChild(shiftOptionName);
-                    shiftOptionInfo.appendChild(shiftOptionHours);
-                    shiftOptionInfo.appendChild(shiftOptionValue);
-                    
-                    shiftOption.appendChild(shiftOptionInfo);
-                    
-                    shiftOption.addEventListener('click', () => {
-                        // Remover seleção de todos os plantões
-                        document.querySelectorAll('.shift-option').forEach(opt => {
-                            opt.classList.remove('selected');
-                        });
-                        
-                        // Adicionar seleção ao plantão clicado
-                        shiftOption.classList.add('selected');
-                        
-                        // Definir plantão selecionado
-                        selectedShift = shift;
-                        
-                        // Preencher campos do formulário com os dados do plantão
-                        eventTitleInput.value = shift.name;
-                        eventTimeInput.value = shift.startTime;
-                        eventDescriptionInput.value = `Plantão ${shift.name}: ${shift.startTime} - ${shift.endTime}`;
-                    });
-                    
-                    shiftsSelector.appendChild(shiftOption);
-                });
-            }
-            
-            // Adicionar novo plantão
-            function addShift(name, startTime, endTime, value) {
-                const shifts = loadShifts();
-                const newShift = {
-                    id: Date.now().toString(),
-                    name: name,
-                    startTime: startTime,
-                    endTime: endTime,
-                    value: value
-                };
-                
-                shifts.push(newShift);
-                saveShifts(shifts);
-                return newShift;
-            }
-            
-            // Editar plantão
-            function editShift(shift) {
-                editingShiftId = shift.id;
-                newShiftName.value = shift.name;
-                newShiftStart.value = shift.startTime;
-                newShiftEnd.value = shift.endTime;
-                newShiftValue.value = shift.value;
-                addShiftForm.style.display = 'block';
-                addNewShiftBtn.style.display = 'none';
-            }
-            
-            // Atualizar plantão
-            function updateShift(id, name, startTime, endTime, value) {
-                const shifts = loadShifts();
-                const index = shifts.findIndex(shift => shift.id === id);
-                
-                if (index !== -1) {
-                    shifts[index].name = name;
-                    shifts[index].startTime = startTime;
-                    shifts[index].endTime = endTime;
-                    shifts[index].value = value;
-                    saveShifts(shifts);
-                    showToast('Plantão atualizado com sucesso!');
-                }
-            }
-            
-            // Excluir plantão
-            function deleteShift(id) {
-                const shifts = loadShifts();
-                const filteredShifts = shifts.filter(shift => shift.id !== id);
-                saveShifts(filteredShifts);
-            }
-            
-            // Carregar notas salvas
-            function loadNotes() {
-                const savedNotes = localStorage.getItem('notes');
-                const notes = savedNotes ? JSON.parse(savedNotes) : [];
-                renderNotes(notes);
-                updateNotesCount(notes.length);
-            }
-            
-            // Renderizar notas no mosaico
-            function renderNotes(notes) {
-                notesMosaic.innerHTML = '';
-                
-                if (notes.length === 0) {
-                    notesMosaic.innerHTML = '<p style="text-align: center; color: #7f8c8d; grid-column: 1/-1;">Nenhuma nota ainda. Clique em "Nota" para começar.</p>';
-                    return;
-                }
-                
-                // Ordenar notas por data (mais recentes primeiro)
-                notes.sort((a, b) => new Date(b.date) - new Date(a.date));
-                
-                notes.forEach(note => {
-                    const noteCard = document.createElement('div');
-                    noteCard.className = `note-card note-${note.color}`;
-                    
-                    const noteTitle = document.createElement('div');
-                    noteTitle.className = 'note-title';
-                    noteTitle.textContent = note.title;
-                    
-                    const noteContent = document.createElement('div');
-                    noteContent.className = 'note-content';
-                    noteContent.textContent = note.content;
-                    
-                    const noteDate = document.createElement('div');
-                    noteDate.className = 'note-date';
-                    noteDate.textContent = formatDate(note.date);
-                    
-                    const noteDelete = document.createElement('button');
-                    noteDelete.className = 'note-delete';
-                    noteDelete.innerHTML = '×';
-                    noteDelete.addEventListener('click', (e) => {
-                        e.stopPropagation();
-                        deleteNote(note.id);
-                    });
-                    
-                    noteCard.appendChild(noteTitle);
-                    noteCard.appendChild(noteContent);
-                    noteCard.appendChild(noteDate);
-                    noteCard.appendChild(noteDelete);
-                    
-                    noteCard.addEventListener('click', () => {
-                        openNoteViewModal(note);
-                    });
-                    
-                    notesMosaic.appendChild(noteCard);
-                });
-            }
-            
-            // Formatar data para exibição
-            function formatDate(dateString) {
-                const date = new Date(dateString);
-                return date.toLocaleDateString('pt-BR', {
-                    day: '2-digit',
-                    month: '2-digit',
-                    hour: '2-digit',
-                    minute: '2-digit'
-                });
-            }
-            
-            // Salvar notas
-            function saveNotes(notes) {
-                localStorage.setItem('notes', JSON.stringify(notes));
-            }
-            
-            // Adicionar nova nota
-            function addNote(title, content, color) {
-                const notes = JSON.parse(localStorage.getItem('notes') || '[]');
-                
-                // Adicionar uma única nota
-                const newNote = {
-                    id: Date.now().toString(),
-                    title: title,
-                    content: content,
-                    color: color,
-                    date: new Date().toISOString()
-                };
-                
-                notes.push(newNote);
-                saveNotes(notes);
-                renderNotes(notes);
-                updateNotesCount(notes.length);
-                showToast('Nota adicionada com sucesso!');
-                
-                return notes;
-            }
-            
-            // Atualizar nota existente
-            function updateNote(id, title, content, color) {
-                const notes = JSON.parse(localStorage.getItem('notes') || '[]');
-                const index = notes.findIndex(note => note.id === id);
-                
-                if (index !== -1) {
-                    notes[index].title = title;
-                    notes[index].content = content;
-                    notes[index].color = color;
-                    saveNotes(notes);
-                    renderNotes(notes);
-                    showToast('Nota atualizada com sucesso!');
-                }
-            }
-            
-            // Excluir nota
-            function deleteNote(id) {
-                if (confirm('Tem certeza que deseja excluir esta nota?')) {
-                    const notes = JSON.parse(localStorage.getItem('notes') || '[]');
-                    const filteredNotes = notes.filter(note => note.id !== id);
-                    
-                    saveNotes(filteredNotes);
-                    renderNotes(filteredNotes);
-                    updateNotesCount(filteredNotes.length);
-                    showToast('Nota excluída com sucesso!');
-                }
-            }
-            
-            // Limpar todas as notas
-            function clearAllNotes() {
-                if (confirm('Tem certeza que deseja limpar todas as notas?')) {
-                    localStorage.removeItem('notes');
-                    renderNotes([]);
-                    updateNotesCount(0);
-                    showToast('Todas as notas foram limpas!');
-                }
-            }
-            
-            // Limpar todos os dados (eventos e notas)
-            function clearAllData() {
-                if (confirm('Tem certeza que deseja limpar todos os dados? Esta ação não pode ser desfeita.')) {
-                    localStorage.removeItem('notes');
-                    localStorage.removeItem('calendarEvents');
-                    renderNotes([]);
-                    updateNotesCount(0);
-                    generateCalendar();
-                    calculateShiftStats();
-                    calculateYearStats(parseInt(yearSelect.value));
-                    showToast('Todos os dados foram limpos!');
-                    closeSettingsModal();
-                }
-            }
-            
-            // Função para exportar dados
-            function exportData() {
-                const events = loadEvents();
-                const notes = JSON.parse(localStorage.getItem('notes') || '[]');
-                const shifts = loadShifts();
-                
-                const data = {
-                    events: events,
-                    notes: notes,
-                    shifts: shifts,
-                    exportDate: new Date().toISOString()
-                };
-                
-                const dataStr = JSON.stringify(data, null, 2);
-                const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
-                
-                const exportFileDefaultName = `bloco-de-notas-dados-${new Date().toISOString().split('T')[0]}.json`;
-                
-                const linkElement = document.createElement('a');
-                linkElement.setAttribute('href', dataUri);
-                linkElement.setAttribute('download', exportFileDefaultName);
-                linkElement.click();
-                
-                showToast('Dados exportados com sucesso!');
-            }
-            
-            // Função para importar dados
-            function importData() {
-                importFileInput.click();
-            }
-            
-            // Função para processar arquivo importado
-            function processImportedFile(event) {
-                const file = event.target.files[0];
-                if (!file) return;
-                
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    try {
-                        const data = JSON.parse(e.target.result);
-                        
-                        // Validar estrutura básica
-                        if (!data.events || !data.notes) {
-                            throw new Error('Formato de arquivo inválido');
-                        }
-                        
-                        // Confirmar substituição
-                        if (confirm('Isso substituirá todos os seus dados atuais. Deseja continuar?')) {
-                            // Salvar eventos
-                            saveEvents(data.events);
-                            
-                            // Salvar notas
-                            localStorage.setItem('notes', JSON.stringify(data.notes));
-                            
-                            // Salvar plantões se existirem
-                            if (data.shifts) {
-                                saveShifts(data.shifts);
-                            }
-                            
-                            // Atualizar interface
-                            generateCalendar();
-                            loadNotes();
-                            calculateShiftStats();
-                            calculateYearStats(parseInt(yearSelect.value));
-                            renderSettingsShiftsList();
-                            renderShiftsSelector();
-                            
-                            showToast('Dados importados com sucesso!');
-                        }
-                    } catch (error) {
-                        showToast('Erro ao importar dados: ' + error.message);
-                    }
-                };
-                
-                reader.readAsText(file);
-                
-                // Limpar o input para permitir importar o mesmo arquivo novamente
-                event.target.value = '';
-            }
-            
-            // Atualizar contagem de notas
-            function updateNotesCount(count) {
-                notesCount.textContent = `${count} nota${count !== 1 ? 's' : ''}`;
-            }
-            
-            // Abrir modal para visualizar nota
-            function openNoteViewModal(note) {
-                currentViewingNote = note;
-                
-                noteViewTitle.textContent = note.title;
-                noteViewContentText.textContent = note.content;
-                noteViewDate.textContent = formatDate(note.date);
-                
-                noteViewModal.style.display = 'flex';
-            }
-            
-            // Abrir modal para adicionar/editar nota
-            function openNoteModal(note = null) {
-                // Resetar seleção de cor
-                noteColorOptions.forEach(option => {
-                    option.classList.remove('selected');
-                    if (option.dataset.color === 'yellow') {
-                        option.classList.add('selected');
-                    }
-                });
-                selectedNoteColor = 'yellow';
-                
-                if (note) {
-                    noteModalTitle.textContent = 'Editar Nota';
-                    noteIdInput.value = note.id;
-                    noteTitleInput.value = note.title;
-                    noteContentInput.value = note.content;
-                    
-                    // Definir cor selecionada
-                    if (note.color) {
-                        noteColorOptions.forEach(option => {
-                            option.classList.remove('selected');
-                            if (option.dataset.color === note.color) {
-                                option.classList.add('selected');
-                                selectedNoteColor = note.color;
-                            }
-                        });
-                    }
-                } else {
-                    noteModalTitle.textContent = 'Adicionar Nota';
-                    noteIdInput.value = '';
-                    noteTitleInput.value = '';
-                    noteContentInput.value = '';
-                }
-                
-                noteModal.style.display = 'flex';
-                
-                // Focar no campo de título ao abrir o modal
-                setTimeout(() => {
-                    noteTitleInput.focus();
-                }, 300);
-            }
-            
-            // Fechar modal de nota
-            function closeNoteModal() {
-                noteModal.style.display = 'none';
-            }
-            
-            // Fechar modal de visualização de nota
-            function closeNoteViewModal() {
-                noteViewModal.style.display = 'none';
-                currentViewingNote = null;
-            }
-            
-            // Abrir modal para visualizar evento
-            function openEventViewModal(event, dateString) {
-                currentViewingEvent = event;
-                currentViewingEventDate = dateString;
-                
-                const date = new Date(dateString);
-                const formattedDate = date.toLocaleDateString('pt-BR');
-                
-                eventViewTitle.textContent = event.title;
-                eventViewDescription.textContent = event.description || 'Sem descrição';
-                eventViewTimeText.textContent = event.time || 'Todo o dia';
-                eventViewDate.textContent = formattedDate;
-                
-                // Definir cor do evento
-                eventViewColor.className = `event-view-color event-${event.color || 'blue'}`;
-                
-                eventViewModal.style.display = 'flex';
-            }
-            
-            // Abrir modal de configurações
-            function openSettingsModal() {
-                settingsModal.style.display = 'flex';
-                renderSettingsShiftsList();
-            }
-            
-            // Fechar modal de configurações
-            function closeSettingsModal() {
-                settingsModal.style.display = 'none';
-            }
-            
-            // Carregar eventos salvos
-            function loadEvents() {
-                const savedEvents = localStorage.getItem('calendarEvents');
-                return savedEvents ? JSON.parse(savedEvents) : {};
-            }
-            
-            // Salvar eventos
-            function saveEvents(events) {
-                localStorage.setItem('calendarEvents', JSON.stringify(events));
-            }
-            
-            // Gerar ID único para eventos
-            function generateEventId() {
-                return Date.now().toString(36) + Math.random().toString(36).substr(2);
-            }
-            
-            // Obter eventos para uma data específica
-            function getEventsForDate(dateString) {
-                const events = loadEvents();
-                return events[dateString] || [];
-            }
-            
-            // Adicionar ou atualizar evento
-            function saveEvent(dateString, eventData) {
-                const events = loadEvents();
-                if (!events[dateString]) {
-                    events[dateString] = [];
-                }
-                
-                if (eventData.id) {
-                    // Atualizar evento existente
-                    const index = events[dateString].findIndex(e => e.id === eventData.id);
-                    if (index !== -1) {
-                        events[dateString][index] = eventData;
-                    }
-                } else {
-                    // Adicionar novo evento
-                    eventData.id = generateEventId();
-                    events[dateString].push(eventData);
-                }
-                
-                // Ordenar eventos por hora
-                events[dateString].sort((a, b) => {
-                    if (a.time && b.time) {
-                        return a.time.localeCompare(b.time);
-                    }
-                    return 0;
-                });
-                
-                saveEvents(events);
-                return eventData;
-            }
-            
-            // Criar eventos em dias alternados
-            function createAlternateDayEvents(startDate, eventData, alternateType) {
-                const events = loadEvents();
-                const start = new Date(startDate);
-                const year = start.getFullYear();
-                const month = start.getMonth();
-                const startDay = start.getDate();
-                
-                // Obter o último dia do mês
-                const lastDay = new Date(year, month + 1, 0).getDate();
-                
-                let createdCount = 0;
-                
-                // Determinar o padrão de dias alternados com base na data de início
-                let dayPattern = [];
-                switch(alternateType) {
-                    case 'odd':
-                        // Dias ímpares: começando do dia de início, pegar todos os dias ímpares
-                        for (let day = startDay; day <= lastDay; day++) {
-                            if (day % 2 === 1) { // Dia ímpar
-                                dayPattern.push(day);
-                            }
-                        }
-                        break;
-                    case 'even':
-                        // Dias pares: começando do dia de início, pegar todos os dias pares
-                        for (let day = startDay; day <= lastDay; day++) {
-                            if (day % 2 === 0) { // Dia par
-                                dayPattern.push(day);
-                            }
-                        }
-                        break;
-                    case 'every3':
-                        // A cada 3 dias: começando do dia de início
-                        for (let day = startDay; day <= lastDay; day += 3) {
-                            dayPattern.push(day);
-                        }
-                        break;
-                    case 'every4':
-                        // A cada 4 dias: começando do dia de início
-                        for (let day = startDay; day <= lastDay; day += 4) {
-                            dayPattern.push(day);
-                        }
-                        break;
-                }
-                
-                // Criar eventos para cada dia no padrão
-                dayPattern.forEach(day => {
-                    const date = new Date(year, month, day);
-                    const dateString = formatDateToYYYYMMDD(date);
-                    
-                    // Criar uma cópia do eventData para cada dia
-                    const dayEventData = {
-                        ...eventData,
-                        id: generateEventId()
-                    };
-                    
-                    // Salvar o evento para este dia
-                    if (!events[dateString]) {
-                        events[dateString] = [];
-                    }
-                    events[dateString].push(dayEventData);
-                    createdCount++;
-                });
-                
-                saveEvents(events);
-                return createdCount;
-            }
-            
-            // Excluir evento
-            function deleteEvent(dateString, eventId) {
-                const events = loadEvents();
-                if (events[dateString]) {
-                    events[dateString] = events[dateString].filter(e => e.id !== eventId);
-                    if (events[dateString].length === 0) {
-                        delete events[dateString];
-                    }
-                    saveEvents(events);
-                }
-            }
-            
-            // Abrir modal para adicionar/editar evento
-            function openEventModal(dateString, event = null) {
-                const date = new Date(dateString);
-                const formattedDate = date.toLocaleDateString('pt-BR');
-                
-                // Resetar seleção de cor e dias alternados
-                eventColorOptions.forEach(option => {
-                    option.classList.remove('selected');
-                    if (option.dataset.color === 'blue') {
-                        option.classList.add('selected');
-                    }
-                });
-                selectedEventColor = 'blue';
-                
-                alternateDayOptions.forEach(option => {
-                    option.classList.remove('selected');
-                });
-                selectedAlternateDaysType = null;
-                
-                // Resetar seleção de plantão
-                selectedShift = null;
-                
-                if (event) {
-                    modalTitle.textContent = `Editar Plantão - ${formattedDate}`;
-                    eventIdInput.value = event.id;
-                    eventDatePickerInput.value = dateString;
-                    eventTitleInput.value = event.title;
-                    eventDescriptionInput.value = event.description || '';
-                    eventTimeInput.value = event.time || '';
-                    deleteEventBtn.style.display = 'block';
-                    
-                    // Definir cor selecionada
-                    if (event.color) {
-                        eventColorOptions.forEach(option => {
-                            option.classList.remove('selected');
-                            if (option.dataset.color === event.color) {
-                                option.classList.add('selected');
-                                selectedEventColor = event.color;
-                            }
-                        });
-                    }
-                    
-                    // Verificar se o evento corresponde a algum plantão pré-definido
-                    const shifts = loadShifts();
-                    const matchingShift = shifts.find(shift => 
-                        shift.name === event.title && 
-                        shift.startTime === event.time
-                    );
-                    
-                    if (matchingShift) {
-                        selectedShift = matchingShift;
-                        // Atualizar a seleção visual na lista de plantões
-                        setTimeout(() => {
-                            document.querySelectorAll('.shift-option').forEach(option => {
-                                option.classList.remove('selected');
-                                const shiftName = option.querySelector('.shift-option-name').textContent;
-                                const shiftHours = option.querySelector('.shift-option-hours').textContent;
-                                if (shiftName === matchingShift.name && shiftHours === `${matchingShift.startTime} - ${matchingShift.endTime}`) {
-                                    option.classList.add('selected');
-                                }
-                            });
-                        }, 100);
-                    }
-                } else {
-                    modalTitle.textContent = `Adicionar Plantão - ${formattedDate}`;
-                    eventIdInput.value = '';
-                    eventDatePickerInput.value = dateString;
-                    eventTitleInput.value = '';
-                    eventDescriptionInput.value = '';
-                    eventTimeInput.value = '';
-                    deleteEventBtn.style.display = 'none';
-                }
-                
-                eventDateInput.value = dateString;
-                eventModal.style.display = 'flex';
-                
-                // Renderizar lista de plantões
-                renderShiftsSelector();
-                
-                // Carregar eventos do dia
-                loadDayEvents(dateString);
-                
-                // Focar no campo de título ao abrir o modal
-                setTimeout(() => {
-                    eventTitleInput.focus();
-                }, 300);
-            }
-            
-            // Abrir modal para adicionar plantão
-            function openShiftModal(dateString) {
-                // Abrir o modal de eventos com o título "Adicionar Plantão"
-                const date = new Date(dateString);
-                const formattedDate = date.toLocaleDateString('pt-BR');
-                
-                // Resetar seleção de cor e dias alternados
-                eventColorOptions.forEach(option => {
-                    option.classList.remove('selected');
-                    if (option.dataset.color === 'blue') {
-                        option.classList.add('selected');
-                    }
-                });
-                selectedEventColor = 'blue';
-                
-                alternateDayOptions.forEach(option => {
-                    option.classList.remove('selected');
-                });
-                selectedAlternateDaysType = null;
-                
-                // Resetar seleção de plantão
-                selectedShift = null;
-                
-                modalTitle.textContent = `Adicionar Plantão - ${formattedDate}`;
-                eventIdInput.value = '';
-                eventDatePickerInput.value = dateString;
-                eventTitleInput.value = '';
-                eventDescriptionInput.value = '';
-                eventTimeInput.value = '';
-                deleteEventBtn.style.display = 'none';
-                
-                eventDateInput.value = dateString;
-                eventModal.style.display = 'flex';
-                
-                // Renderizar lista de plantões
-                renderShiftsSelector();
-                
-                // Carregar eventos do dia
-                loadDayEvents(dateString);
-                
-                // Focar no campo de título ao abrir o modal
-                setTimeout(() => {
-                    eventTitleInput.focus();
-                }, 300);
-            }
-            
-            // Abrir modal para editar plantão
-            function openEditShiftModal(dateString) {
-                // Abrir o modal de eventos com o título "Editar Plantão"
-                const date = new Date(dateString);
-                const formattedDate = date.toLocaleDateString('pt-BR');
-                
-                // Resetar seleção de cor e dias alternados
-                eventColorOptions.forEach(option => {
-                    option.classList.remove('selected');
-                    if (option.dataset.color === 'blue') {
-                        option.classList.add('selected');
-                    }
-                });
-                selectedEventColor = 'blue';
-                
-                alternateDayOptions.forEach(option => {
-                    option.classList.remove('selected');
-                });
-                selectedAlternateDaysType = null;
-                
-                // Resetar seleção de plantão
-                selectedShift = null;
-                
-                modalTitle.textContent = `Editar Plantão - ${formattedDate}`;
-                eventIdInput.value = '';
-                eventDatePickerInput.value = dateString;
-                eventTitleInput.value = '';
-                eventDescriptionInput.value = '';
-                eventTimeInput.value = '';
-                deleteEventBtn.style.display = 'none';
-                
-                eventDateInput.value = dateString;
-                eventModal.style.display = 'flex';
-                
-                // Renderizar lista de plantões
-                renderShiftsSelector();
-                
-                // Carregar eventos do dia
-                loadDayEvents(dateString);
-                
-                // Focar no campo de título ao abrir o modal
-                setTimeout(() => {
-                    eventTitleInput.focus();
-                }, 300);
-            }
-            
-            // Carregar eventos do dia no modal
-            function loadDayEvents(dateString) {
-                const events = getEventsForDate(dateString);
-                eventList.innerHTML = '';
-                
-                if (events.length === 0) {
-                    eventList.innerHTML = '<p style="text-align: center; color: #7f8c8d; padding: 10px;">Nenhum evento para este dia</p>';
-                    return;
-                }
-                
-                events.forEach(event => {
-                    const eventItem = document.createElement('div');
-                    eventItem.className = `event-item event-${event.color || 'blue'}`;
-                    
-                    const eventInfo = document.createElement('div');
-                    eventInfo.className = 'event-info';
-                    
-                    const eventTitle = document.createElement('div');
-                    eventTitle.className = 'event-title';
-                    eventTitle.textContent = event.title;
-                    
-                    const eventTime = document.createElement('div');
-                    eventTime.className = 'event-time';
-                    eventTime.textContent = event.time || 'Todo o dia';
-                    
-                    eventInfo.appendChild(eventTitle);
-                    eventInfo.appendChild(eventTime);
-                    
-                    const eventActions = document.createElement('div');
-                    eventActions.className = 'event-actions';
-                    
-                    const editBtn = document.createElement('button');
-                    editBtn.className = 'event-action';
-                    editBtn.innerHTML = '✏️';
-                    editBtn.addEventListener('click', () => {
-                        openEventModal(dateString, event);
-                    });
-                    
-                    const deleteBtn = document.createElement('button');
-                    deleteBtn.className = 'event-action';
-                    deleteBtn.innerHTML = '🗑️';
-                    deleteBtn.addEventListener('click', () => {
-                        if (confirm('Tem certeza que deseja excluir este evento?')) {
-                            deleteEvent(dateString, event.id);
-                            generateCalendar();
-                            loadDayEvents(dateString);
-                            calculateShiftStats();
-                            calculateYearStats(parseInt(yearSelect.value));
-                            showToast('Evento excluído com sucesso!');
-                        }
-                    });
-                    
-                    eventActions.appendChild(editBtn);
-                    eventActions.appendChild(deleteBtn);
-                    
-                    eventItem.appendChild(eventInfo);
-                    eventItem.appendChild(eventActions);
-                    
-                    eventList.appendChild(eventItem);
-                });
-            }
-            
-            // Fechar modal
-            function closeEventModal() {
-                eventModal.style.display = 'none';
-            }
-            
-            // Fechar modal de visualização de evento
-            function closeEventViewModal() {
-                eventViewModal.style.display = 'none';
-                currentViewingEvent = null;
-                currentViewingEventDate = null;
-            }
-            
-            // Gerar calendário
-            function generateCalendar() {
-                calendarBody.innerHTML = '';
-                const firstDay = new Date(currentYear, currentMonth, 1);
-                const lastDay = new Date(currentYear, currentMonth + 1, 0);
-                const daysInMonth = lastDay.getDate();
-                const firstDayOfWeek = firstDay.getDay();
-                
-                // Criar células vazias para os dias antes do início do mês
-                let html = '';
-                for (let i = 0; i < firstDayOfWeek; i++) {
-                    html += '<td></td>';
-                }
-                
-                // Preencher dias do mês
-                for (let day = 1; day <= daysInMonth; day++) {
-                    // Criar objeto Date para o dia atual
-                    const date = new Date(currentYear, currentMonth, day);
-                    // Formatar a data como YYYY-MM-DD usando nossa função personalizada
-                    const dateString = formatDateToYYYYMMDD(date);
-                    const today = new Date();
-                    const isToday = (day === today.getDate() && currentMonth === today.getMonth() && currentYear === today.getFullYear());
-                    
-                    // Obter eventos para este dia
-                    const dayEvents = getEventsForDate(dateString);
-                    
-                    html += `<td data-date="${dateString}">
-                        <div class="day-number ${isToday ? 'today' : ''}">${day}</div>`;
-                    
-                    // Adicionar eventos (máximo de 3 para melhor visualização)
-                    dayEvents.slice(0, 3).forEach(event => {
-                        html += `<div class="event event-${event.color || 'blue'}" data-event-id="${event.id}">${event.title}</div>`;
-                    });
-                    
-                    // Indicador se há mais eventos
-                    if (dayEvents.length > 3) {
-                        html += `<div class="event">+${dayEvents.length - 3}</div>`;
-                    }
-                    
-                    html += '</td>';
-                    
-                    // Quebrar linha a cada 7 dias
-                    if ((firstDayOfWeek + day) % 7 === 0) {
-                        html += '</tr><tr>';
-                    }
-                }
-                
-                // Preencher células vazias no final
-                const remainingCells = 7 - ((firstDayOfWeek + daysInMonth) % 7);
-                if (remainingCells < 7) {
-                    for (let i = 0; i < remainingCells; i++) {
-                        html += '<td></td>';
-                    }
-                }
-                
-                // Atualizar título do calendário
-                calendarTitle.textContent = `${monthNames[currentMonth]} ${currentYear}`;
-                
-                // Adicionar ao DOM
-                calendarBody.innerHTML = `<tr>${html}</tr>`;
-                
-                // Adicionar event listeners para os dias e eventos
-                document.querySelectorAll('#calendar td[data-date]').forEach(cell => {
-                    cell.addEventListener('click', function(e) {
-                        // Verificar se o clique foi em um evento ou na célula do dia
-                        if (e.target.classList.contains('event')) {
-                            // Clicou em um evento existente
-                            const dateString = this.getAttribute('data-date');
-                            const eventId = e.target.getAttribute('data-event-id');
-                            const events = getEventsForDate(dateString);
-                            const event = events.find(ev => ev.id === eventId);
-                            
-                            if (event) {
-                                openEventViewModal(event, dateString);
-                            }
-                        } else {
-                            // Clicou em um dia vazio
-                            const dateString = this.getAttribute('data-date');
-                            openEventModal(dateString);
-                        }
-                    });
-                });
-            }
-            
-            // Calcular e exibir estatísticas de plantões
-            function calculateShiftStats() {
-                const events = loadEvents();
-                const shifts = loadShifts();
-                
-                // Filtrar apenas eventos do mês atual
-                const currentMonthEvents = {};
-                const monthStart = new Date(currentYear, currentMonth, 1);
-                const monthEnd = new Date(currentYear, currentMonth + 1, 0);
-                
-                // Iterar sobre todos os eventos
-                Object.keys(events).forEach(dateString => {
-                    const eventDate = new Date(dateString);
-                    if (eventDate >= monthStart && eventDate <= monthEnd) {
-                        currentMonthEvents[dateString] = events[dateString];
-                    }
-                });
-                
-                // Contar plantões por tipo e calcular valores
-                const shiftCounts = {};
-                const shiftValues = {};
-                
-                // Inicializar contadores para cada tipo de plantão
-                shifts.forEach(shift => {
-                    shiftCounts[shift.name] = 0;
-                    shiftValues[shift.name] = 0;
-                });
-                
-                // Contar eventos
-                Object.values(currentMonthEvents).forEach(dayEvents => {
-                    dayEvents.forEach(event => {
-                        // Verificar se o evento corresponde a algum plantão pelo horário
-                        let matchingShift = null;
-                        
-                        // Primeiro tenta encontrar pelo nome e horário exato
-                        matchingShift = shifts.find(shift => 
-                            shift.name === event.title && 
-                            shift.startTime === event.time
-                        );
-                        
-                        // Se não encontrar, tenta encontrar apenas pelo horário
-                        if (!matchingShift) {
-                            matchingShift = shifts.find(shift => shift.startTime === event.time);
-                        }
-                        
-                        if (matchingShift) {
-                            shiftCounts[matchingShift.name]++;
-                            // Converter valor para número e somar
-                            const value = parseFloat(matchingShift.value.replace(',', '.'));
-                            shiftValues[matchingShift.name] += value;
-                        }
-                    });
-                });
-                
-                // Calcular totais
-                let totalShifts = 0;
-                let totalValue = 0;
-                
-                Object.values(shiftCounts).forEach(count => {
-                    totalShifts += count;
-                });
-                
-                Object.values(shiftValues).forEach(value => {
-                    totalValue += value;
-                });
-                
-                // Atualizar interface
-                totalShiftsElement.textContent = totalShifts;
-                totalValueElement.textContent = formatCurrency(totalValue);
-                
-                // Preencher lista de detalhes
-                shiftsDetailsList.innerHTML = '';
-                
-                shifts.forEach(shift => {
-                    const count = shiftCounts[shift.name] || 0;
-                    const value = shiftValues[shift.name] || 0;
-                    
-                    const detailItem = document.createElement('div');
-                    detailItem.className = 'shift-detail-item';
-                    
-                    const detailName = document.createElement('div');
-                    detailName.className = 'shift-detail-name';
-                    detailName.textContent = shift.name;
-                    
-                    const detailCount = document.createElement('div');
-                    detailCount.className = 'shift-detail-count';
-                    detailCount.textContent = `${count} plantão${count !== 1 ? 'ões' : ''}`;
-                    
-                    const detailValue = document.createElement('div');
-                    detailValue.className = 'shift-detail-value';
-                    detailValue.textContent = formatCurrency(value);
-                    
-                    detailItem.appendChild(detailName);
-                    detailItem.appendChild(detailCount);
-                    detailItem.appendChild(detailValue);
-                    
-                    shiftsDetailsList.appendChild(detailItem);
-                });
-                
-                // Criar gráfico simples
-                createShiftsChart(shiftCounts);
-            }
-            
-            // Criar gráfico de plantões
-            function createShiftsChart(shiftCounts) {
-                const canvas = shiftsChart;
-                const ctx = canvas.getContext('2d');
-                
-                // Limpar gráfico anterior
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-                
-                // Definir dimensões do canvas
-                canvas.width = canvas.offsetWidth;
-                canvas.height = canvas.offsetHeight;
-                
-                // Obter dados para o gráfico
-                const labels = Object.keys(shiftCounts);
-                const data = Object.values(shiftCounts);
-                
-                if (labels.length === 0 || data.every(value => value === 0)) {
-                    // Não há dados para exibir
-                    ctx.font = '14px Arial';
-                    ctx.fillStyle = '#7f8c8d';
-                    ctx.textAlign = 'center';
-                    ctx.fillText('Nenhum plantão neste mês', canvas.width / 2, canvas.height / 2);
-                    return;
-                }
-                
-                // Configurar gráfico
-                const barWidth = canvas.width / (labels.length * 2);
-                const maxValue = Math.max(...data);
-                const scale = (canvas.height - 40) / maxValue;
-                
-                // Desenhar barras
-                labels.forEach((label, index) => {
-                    const value = data[index];
-                    const barHeight = value * scale;
-                    const x = (index * 2 + 0.5) * barWidth;
-                    const y = canvas.height - barHeight - 20;
-                    
-                    // Cor da barra
-                    const colors = ['#3498db', '#2ecc71', '#e74c3c', '#f39c12', '#9b59b6', '#1abc9c'];
-                    ctx.fillStyle = colors[index % colors.length];
-                    
-                    // Desenhar barra
-                    ctx.fillRect(x, y, barWidth, barHeight);
-                    
-                    // Desenhar rótulo
-                    ctx.fillStyle = '#333';
-                    ctx.font = '12px Arial';
-                    ctx.textAlign = 'center';
-                    ctx.fillText(label, x + barWidth / 2, canvas.height - 5);
-                    
-                    // Desenhar valor
-                    ctx.fillText(value.toString(), x + barWidth / 2, y - 5);
-                });
-            }
-            
-            // Função para preencher o seletor de anos
-            function populateYearSelector() {
-                const currentYear = new Date().getFullYear();
-                const startYear = 2024; // Ano inicial, pode ser ajustado
-                yearSelect.innerHTML = '';
-                
-                for (let year = startYear; year <= currentYear + 1; year++) {
-                    const option = document.createElement('option');
-                    option.value = year;
-                    option.textContent = year;
-                    if (year === currentYear) {
-                        option.selected = true;
-                    }
-                    yearSelect.appendChild(option);
-                }
-            }
-            
-            // Função para calcular estatísticas anuais
-            function calculateYearStats(year) {
-                const events = loadEvents();
-                const shifts = loadShifts();
-                
-                // Inicializar arrays para cada mês
-                const monthlyShifts = new Array(12).fill(0);
-                const monthlyValues = new Array(12).fill(0);
-                
-                // Contadores totais
-                let totalShifts = 0;
-                let totalValue = 0;
-                
-                // Iterar sobre todos os eventos
-                Object.keys(events).forEach(dateString => {
-                    const eventDate = new Date(dateString);
-                    if (eventDate.getFullYear() === year) {
-                        const month = eventDate.getMonth();
-                        
-                        events[dateString].forEach(event => {
-                            // Encontrar o plantão correspondente
-                            let matchingShift = null;
-                            
-                            // Primeiro tenta encontrar pelo nome e horário exato
-                            matchingShift = shifts.find(shift => 
-                                shift.name === event.title && 
-                                shift.startTime === event.time
-                            );
-                            
-                            // Se não encontrar, tenta encontrar apenas pelo horário
-                            if (!matchingShift) {
-                                matchingShift = shifts.find(shift => shift.startTime === event.time);
-                            }
-                            
-                            if (matchingShift) {
-                                monthlyShifts[month]++;
-                                // Converter valor para número e somar
-                                const value = parseFloat(matchingShift.value.replace(',', '.'));
-                                monthlyValues[month] += value;
-                                
-                                totalShifts++;
-                                totalValue += value;
-                            }
-                        });
-                    }
-                });
-                
-                // Atualizar interface
-                totalYearShiftsElement.textContent = totalShifts;
-                totalYearValueElement.textContent = formatCurrency(totalValue);
-                
-                // Preencher lista de detalhes por mês
-                yearShiftsDetailsList.innerHTML = '';
-                const monthNames = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
-                
-                for (let i = 0; i < 12; i++) {
-                    const detailItem = document.createElement('div');
-                    detailItem.className = 'shift-detail-item';
-                    
-                    const detailName = document.createElement('div');
-                    detailName.className = 'shift-detail-name';
-                    detailName.textContent = monthNames[i];
-                    
-                    const detailCount = document.createElement('div');
-                    detailCount.className = 'shift-detail-count';
-                    detailCount.textContent = `${monthlyShifts[i]} plantão${monthlyShifts[i] !== 1 ? 'ões' : ''}`;
-                    
-                    const detailValue = document.createElement('div');
-                    detailValue.className = 'shift-detail-value';
-                    detailValue.textContent = formatCurrency(monthlyValues[i]);
-                    
-                    detailItem.appendChild(detailName);
-                    detailItem.appendChild(detailCount);
-                    detailItem.appendChild(detailValue);
-                    
-                    yearShiftsDetailsList.appendChild(detailItem);
-                }
-                
-                // Criar gráfico anual
-                createYearChart(year, monthlyShifts, monthlyValues);
-            }
-            
-            // Função para criar o gráfico anual
-            function createYearChart(year, monthlyShifts, monthlyValues) {
-                const canvas = yearShiftsChart;
-                const ctx = canvas.getContext('2d');
-                
-                // Limpar gráfico anterior
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-                
-                // Definir dimensões do canvas
-                canvas.width = canvas.offsetWidth;
-                canvas.height = canvas.offsetHeight;
-                
-                // Configurar gráfico
-                const padding = 40;
-                const chartWidth = canvas.width - padding * 2;
-                const chartHeight = canvas.height - padding * 2;
-                const barWidth = chartWidth / 12;
-                
-                // Encontrar o valor máximo para escala
-                const maxShifts = Math.max(...monthlyShifts);
-                const maxValue = Math.max(...monthlyValues);
-                const shiftScale = maxShifts > 0 ? chartHeight / maxShifts : 0;
-                const valueScale = maxValue > 0 ? chartHeight / maxValue : 0;
-                
-                // Desenhar eixos
-                ctx.beginPath();
-                ctx.moveTo(padding, padding);
-                ctx.lineTo(padding, canvas.height - padding);
-                ctx.lineTo(canvas.width - padding, canvas.height - padding);
-                ctx.strokeStyle = '#ddd';
-                ctx.stroke();
-                
-                // Desenhar barras e linha
-                for (let i = 0; i < 12; i++) {
-                    const x = padding + i * barWidth + barWidth / 2;
-                    
-                    // Desenhar barra de plantões
-                    const barHeight = monthlyShifts[i] * shiftScale;
-                    ctx.fillStyle = '#3498db';
-                    ctx.fillRect(x - barWidth / 4, canvas.height - padding - barHeight, barWidth / 2, barHeight);
-                    
-                    // Desenhar linha de valor
-                    if (i > 0) {
-                        const prevX = padding + (i - 1) * barWidth + barWidth / 2;
-                        const prevY = canvas.height - padding - monthlyValues[i - 1] * valueScale;
-                        const currY = canvas.height - padding - monthlyValues[i] * valueScale;
-                        
-                        ctx.beginPath();
-                        ctx.moveTo(prevX, prevY);
-                        ctx.lineTo(x, currY);
-                        ctx.strokeStyle = '#e74c3c';
-                        ctx.lineWidth = 2;
-                        ctx.stroke();
-                    }
-                    
-                    // Desenhar ponto no valor atual
-                    const pointY = canvas.height - padding - monthlyValues[i] * valueScale;
-                    ctx.beginPath();
-                    ctx.arc(x, pointY, 4, 0, Math.PI * 2);
-                    ctx.fillStyle = '#e74c3c';
-                    ctx.fill();
-                    
-                    // Desenhar rótulo do mês
-                    ctx.fillStyle = '#333';
-                    ctx.font = '10px Arial';
-                    ctx.textAlign = 'center';
-                    const monthNames = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
-                    ctx.fillText(monthNames[i], x, canvas.height - padding + 20);
-                    
-                    // Desenhar valor do plantão se houver
-                    if (monthlyShifts[i] > 0) {
-                        ctx.fillText(monthlyShifts[i].toString(), x, canvas.height - padding - barHeight - 5);
-                    }
-                }
-                
-                // Desenhar legenda
-                ctx.fillStyle = '#3498db';
-                ctx.fillRect(canvas.width - 150, 20, 15, 15);
-                ctx.fillStyle = '#333';
-                ctx.font = '12px Arial';
-                ctx.textAlign = 'left';
-                ctx.fillText('Plantões', canvas.width - 130, 32);
-                
-                ctx.fillStyle = '#e74c3c';
-                ctx.beginPath();
-                ctx.arc(canvas.width - 150, 55, 4, 0, Math.PI * 2);
-                ctx.fill();
-                ctx.fillStyle = '#333';
-                ctx.fillText('Valor (R$)', canvas.width - 130, 60);
-            }
-            
-            // Event listeners
-            prevMonthBtn.addEventListener('click', function() {
-                currentMonth--;
-                if (currentMonth < 0) {
-                    currentMonth = 11;
-                    currentYear--;
-                }
-                generateCalendar();
-                calculateShiftStats();
-            });
-            
-            nextMonthBtn.addEventListener('click', function() {
-                currentMonth++;
-                if (currentMonth > 11) {
-                    currentMonth = 0;
-                    currentYear++;
-                }
-                generateCalendar();
-                calculateShiftStats();
-            });
-            
-            // Botão flutuante e menu
-            fabBtn.addEventListener('click', function() {
-                fabMenu.classList.toggle('show');
-                // Mudar o ícone do botão
-                this.textContent = fabMenu.classList.contains('show') ? '×' : '👆🏻';
-            });
-            
-            // Fechar o menu quando clicar fora
-            document.addEventListener('click', function(e) {
-                if (!fabBtn.contains(e.target) && !fabMenu.contains(e.target)) {
-                    fabMenu.classList.remove('show');
-                    fabBtn.textContent = '👆🏻';
-                }
-            });
-            
-            // Ações do menu
-            homeBtn.addEventListener('click', function() {
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-                fabMenu.classList.remove('show');
-                fabBtn.textContent = '👆🏻';
-            });
-            
-            addShiftBtn.addEventListener('click', function() {
-                // Abrir modal para adicionar plantão na data atual
-                const today = formatDateToYYYYMMDD(new Date());
-                openShiftModal(today);
-                fabMenu.classList.remove('show');
-                fabBtn.textContent = '👆🏻';
-            });
-            
-            addNoteBtn.addEventListener('click', function() {
-                openNoteModal();
-                fabMenu.classList.remove('show');
-                fabBtn.textContent = '👆🏻';
-            });
-            
-            settingsBtn.addEventListener('click', function() {
-                openSettingsModal();
-                fabMenu.classList.remove('show');
-                fabBtn.textContent = '👆🏻';
-            });
-            
-            clearNotesBtn.addEventListener('click', function() {
-                clearAllNotes();
-            });
-            
-            // Event listeners para o seletor de cores de eventos
-            eventColorOptions.forEach(option => {
-                option.addEventListener('click', function() {
-                    eventColorOptions.forEach(opt => opt.classList.remove('selected'));
-                    this.classList.add('selected');
-                    selectedEventColor = this.dataset.color;
-                });
-            });
-            
-            // Event listeners para o seletor de cores de notas
-            noteColorOptions.forEach(option => {
-                option.addEventListener('click', function() {
-                    noteColorOptions.forEach(opt => opt.classList.remove('selected'));
-                    this.classList.add('selected');
-                    selectedNoteColor = this.dataset.color;
-                });
-            });
-            
-            // Event listeners para o seletor de dias alternados
-            alternateDayOptions.forEach(option => {
-                option.addEventListener('click', function() {
-                    // Se já estiver selecionado, desselecionar
-                    if (this.classList.contains('selected')) {
-                        this.classList.remove('selected');
-                        selectedAlternateDaysType = null;
-                    } else {
-                        // Desselecionar todos os outros
-                        alternateDayOptions.forEach(opt => opt.classList.remove('selected'));
-                        // Selecionar este
-                        this.classList.add('selected');
-                        selectedAlternateDaysType = this.dataset.type;
-                    }
-                });
-            });
-            
-            // Event listeners para o modal de eventos
-            eventForm.addEventListener('submit', function(e) {
-                e.preventDefault();
-                
-                // Usar a data do campo de seleção de data
-                const dateString = eventDatePickerInput.value;
-                const eventId = eventIdInput.value;
-                const eventData = {
-                    id: eventId || null,
-                    title: eventTitleInput.value,
-                    description: eventDescriptionInput.value,
-                    time: eventTimeInput.value,
-                    color: selectedEventColor
-                };
-                
-                if (selectedAlternateDaysType) {
-                    // Criar eventos em dias alternados
-                    const createdCount = createAlternateDayEvents(dateString, eventData, selectedAlternateDaysType);
-                    generateCalendar();
-                    loadDayEvents(dateString);
-                    calculateShiftStats();
-                    calculateYearStats(parseInt(yearSelect.value));
-                    showToast(`${createdCount} eventos criados em dias alternados!`);
-                } else {
-                    // Salvar evento único
-                    saveEvent(dateString, eventData);
-                    generateCalendar();
-                    loadDayEvents(dateString);
-                    calculateShiftStats();
-                    calculateYearStats(parseInt(yearSelect.value));
-                    showToast(eventId ? 'Plantão atualizado com sucesso!' : 'Plantão adicionado com sucesso!');
-                }
-                
-                closeEventModal();
-            });
-            
-            // Event listener para o botão "Novo Plantão"
-            newShiftBtn.addEventListener('click', function() {
-                // Manter a data atual do modal
-                const currentDateString = eventDatePickerInput.value;
-                
-                // Fechar o modal atual
-                closeEventModal();
-                
-                // Abrir um novo modal para adicionar um plantão na mesma data
-                setTimeout(() => {
-                    openShiftModal(currentDateString);
-                }, 300);
-            });
-            
-            // Event listener para o botão "Editar Plantão"
-            editShiftBtn.addEventListener('click', function() {
-                // Manter a data atual do modal
-                const currentDateString = eventDatePickerInput.value;
-                
-                // Fechar o modal atual
-                closeEventModal();
-                
-                // Abrir um novo modal para editar um plantão na mesma data
-                setTimeout(() => {
-                    openEditShiftModal(currentDateString);
-                }, 300);
-            });
-            
-            deleteEventBtn.addEventListener('click', function() {
-                if (confirm('Tem certeza que deseja excluir este plantão?')) {
-                    const dateString = eventDatePickerInput.value;
-                    const eventId = eventIdInput.value;
-                    
-                    deleteEvent(dateString, eventId);
-                    generateCalendar();
-                    loadDayEvents(dateString);
-                    calculateShiftStats();
-                    calculateYearStats(parseInt(yearSelect.value));
-                    showToast('Plantão excluído com sucesso!');
-                    closeEventModal();
-                }
-            });
-            
-            closeModalBtn.addEventListener('click', function() {
-                closeEventModal();
-            });
-            
-            eventModal.addEventListener('click', function(e) {
-                if (e.target === eventModal) {
-                    closeEventModal();
-                }
-            });
-            
-            // Event listeners para o modal de notas
-            noteForm.addEventListener('submit', function(e) {
-                e.preventDefault();
-                
-                const noteId = noteIdInput.value;
-                const noteTitle = noteTitleInput.value;
-                const noteContent = noteContentInput.value;
-                
-                if (noteId) {
-                    // Atualizar nota existente
-                    updateNote(noteId, noteTitle, noteContent, selectedNoteColor);
-                } else {
-                    // Adicionar nova nota
-                    addNote(noteTitle, noteContent, selectedNoteColor);
-                }
-                
-                closeNoteModal();
-            });
-            
-            closeNoteModalBtn.addEventListener('click', function() {
-                closeNoteModal();
-            });
-            
-            noteModal.addEventListener('click', function(e) {
-                if (e.target === noteModal) {
-                    closeNoteModal();
-                }
-            });
-            
-            // Event listeners para o modal de visualização de notas
-            closeNoteViewModalBtn.addEventListener('click', function() {
-                closeNoteViewModal();
-            });
-            
-            noteViewModal.addEventListener('click', function(e) {
-                if (e.target === noteViewModal) {
-                    closeNoteViewModal();
-                }
-            });
-            
-            editNoteViewBtn.addEventListener('click', function() {
-                if (currentViewingNote) {
-                    closeNoteViewModal();
-                    setTimeout(() => {
-                        openNoteModal(currentViewingNote);
-                    }, 300);
-                }
-            });
-            
-            deleteNoteViewBtn.addEventListener('click', function() {
-                if (currentViewingNote) {
-                    if (confirm('Tem certeza que deseja excluir esta nota?')) {
-                        deleteNote(currentViewingNote.id);
-                        closeNoteViewModal();
-                    }
-                }
-            });
-            
-            // Event listeners para o modal de visualização de eventos
-            closeEventViewModalBtn.addEventListener('click', function() {
-                closeEventViewModal();
-            });
-            
-            eventViewModal.addEventListener('click', function(e) {
-                if (e.target === eventViewModal) {
-                    closeEventViewModal();
-                }
-            });
-            
-            newEventViewBtn.addEventListener('click', function() {
-                closeEventViewModal();
-                setTimeout(() => {
-                    // Abrir modal para adicionar novo evento na data atual
-                    const today = formatDateToYYYYMMDD(new Date());
-                    openEventModal(today);
-                }, 300);
-            });
-            
-            editEventViewBtn.addEventListener('click', function() {
-                if (currentViewingEvent && currentViewingEventDate) {
-                    closeEventViewModal();
-                    setTimeout(() => {
-                        openEventModal(currentViewingEventDate, currentViewingEvent);
-                    }, 300);
-                }
-            });
-            
-            deleteEventViewBtn.addEventListener('click', function() {
-                if (currentViewingEvent && currentViewingEventDate) {
-                    if (confirm('Tem certeza que deseja excluir este plantão?')) {
-                        deleteEvent(currentViewingEventDate, currentViewingEvent.id);
-                        generateCalendar();
-                        calculateShiftStats();
-                        calculateYearStats(parseInt(yearSelect.value));
-                        closeEventViewModal();
-                        showToast('Plantão excluído com sucesso!');
-                    }
-                }
-            });
-            
-            // Event listeners para o modal de configurações
-            closeSettingsModalBtn.addEventListener('click', function() {
-                closeSettingsModal();
-            });
-            
-            settingsModal.addEventListener('click', function(e) {
-                if (e.target === settingsModal) {
-                    closeSettingsModal();
-                }
-            });
-            
-            clearAllDataBtn.addEventListener('click', function() {
-                clearAllData();
-            });
-            
-            exportDataBtn.addEventListener('click', function() {
-                exportData();
-            });
-            
-            importDataBtn.addEventListener('click', function() {
-                importData();
-            });
-            
-            importFileInput.addEventListener('change', function(e) {
-                processImportedFile(e);
-            });
-            
-            // Event listeners para gerenciar plantões pré-definidos
-            addNewShiftBtn.addEventListener('click', function() {
-                addShiftForm.style.display = 'block';
-                addNewShiftBtn.style.display = 'none';
-                editingShiftId = null;
-                newShiftName.value = '';
-                newShiftStart.value = '';
-                newShiftEnd.value = '';
-                newShiftValue.value = '';
-            });
-            
-            saveNewShiftBtn.addEventListener('click', function() {
-                const name = newShiftName.value.trim();
-                const startTime = newShiftStart.value;
-                const endTime = newShiftEnd.value;
-                const value = newShiftValue.value.trim();
-                
-                if (!name || !startTime || !endTime || !value) {
-                    showToast('Preencha todos os campos!');
-                    return;
-                }
-                
-                if (editingShiftId) {
-                    updateShift(editingShiftId, name, startTime, endTime, value);
-                } else {
-                    addShift(name, startTime, endTime, value);
-                }
-                
-                renderSettingsShiftsList();
-                renderShiftsSelector();
-                
-                addShiftForm.style.display = 'none';
-                addNewShiftBtn.style.display = 'block';
-                
-                showToast(editingShiftId ? 'Plantão atualizado com sucesso!' : 'Plantão adicionado com sucesso!');
-            });
-            
-            cancelNewShiftBtn.addEventListener('click', function() {
-                addShiftForm.style.display = 'none';
-                addNewShiftBtn.style.display = 'block';
-            });
-            
-            // Event listener para mudança de ano
-            yearSelect.addEventListener('change', function() {
-                const selectedYear = parseInt(this.value);
-                calculateYearStats(selectedYear);
-            });
-            
-            // Inicializar
-            populateYearSelector();
-            generateCalendar();
-            loadNotes();
-            renderSettingsShiftsList();
-            calculateShiftStats();
-            calculateYearStats(new Date().getFullYear());
+        <div class="grid grid-cols-2 gap-3 mb-3">
+          <div>
+            <label class="block text-sm mb-1">Tipo</label>
+            <select id="shiftType" required>
+              <option value="sd">SD (12h)</option>
+              <option value="sn">SN (12h)</option>
+              <option value="dn">DN (24h)</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-sm mb-1">Valor (R$)</label>
+            <input type="number" id="shiftValue" step="0.01" min="0">
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <label class="block text-sm mb-1">Local</label>
+          <input type="text" id="shiftLocation" required list="locationList">
+          <datalist id="locationList"></datalist>
+        </div>
+
+        <div class="mb-4">
+          <label class="block text-sm mb-1">Observações</label>
+          <textarea id="shiftNotes" rows="2"></textarea>
+        </div>
+
+        <div class="flex gap-2">
+          <button type="submit" class="btn-primary flex-1 py-3">Salvar</button>
+          <button type="button" onclick="closeFormModal()" class="bg-slate-600 text-white px-4 py-3 rounded-lg flex-1 hover:bg-slate-500 transition-colors">Cancelar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div id="detailModal" class="modal">
+    <div class="modal-content">
+      <div id="detailContent"></div>
+    </div>
+  </div>
+
+  <div id="swapModal" class="modal">
+    <div class="modal-content">
+      <h2 class="text-xl font-bold mb-4">Oferecer Troca</h2>
+      <div id="swapModalContent"></div>
+    </div>
+  </div>
+
+  <script>
+    // Constantes
+    const SHIFT_TYPES = {
+      sd: { name: 'SD', fullName: 'Plantão SD', hours: 12, color: 'bg-emerald-500', textColor: 'text-white' },
+      sn: { name: 'SN', fullName: 'Plantão SN', hours: 12, color: 'bg-purple-500', textColor: 'text-white' },
+      dn: { name: 'DN', fullName: 'Plantão DN', hours: 24, color: 'bg-blue-500', textColor: 'text-white' }
+    };
+
+    // Estado
+    let shifts = [];
+    let currentDate = new Date();
+    let currentFilters = { type: 'all', location: 'all' };
+    let editingId = null;
+
+    // Load data
+    function loadData() {
+      const saved = localStorage.getItem('minhaEscalaV3');
+      if (saved) {
+        shifts = JSON.parse(saved);
+      } else {
+        // Dados iniciais
+        const today = new Date();
+        const dates = [];
+        for (let i = 0; i < 10; i++) {
+          const d = new Date(today);
+          d.setDate(d.getDate() + i);
+          dates.push(formatDate(d));
+        }
+        
+        shifts = [
+          {
+            id: '1',
+            date: dates[0],
+            type: 'sd',
+            location: 'UTI Central',
+            value: 800,
+            notes: 'Plantão SD',
+            swapRequest: false,
+            swapWith: null
+          },
+          {
+            id: '2',
+            date: dates[1],
+            type: 'sn',
+            location: 'Pronto Socorro',
+            value: 850,
+            notes: '',
+            swapRequest: true,
+            swapWith: null,
+            swapNotes: 'Preciso trocar este SN - horário conflitante'
+          },
+          {
+            id: '3',
+            date: dates[3],
+            type: 'dn',
+            location: 'UTI Central',
+            value: 1800,
+            notes: 'Plantão DN',
+            swapRequest: false,
+            swapWith: null
+          },
+          {
+            id: '4',
+            date: dates[5],
+            type: 'sd',
+            location: 'Enfermaria',
+            value: 780,
+            notes: '',
+            swapRequest: true,
+            swapWith: null,
+            swapNotes: 'Troco por SD ou SN em qualquer data'
+          },
+          {
+            id: '5',
+            date: dates[7],
+            type: 'dn',
+            location: 'Centro Cirúrgico',
+            value: 1900,
+            notes: 'Plantão de final de semana',
+            swapRequest: true,
+            swapWith: null,
+            swapNotes: 'TC-DN DN 24hs - preciso trocar por outro DN'
+          }
+        ];
+        saveData();
+      }
+      updateLocationFilter();
+    }
+
+    function saveData() {
+      localStorage.setItem('minhaEscalaV3', JSON.stringify(shifts));
+    }
+
+    // Correção para timezone: usa componentes locais da data
+    function formatDate(date) {
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    }
+
+    function formatDisplayDate(dateStr) {
+      const d = new Date(dateStr + 'T12:00:00');
+      return d.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' }).replace('.', '');
+    }
+
+    function formatFullDate(dateStr) {
+      const d = new Date(dateStr + 'T12:00:00');
+      return d.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: '2-digit' }).replace('.', '');
+    }
+
+    function formatCurrency(value) {
+      return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value || 0);
+    }
+
+    function generateId() {
+      return Date.now() + '-' + Math.random().toString(36).substr(2, 9);
+    }
+
+    // Update location filter options
+    function updateLocationFilter() {
+      const select = document.getElementById('filterLocation');
+      const locations = [...new Set(shifts.map(s => s.location))];
+      select.innerHTML = '<option value="all">Todos locais</option>';
+      locations.forEach(loc => {
+        select.innerHTML += `<option value="${loc}">${loc}</option>`;
+      });
+
+      const datalist = document.getElementById('locationList');
+      datalist.innerHTML = '';
+      locations.forEach(loc => {
+        datalist.innerHTML += `<option value="${loc}">`;
+      });
+    }
+
+    // Get filtered shifts
+    function getFilteredShifts() {
+      return shifts.filter(s => {
+        const typeMatch = currentFilters.type === 'all' || s.type === currentFilters.type;
+        const locationMatch = currentFilters.location === 'all' || s.location === currentFilters.location;
+        return typeMatch && locationMatch;
+      });
+    }
+
+    // Render calendar
+    function renderCalendar() {
+      const year = currentDate.getFullYear();
+      const month = currentDate.getMonth();
+      
+      document.getElementById('calendarTitle').innerHTML = currentDate.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' }).toUpperCase();
+
+      const firstDay = new Date(year, month, 1).getDay();
+      const daysInMonth = new Date(year, month + 1, 0).getDate();
+      const todayStr = formatDate(new Date());
+
+      const filteredShifts = getFilteredShifts();
+      
+      let html = '';
+      
+      // Empty cells
+      for (let i = 0; i < firstDay; i++) {
+        html += '<div></div>';
+      }
+
+      // Days
+      for (let d = 1; d <= daysInMonth; d++) {
+        const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+        const shift = filteredShifts.find(s => s.date === dateStr);
+        
+        let classes = 'calendar-day';
+        if (shift) {
+          classes += ' has-shift';
+          if (shift.swapRequest) classes += ' has-swap';
+        }
+        if (dateStr === todayStr) classes += ' today';
+        
+        let badgeHtml = '';
+        if (shift) {
+          const typeInfo = SHIFT_TYPES[shift.type];
+          badgeHtml = `<div class="shift-badge ${typeInfo.color} ${typeInfo.textColor}">${typeInfo.name}${shift.swapRequest ? ' 🔄' : ''}</div>`;
+        }
+        
+        html += `<div class="${classes}" onclick="handleDayClick('${dateStr}')">
+          <span class="day-number">${d}</span>
+          ${badgeHtml}
+        </div>`;
+      }
+
+      document.getElementById('calendarGrid').innerHTML = html;
+      
+      updateStats();
+      renderUpcoming();
+      renderPendingSwaps();
+    }
+
+    // Update statistics
+    function updateStats() {
+      const now = new Date();
+      const currentMonth = now.getMonth();
+      const currentYear = now.getFullYear();
+
+      const monthShifts = shifts.filter(s => {
+        const d = new Date(s.date + 'T12:00:00');
+        return d.getMonth() === currentMonth && d.getFullYear() === currentYear;
+      });
+
+      const totalHours = monthShifts.reduce((sum, s) => sum + SHIFT_TYPES[s.type].hours, 0);
+      const totalRevenue = monthShifts.reduce((sum, s) => sum + (Number(s.value) || 0), 0);
+      
+      document.getElementById('totalShifts').innerHTML = monthShifts.length;
+      document.getElementById('totalHours').innerHTML = totalHours;
+      document.getElementById('totalRevenue').innerHTML = formatCurrency(totalRevenue);
+
+      // Next shift
+      const todayStr = formatDate(new Date());
+      const nextShift = shifts.filter(s => s.date >= todayStr).sort((a, b) => a.date.localeCompare(b.date))[0];
+      
+      if (nextShift) {
+        document.getElementById('nextShift').innerHTML = formatDisplayDate(nextShift.date);
+        const diff = Math.ceil((new Date(nextShift.date + 'T12:00:00') - new Date(todayStr + 'T12:00:00')) / (1000 * 60 * 60 * 24));
+        document.getElementById('nextShiftLabel').innerHTML = diff === 0 ? 'hoje' : diff === 1 ? 'amanhã' : `em ${diff} dias`;
+      } else {
+        document.getElementById('nextShift').innerHTML = '-';
+        document.getElementById('nextShiftLabel').innerHTML = '';
+      }
+
+      // Swap count
+      const swapCount = shifts.filter(s => s.swapRequest).length;
+      document.getElementById('swapCount').innerHTML = swapCount;
+      document.getElementById('pendingSwapsCount').innerHTML = swapCount;
+    }
+
+    // Render upcoming shifts
+    function renderUpcoming() {
+      const todayStr = formatDate(new Date());
+      const upcoming = getFilteredShifts()
+        .filter(s => s.date >= todayStr)
+        .sort((a, b) => a.date.localeCompare(b.date))
+        .slice(0, 5);
+
+      const container = document.getElementById('upcomingShifts');
+      
+      if (upcoming.length === 0) {
+        container.innerHTML = '<p class="text-gray-400 text-center py-8">Nenhum plantão futuro</p>';
+        return;
+      }
+
+      container.innerHTML = upcoming.map(s => {
+        const typeInfo = SHIFT_TYPES[s.type];
+        return `
+        <div onclick="openDetailModal('${s.id}')" class="p-4 bg-slate-800 rounded-xl cursor-pointer hover:bg-slate-700 transition-all border-l-4 ${s.swapRequest ? 'border-yellow-500' : 'border-emerald-500'} hover:translate-x-1">
+          <div class="flex justify-between items-start">
+            <div>
+              <div class="flex items-center gap-2 mb-1">
+                <span class="font-semibold">${formatFullDate(s.date)}</span>
+                <span class="text-xs px-2 py-1 rounded-full ${typeInfo.color} text-white font-medium">${typeInfo.name}</span>
+              </div>
+              <p class="text-sm text-gray-400">${s.location}</p>
+            </div>
+            ${s.swapRequest ? '<span class="swap-badge">Troca</span>' : ''}
+          </div>
+          ${s.value ? `<p class="text-sm text-emerald-400 mt-2 font-mono">${formatCurrency(s.value)}</p>` : ''}
+        </div>
+      `}).join('');
+    }
+
+    // Render pending swaps
+    function renderPendingSwaps() {
+      const pendingSwaps = shifts.filter(s => s.swapRequest);
+      const container = document.getElementById('pendingSwapsList');
+      
+      if (pendingSwaps.length === 0) {
+        container.innerHTML = '<p class="text-gray-400 text-center py-8">Nenhuma troca pendente</p>';
+        return;
+      }
+
+      container.innerHTML = pendingSwaps.map(s => {
+        const typeInfo = SHIFT_TYPES[s.type];
+        return `
+        <div class="trade-card p-4 rounded-xl">
+          <div class="flex justify-between items-start">
+            <div class="flex-1">
+              <div class="flex items-center gap-2 mb-2">
+                <span class="font-semibold">${formatFullDate(s.date)}</span>
+                <span class="text-xs px-2 py-1 rounded-full ${typeInfo.color} text-white font-medium">${typeInfo.name}</span>
+              </div>
+              <p class="text-sm text-gray-300">📍 ${s.location}</p>
+              ${s.swapNotes ? `
+                <div class="mt-2 text-sm bg-yellow-500/10 p-2 rounded-lg border border-yellow-500/30">
+                  <span class="text-yellow-500">📝 ${s.swapNotes}</span>
+                </div>
+              ` : ''}
+            </div>
+            <button onclick="openSwapProposal('${s.id}')" class="bg-yellow-500 text-black px-4 py-2 rounded-lg text-sm font-medium hover:bg-yellow-400 transition-colors ml-2 whitespace-nowrap">
+              Propor Troca
+            </button>
+          </div>
+        </div>
+      `}).join('');
+    }
+
+    // Handle day click
+    function handleDayClick(dateStr) {
+      const shift = shifts.find(s => s.date === dateStr);
+      if (shift) {
+        openDetailModal(shift.id);
+      } else {
+        openFormModal(dateStr);
+      }
+    }
+
+    // Open form modal
+    function openFormModal(date = null, id = null) {
+      editingId = id;
+      const form = document.getElementById('shiftForm');
+      form.reset();
+      
+      document.getElementById('formTitle').innerHTML = id ? 'Editar Plantão' : 'Novo Plantão';
+      
+      if (id) {
+        const shift = shifts.find(s => s.id === id);
+        if (shift) {
+          document.getElementById('shiftId').value = shift.id;
+          document.getElementById('shiftDate').value = shift.date;
+          document.getElementById('shiftType').value = shift.type;
+          document.getElementById('shiftValue').value = shift.value;
+          document.getElementById('shiftLocation').value = shift.location;
+          document.getElementById('shiftNotes').value = shift.notes || '';
+        }
+      } else if (date) {
+        document.getElementById('shiftDate').value = date;
+      }
+      
+      document.getElementById('formModal').style.display = 'flex';
+    }
+
+    function closeFormModal() {
+      document.getElementById('formModal').style.display = 'none';
+    }
+
+    // Save shift
+    function saveShift(e) {
+      e.preventDefault();
+      
+      const id = document.getElementById('shiftId').value;
+      const date = document.getElementById('shiftDate').value;
+      const type = document.getElementById('shiftType').value;
+      const value = parseFloat(document.getElementById('shiftValue').value) || 0;
+      const location = document.getElementById('shiftLocation').value;
+      const notes = document.getElementById('shiftNotes').value;
+
+      if (!date || !type || !location) {
+        alert('Preencha todos os campos obrigatórios');
+        return;
+      }
+
+      if (id) {
+        // Edit
+        const index = shifts.findIndex(s => s.id === id);
+        if (index !== -1) {
+          shifts[index] = { ...shifts[index], date, type, value, location, notes };
+        }
+      } else {
+        // Create
+        const existing = shifts.find(s => s.date === date);
+        if (existing && !confirm('Já existe um plantão nesta data. Adicionar mesmo assim?')) {
+          return;
+        }
+        
+        shifts.push({
+          id: generateId(),
+          date,
+          type,
+          value,
+          location,
+          notes,
+          swapRequest: false,
+          swapWith: null
         });
-    </script>
+      }
+
+      saveData();
+      updateLocationFilter();
+      renderCalendar();
+      closeFormModal();
+    }
+
+    // Open detail modal
+    function openDetailModal(id) {
+      const shift = shifts.find(s => s.id === id);
+      if (!shift) return;
+
+      const typeInfo = SHIFT_TYPES[shift.type];
+      
+      const html = `
+        <div class="mb-6">
+          <div class="flex justify-between items-start mb-4">
+            <h2 class="text-2xl font-bold">${formatFullDate(shift.date)}</h2>
+            <div class="flex gap-2">
+              <span class="px-3 py-1 rounded-full text-sm ${typeInfo.color} text-white font-medium">${typeInfo.name}</span>
+              ${shift.swapRequest ? '<span class="px-3 py-1 rounded-full text-sm bg-yellow-500 text-black font-medium">🔄 Troca</span>' : ''}
+            </div>
+          </div>
+          
+          <p class="text-lg mb-4 flex items-center gap-2">
+            <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+            ${shift.location}
+          </p>
+          
+          <div class="grid grid-cols-2 gap-3 mb-4">
+            <div class="bg-slate-800 p-4 rounded-xl">
+              <p class="text-sm text-gray-400 mb-1">Carga horária</p>
+              <p class="text-xl font-bold">${typeInfo.hours}h</p>
+            </div>
+            ${shift.value ? `
+              <div class="bg-slate-800 p-4 rounded-xl">
+                <p class="text-sm text-gray-400 mb-1">Valor</p>
+                <p class="text-xl font-bold text-emerald-400">${formatCurrency(shift.value)}</p>
+              </div>
+            ` : ''}
+          </div>
+          
+          ${shift.swapNotes ? `
+            <div class="bg-yellow-500/10 border border-yellow-500 p-4 rounded-xl mb-4">
+              <p class="text-sm text-yellow-500 font-medium mb-1">Motivo da troca:</p>
+              <p>${shift.swapNotes}</p>
+            </div>
+          ` : ''}
+          
+          ${shift.notes ? `
+            <div class="bg-slate-800 p-4 rounded-xl mb-6">
+              <p class="text-sm text-gray-400 mb-1">Observações</p>
+              <p>${shift.notes}</p>
+            </div>
+          ` : ''}
+          
+          <div class="flex flex-col gap-2">
+            <div class="grid grid-cols-2 gap-2">
+              <button onclick="editShift('${shift.id}')" class="bg-blue-600 text-white py-3 rounded-xl hover:bg-blue-700 transition-colors font-medium">
+                Editar
+              </button>
+              <button onclick="toggleSwap('${shift.id}')" class="${shift.swapRequest ? 'bg-emerald-600 hover:bg-emerald-700' : 'bg-yellow-600 hover:bg-yellow-700'} text-white py-3 rounded-xl transition-colors font-medium">
+                ${shift.swapRequest ? 'Cancelar Troca' : 'Oferecer Troca'}
+              </button>
+            </div>
+            ${!shift.swapRequest ? `
+              <button onclick="openSwapWithAnother('${shift.id}')" class="bg-purple-600 text-white py-3 rounded-xl hover:bg-purple-700 transition-colors font-medium">
+                Trocar com outro plantão
+              </button>
+            ` : ''}
+            <button onclick="deleteShift('${shift.id}')" class="bg-red-600 text-white py-3 rounded-xl hover:bg-red-700 transition-colors font-medium">
+              Excluir Plantão
+            </button>
+          </div>
+        </div>
+      `;
+
+      document.getElementById('detailContent').innerHTML = html;
+      document.getElementById('detailModal').style.display = 'flex';
+    }
+
+    function closeDetailModal() {
+      document.getElementById('detailModal').style.display = 'none';
+    }
+
+    // Edit shift
+    function editShift(id) {
+      closeDetailModal();
+      openFormModal(null, id);
+    }
+
+    // Toggle swap
+    function toggleSwap(id) {
+      const shift = shifts.find(s => s.id === id);
+      if (shift) {
+        if (!shift.swapRequest) {
+          const motivo = prompt('Por que você quer trocar este plantão? (opcional)');
+          shift.swapRequest = true;
+          shift.swapNotes = motivo || 'Disponível para troca';
+        } else {
+          shift.swapRequest = false;
+          shift.swapNotes = '';
+          shift.swapWith = null;
+        }
+        saveData();
+        renderCalendar();
+        openDetailModal(id);
+      }
+    }
+
+    // Open swap with another shift
+    function openSwapWithAnother(id) {
+      const shift = shifts.find(s => s.id === id);
+      if (!shift) return;
+      
+      closeDetailModal();
+      
+      const otherShifts = shifts.filter(s => 
+        s.id !== id && 
+        !s.swapRequest && 
+        new Date(s.date + 'T12:00:00') > new Date()
+      ).sort((a, b) => a.date.localeCompare(b.date));
+      
+      if (otherShifts.length === 0) {
+        alert('Não há outros plantões disponíveis para troca.');
+        return;
+      }
+      
+      let html = `
+        <p class="mb-4">Selecione o plantão para trocar com <span class="font-bold">${SHIFT_TYPES[shift.type].name} ${formatFullDate(shift.date)}</span>:</p>
+        <div class="space-y-2 max-h-60 overflow-y-auto mb-4 pr-2">
+      `;
+      
+      otherShifts.forEach(s => {
+        const typeInfo = SHIFT_TYPES[s.type];
+        html += `
+          <div onclick="proposeSwap('${shift.id}', '${s.id}')" class="p-4 bg-slate-800 rounded-xl cursor-pointer hover:bg-slate-700 border border-gray-700 transition-all hover:translate-x-1">
+            <div class="flex justify-between items-center mb-1">
+              <span class="font-semibold">${formatFullDate(s.date)}</span>
+              <span class="text-xs px-2 py-1 rounded-full ${typeInfo.color} text-white">${typeInfo.name}</span>
+            </div>
+            <p class="text-sm text-gray-400">${s.location}</p>
+            ${s.value ? `<p class="text-sm text-emerald-400 mt-1">${formatCurrency(s.value)}</p>` : ''}
+          </div>
+        `;
+      });
+      
+      html += '</div><button onclick="closeSwapModal()" class="w-full bg-slate-600 text-white py-3 rounded-xl hover:bg-slate-500 transition-colors">Cancelar</button>';
+      
+      document.getElementById('swapModalContent').innerHTML = html;
+      document.getElementById('swapModal').style.display = 'flex';
+    }
+
+    // Propose swap between two shifts
+    function proposeSwap(shift1Id, shift2Id) {
+      const shift1 = shifts.find(s => s.id === shift1Id);
+      const shift2 = shifts.find(s => s.id === shift2Id);
+      
+      if (!shift1 || !shift2) return;
+      
+      const mensagem = `TC-${SHIFT_TYPES[shift1.type].name} ${SHIFT_TYPES[shift1.type].name} ${formatFullDate(shift1.date)} pelo dia TC-${SHIFT_TYPES[shift2.type].name} ${SHIFT_TYPES[shift2.type].name} ${formatFullDate(shift2.date)}`;
+      
+      if (confirm(`Confirmar troca?\n\n${mensagem}`)) {
+        // Marcar ambos como em processo de troca
+        shift1.swapRequest = true;
+        shift1.swapWith = shift2.id;
+        shift1.swapNotes = `Troca com ${SHIFT_TYPES[shift2.type].name} ${formatFullDate(shift2.date)}`;
+        
+        shift2.swapRequest = true;
+        shift2.swapWith = shift1.id;
+        shift2.swapNotes = `Troca com ${SHIFT_TYPES[shift1.type].name} ${formatFullDate(shift1.date)}`;
+        
+        saveData();
+        renderCalendar();
+        closeSwapModal();
+        
+        alert('Troca proposta com sucesso!');
+      }
+    }
+
+    // Open swap proposal for a specific shift
+    function openSwapProposal(id) {
+      const targetShift = shifts.find(s => s.id === id);
+      if (!targetShift) return;
+      
+      const myShifts = shifts.filter(s => 
+        !s.swapRequest && 
+        new Date(s.date + 'T12:00:00') > new Date()
+      ).sort((a, b) => a.date.localeCompare(b.date));
+      
+      if (myShifts.length === 0) {
+        alert('Você não tem plantões disponíveis para troca.');
+        return;
+      }
+      
+      let html = `
+        <p class="mb-3">Propor troca para:</p>
+        <div class="bg-yellow-500/10 p-4 rounded-xl border border-yellow-500 mb-4">
+          <div class="flex items-center gap-2 mb-1">
+            <span class="font-bold">${formatFullDate(targetShift.date)}</span>
+            <span class="text-xs px-2 py-1 rounded-full ${SHIFT_TYPES[targetShift.type].color} text-white">${SHIFT_TYPES[targetShift.type].name}</span>
+          </div>
+          <p class="text-sm text-gray-300">${targetShift.location}</p>
+          ${targetShift.swapNotes ? `<p class="text-sm text-yellow-500 mt-2">"${targetShift.swapNotes}"</p>` : ''}
+        </div>
+        <p class="mb-3">Selecione seu plantão para troca:</p>
+        <div class="space-y-2 max-h-60 overflow-y-auto mb-4 pr-2">
+      `;
+      
+      myShifts.forEach(s => {
+        const typeInfo = SHIFT_TYPES[s.type];
+        html += `
+          <div onclick="proposeSwap('${s.id}', '${targetShift.id}')" class="p-4 bg-slate-800 rounded-xl cursor-pointer hover:bg-slate-700 border border-gray-700 transition-all hover:translate-x-1">
+            <div class="flex justify-between items-center mb-1">
+              <span class="font-semibold">${formatFullDate(s.date)}</span>
+              <span class="text-xs px-2 py-1 rounded-full ${typeInfo.color} text-white">${typeInfo.name}</span>
+            </div>
+            <p class="text-sm text-gray-400">${s.location}</p>
+          </div>
+        `;
+      });
+      
+      html += '</div><button onclick="closeSwapModal()" class="w-full bg-slate-600 text-white py-3 rounded-xl hover:bg-slate-500 transition-colors">Cancelar</button>';
+      
+      document.getElementById('swapModalContent').innerHTML = html;
+      document.getElementById('swapModal').style.display = 'flex';
+    }
+
+    function closeSwapModal() {
+      document.getElementById('swapModal').style.display = 'none';
+    }
+
+    // Delete shift
+    function deleteShift(id) {
+      if (confirm('Tem certeza que deseja excluir este plantão?')) {
+        shifts = shifts.filter(s => s.id !== id);
+        saveData();
+        updateLocationFilter();
+        renderCalendar();
+        closeDetailModal();
+      }
+    }
+
+    // Change month
+    function changeMonth(delta) {
+      currentDate.setMonth(currentDate.getMonth() + delta);
+      renderCalendar();
+    }
+
+    // Filters
+    function applyFilters() {
+      currentFilters.type = document.getElementById('filterType').value;
+      currentFilters.location = document.getElementById('filterLocation').value;
+      renderCalendar();
+    }
+
+    function clearFilters() {
+      document.getElementById('filterType').value = 'all';
+      document.getElementById('filterLocation').value = 'all';
+      currentFilters = { type: 'all', location: 'all' };
+      renderCalendar();
+    }
+
+    // Initialize
+    document.addEventListener('DOMContentLoaded', () => {
+      loadData();
+      renderCalendar();
+      
+      document.getElementById('filterType').addEventListener('change', applyFilters);
+      document.getElementById('filterLocation').addEventListener('change', applyFilters);
+      
+      // Close modals when clicking outside
+      window.onclick = function(event) {
+        const formModal = document.getElementById('formModal');
+        const detailModal = document.getElementById('detailModal');
+        const swapModal = document.getElementById('swapModal');
+        if (event.target === formModal) closeFormModal();
+        if (event.target === detailModal) closeDetailModal();
+        if (event.target === swapModal) closeSwapModal();
+      };
+    });
+  </script>
 </body>
 </html>
