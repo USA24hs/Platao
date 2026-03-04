@@ -364,6 +364,126 @@
         font-size: 10px;
       }
     }
+
+    /* Relatórios */
+    .report-card {
+      background: linear-gradient(145deg, #2d3748, #1e293b);
+      border-radius: 16px;
+      padding: 16px;
+      margin-bottom: 12px;
+      border: 1px solid #334155;
+    }
+
+    .report-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 15px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid #334155;
+    }
+
+    .report-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: #10b981;
+    }
+
+    .report-stat {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 0;
+      border-bottom: 1px dashed #334155;
+    }
+
+    .report-stat:last-child {
+      border-bottom: none;
+    }
+
+    .report-label {
+      color: #94a3b8;
+      font-size: 13px;
+    }
+
+    .report-value {
+      font-weight: 600;
+      font-size: 15px;
+    }
+
+    .report-highlight {
+      color: #10b981;
+      font-size: 18px;
+      font-weight: 700;
+    }
+
+    .location-badge-sm {
+      display: inline-block;
+      width: 10px;
+      height: 10px;
+      border-radius: 4px;
+      margin-right: 6px;
+    }
+
+    /* Abas */
+    .tabs {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+
+    .tab {
+      flex: 1;
+      padding: 10px;
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 10px;
+      text-align: center;
+      font-size: 13px;
+      font-weight: 500;
+      color: #94a3b8;
+      cursor: pointer;
+    }
+
+    .tab.active {
+      background: #10b981;
+      color: white;
+      border-color: #10b981;
+    }
+
+    .tab-content {
+      display: none;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    /* Seletores de mês/ano */
+    .period-selector {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+      background: #0f172a;
+      padding: 8px 12px;
+      border-radius: 30px;
+    }
+
+    .period-btn {
+      background: none;
+      border: none;
+      color: #94a3b8;
+      font-size: 18px;
+      padding: 4px 12px;
+      min-height: auto;
+    }
+
+    .period-display {
+      font-weight: 600;
+      color: white;
+      font-size: 14px;
+    }
   </style>
 </head>
 <body>
@@ -404,147 +524,209 @@
     </div>
   </div>
 
-  <!-- Calendário -->
-  <div class="card mb-3">
-    <div class="flex items-center justify-between mb-3">
-      <button onclick="changeMonth(-1)" class="w-9 h-9 rounded-lg bg-slate-700 flex items-center justify-center">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
-          <path d="M15 19l-7-7 7-7"/>
+  <!-- Abas principais -->
+  <div class="tabs">
+    <div class="tab active" onclick="switchTab('calendar')">📅 Calendário</div>
+    <div class="tab" onclick="switchTab('reports')">📊 Relatórios</div>
+  </div>
+
+  <!-- Conteúdo da aba Calendário -->
+  <div id="calendarTab" class="tab-content active">
+    <!-- Calendário -->
+    <div class="card mb-3">
+      <div class="flex items-center justify-between mb-3">
+        <button onclick="changeMonth(-1)" class="w-9 h-9 rounded-lg bg-slate-700 flex items-center justify-center">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+            <path d="M15 19l-7-7 7-7"/>
+          </svg>
+        </button>
+        <h2 class="font-semibold text-sm md:text-base" id="calendarTitle">Março 2026</h2>
+        <button onclick="changeMonth(1)" class="w-9 h-9 rounded-lg bg-slate-700 flex items-center justify-center">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+            <path d="M9 5l7 7-7 7"/>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Dias da Semana -->
+      <div class="grid grid-cols-7 gap-[1.5px] mb-1">
+        <div class="week-day">DOM</div>
+        <div class="week-day">SEG</div>
+        <div class="week-day">TER</div>
+        <div class="week-day">QUA</div>
+        <div class="week-day">QUI</div>
+        <div class="week-day">SEX</div>
+        <div class="week-day">SÁB</div>
+      </div>
+
+      <!-- Grid do Calendário -->
+      <div id="calendarGrid" class="calendar-grid"></div>
+
+      <!-- Legenda Compacta -->
+      <div class="flex flex-wrap gap-2 pt-2 border-t border-gray-700 text-[10px]">
+        <div class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-emerald-500"></span><span>SD</span></div>
+        <div class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-purple-500"></span><span>SN</span></div>
+        <div class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-blue-500"></span><span>DN</span></div>
+        <div class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-red-500"></span><span>HRL</span></div>
+        <div class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-purple-500"></span><span>HTO</span></div>
+        <div class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-blue-500"></span><span>EXTRA</span></div>
+        <div class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-orange-500"></span><span>CIA</span></div>
+        <div class="flex items-center gap-1 ml-auto"><span class="w-2 h-2 rounded-full border border-emerald-500"></span><span>Hoje</span></div>
+      </div>
+    </div>
+
+    <!-- Stats Scroll -->
+    <div class="scroll-x mb-3">
+      <div class="stat-card">
+        <div class="text-[10px] text-gray-400">Mês</div>
+        <div class="text-xl font-bold" id="totalShifts">0</div>
+      </div>
+      <div class="stat-card">
+        <div class="text-[10px] text-gray-400">Horas</div>
+        <div class="text-xl font-bold" id="totalHours">0</div>
+      </div>
+      <div class="stat-card">
+        <div class="text-[10px] text-gray-400">Receita</div>
+        <div class="text-base font-bold text-emerald-400" id="totalRevenue">R$ 0</div>
+      </div>
+      <div class="stat-card">
+        <div class="text-[10px] text-gray-400">Próx</div>
+        <div class="text-base font-bold" id="nextShift">-</div>
+      </div>
+      <div class="stat-card">
+        <div class="text-[10px] text-gray-400">Trocas</div>
+        <div class="text-xl font-bold text-yellow-500" id="swapCount">0</div>
+      </div>
+    </div>
+
+    <!-- Filtros Compactos -->
+    <div class="card mb-3 p-2">
+      <div class="flex gap-1.5">
+        <select id="filterType" class="flex-1 text-xs p-1.5">
+          <option value="all">Tipos</option>
+          <option value="sd">SD</option>
+          <option value="sn">SN</option>
+          <option value="dn">DN</option>
+        </select>
+        
+        <select id="filterLocation" class="flex-1 text-xs p-1.5">
+          <option value="all">Locais</option>
+        </select>
+        
+        <button onclick="clearFilters()" class="px-3 py-1.5 bg-slate-700 rounded-lg text-xs whitespace-nowrap">
+          Limpar
+        </button>
+      </div>
+    </div>
+
+    <!-- Trocas Pendentes -->
+    <div class="card mb-3 border-l-4 border-yellow-500 p-3">
+      <div class="flex items-center justify-between mb-2">
+        <h3 class="text-sm font-semibold flex items-center gap-1">
+          <span class="text-yellow-500">🔄</span>
+          Trocas em Andamento
+        </h3>
+        <span class="bg-yellow-500 text-black px-2 py-0.5 rounded-full text-xs font-bold" id="pendingSwapsCount">0</span>
+      </div>
+      <div id="pendingSwapsList" class="space-y-2"></div>
+    </div>
+
+    <!-- Trocas Confirmadas -->
+    <div class="card mb-3 border-l-4 border-emerald-500 p-3">
+      <div class="flex items-center justify-between mb-2">
+        <h3 class="text-sm font-semibold flex items-center gap-1">
+          <span class="text-emerald-500">✅</span>
+          Trocas Confirmadas
+        </h3>
+        <span class="bg-emerald-500 text-black px-2 py-0.5 rounded-full text-xs font-bold" id="confirmedSwapsCount">0</span>
+      </div>
+      <div id="confirmedSwapsList" class="space-y-2"></div>
+    </div>
+
+    <!-- Próximos Plantões -->
+    <div class="card p-3">
+      <h3 class="text-sm font-semibold mb-2 flex items-center gap-1">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2">
+          <path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
         </svg>
-      </button>
-      <h2 class="font-semibold text-sm md:text-base" id="calendarTitle">Março 2026</h2>
-      <button onclick="changeMonth(1)" class="w-9 h-9 rounded-lg bg-slate-700 flex items-center justify-center">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
-          <path d="M9 5l7 7-7 7"/>
-        </svg>
-      </button>
-    </div>
-
-    <!-- Dias da Semana -->
-    <div class="grid grid-cols-7 gap-[1.5px] mb-1">
-      <div class="week-day">DOM</div>
-      <div class="week-day">SEG</div>
-      <div class="week-day">TER</div>
-      <div class="week-day">QUA</div>
-      <div class="week-day">QUI</div>
-      <div class="week-day">SEX</div>
-      <div class="week-day">SÁB</div>
-    </div>
-
-    <!-- Grid do Calendário -->
-    <div id="calendarGrid" class="calendar-grid"></div>
-
-    <!-- Legenda Compacta -->
-    <div class="flex flex-wrap gap-2 pt-2 border-t border-gray-700 text-[10px]">
-      <div class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-emerald-500"></span><span>SD</span></div>
-      <div class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-purple-500"></span><span>SN</span></div>
-      <div class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-blue-500"></span><span>DN</span></div>
-      <div class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-red-500"></span><span>HRL</span></div>
-      <div class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-purple-500"></span><span>HTO</span></div>
-      <div class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-blue-500"></span><span>EXTRA</span></div>
-      <div class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-orange-500"></span><span>CIA</span></div>
-      <div class="flex items-center gap-1 ml-auto"><span class="w-2 h-2 rounded-full border border-emerald-500"></span><span>Hoje</span></div>
-    </div>
-  </div>
-
-  <!-- Stats Scroll -->
-  <div class="scroll-x mb-3">
-    <div class="stat-card">
-      <div class="text-[10px] text-gray-400">Mês</div>
-      <div class="text-xl font-bold" id="totalShifts">0</div>
-    </div>
-    <div class="stat-card">
-      <div class="text-[10px] text-gray-400">Horas</div>
-      <div class="text-xl font-bold" id="totalHours">0</div>
-    </div>
-    <div class="stat-card">
-      <div class="text-[10px] text-gray-400">Receita</div>
-      <div class="text-base font-bold text-emerald-400" id="totalRevenue">R$ 0</div>
-    </div>
-    <div class="stat-card">
-      <div class="text-[10px] text-gray-400">Próx</div>
-      <div class="text-base font-bold" id="nextShift">-</div>
-    </div>
-    <div class="stat-card">
-      <div class="text-[10px] text-gray-400">Trocas</div>
-      <div class="text-xl font-bold text-yellow-500" id="swapCount">0</div>
-    </div>
-  </div>
-
-  <!-- Filtros Compactos -->
-  <div class="card mb-3 p-2">
-    <div class="flex gap-1.5">
-      <select id="filterType" class="flex-1 text-xs p-1.5">
-        <option value="all">Tipos</option>
-        <option value="sd">SD</option>
-        <option value="sn">SN</option>
-        <option value="dn">DN</option>
-      </select>
-      
-      <select id="filterLocation" class="flex-1 text-xs p-1.5">
-        <option value="all">Locais</option>
-      </select>
-      
-      <button onclick="clearFilters()" class="px-3 py-1.5 bg-slate-700 rounded-lg text-xs whitespace-nowrap">
-        Limpar
-      </button>
-    </div>
-  </div>
-
-  <!-- Trocas Pendentes -->
-  <div class="card mb-3 border-l-4 border-yellow-500 p-3">
-    <div class="flex items-center justify-between mb-2">
-      <h3 class="text-sm font-semibold flex items-center gap-1">
-        <span class="text-yellow-500">🔄</span>
-        Trocas em Andamento
+        Próximos
       </h3>
-      <span class="bg-yellow-500 text-black px-2 py-0.5 rounded-full text-xs font-bold" id="pendingSwapsCount">0</span>
+      <div id="upcomingShifts" class="space-y-1.5"></div>
     </div>
-    <div id="pendingSwapsList" class="space-y-2"></div>
   </div>
 
-  <!-- Trocas Confirmadas -->
-  <div class="card mb-3 border-l-4 border-emerald-500 p-3">
-    <div class="flex items-center justify-between mb-2">
-      <h3 class="text-sm font-semibold flex items-center gap-1">
-        <span class="text-emerald-500">✅</span>
-        Trocas Confirmadas
-      </h3>
-      <span class="bg-emerald-500 text-black px-2 py-0.5 rounded-full text-xs font-bold" id="confirmedSwapsCount">0</span>
+  <!-- Conteúdo da aba Relatórios -->
+  <div id="reportsTab" class="tab-content">
+    <!-- Seletor de período -->
+    <div class="period-selector">
+      <button class="period-btn" onclick="changeReportMonth(-1)">←</button>
+      <span class="period-display" id="reportPeriod">Março 2026</span>
+      <button class="period-btn" onclick="changeReportMonth(1)">→</button>
     </div>
-    <div id="confirmedSwapsList" class="space-y-2"></div>
+
+    <!-- Cards de resumo geral -->
+    <div class="report-card">
+      <div class="report-header">
+        <span class="text-2xl">📊</span>
+        <span class="report-title">Resumo do Mês</span>
+      </div>
+      <div class="report-stat">
+        <span class="report-label">Total de Plantões</span>
+        <span class="report-value" id="reportTotalShifts">0</span>
+      </div>
+      <div class="report-stat">
+        <span class="report-label">Total de Horas</span>
+        <span class="report-value" id="reportTotalHours">0h</span>
+      </div>
+      <div class="report-stat">
+        <span class="report-label">Horas Extraordinárias *</span>
+        <span class="report-value text-yellow-400" id="reportExtraHours">0h</span>
+      </div>
+      <div class="report-stat">
+        <span class="report-label">Faturamento Total</span>
+        <span class="report-highlight" id="reportTotalRevenue">R$ 0</span>
+      </div>
+      <div class="text-[10px] text-gray-500 mt-2">* DN (24h) considerado como base +12h extras</div>
+    </div>
+
+    <!-- Por Local -->
+    <div class="report-card">
+      <div class="report-header">
+        <span class="text-2xl">📍</span>
+        <span class="report-title">Por Local</span>
+      </div>
+      <div id="reportByLocation"></div>
+    </div>
+
+    <!-- Resumo por Tipo -->
+    <div class="report-card">
+      <div class="report-header">
+        <span class="text-2xl">🕒</span>
+        <span class="report-title">Por Tipo de Plantão</span>
+      </div>
+      <div id="reportByType"></div>
+    </div>
   </div>
 
-  <!-- Próximos Plantões -->
-  <div class="card p-3">
-    <h3 class="text-sm font-semibold mb-2 flex items-center gap-1">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2">
-        <path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
-      </svg>
-      Próximos
-    </h3>
-    <div id="upcomingShifts" class="space-y-1.5"></div>
-  </div>
-
-  <!-- Bottom Navigation -->
+  <!-- Bottom Navigation (atualizado) -->
   <div class="bottom-nav">
-    <button class="nav-item active" onclick="document.querySelector('.card').scrollIntoView({behavior:'smooth'})">
+    <button class="nav-item active" onclick="switchTab('calendar')">
       <svg viewBox="0 0 24 24">
         <path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
       </svg>
       <span>Calendário</span>
     </button>
-    <button class="nav-item" onclick="location.reload()">
+    <button class="nav-item" onclick="switchTab('reports')">
       <svg viewBox="0 0 24 24">
-        <path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+        <path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
       </svg>
-      <span>Atualizar</span>
+      <span>Relatórios</span>
     </button>
     <button class="nav-item" onclick="openFormModal()">
       <svg viewBox="0 0 24 24">
         <path d="M12 4v16m8-8H4"/>
       </svg>
-      <span>Novo</span>
+      <span>Turnos</span>
     </button>
     <button class="nav-item" onclick="openGeneratorModal()">
       <svg viewBox="0 0 24 24">
@@ -554,7 +736,7 @@
     </button>
   </div>
 
-  <!-- MODAIS -->
+  <!-- MODAIS (mantidos iguais) -->
   <div id="formModal" class="modal">
     <div class="modal-content">
       <h2 class="text-lg font-bold mb-3" id="formTitle">Novo Plantão</h2>
@@ -670,9 +852,11 @@
 
     // ESTADO
     let shifts = [];
-    let swaps = []; // Array separado para gerenciar trocas
+    let swaps = [];
     let currentDate = new Date();
+    let reportDate = new Date();
     let currentFilters = { type: 'all', location: 'all' };
+    let currentTab = 'calendar';
 
     // FUNÇÕES DE TOAST
     function showToast(message, type = 'success') {
@@ -692,6 +876,34 @@
 
     function hideToast() {
       document.getElementById('toast').classList.remove('show');
+    }
+
+    // FUNÇÕES DE ABA
+    function switchTab(tab) {
+      currentTab = tab;
+      
+      // Atualizar classes das abas
+      document.querySelectorAll('.tab').forEach((el, index) => {
+        if (index === 0 && tab === 'calendar') el.classList.add('active');
+        else if (index === 1 && tab === 'reports') el.classList.add('active');
+        else el.classList.remove('active');
+      });
+      
+      // Mostrar/esconder conteúdo
+      document.getElementById('calendarTab').classList.toggle('active', tab === 'calendar');
+      document.getElementById('reportsTab').classList.toggle('active', tab === 'reports');
+      
+      // Atualizar bottom nav
+      document.querySelectorAll('.nav-item').forEach((el, index) => {
+        if (index === 0 && tab === 'calendar') el.classList.add('active');
+        else if (index === 1 && tab === 'reports') el.classList.add('active');
+        else el.classList.remove('active');
+      });
+      
+      // Se for relatórios, renderizar
+      if (tab === 'reports') {
+        renderReports();
+      }
     }
 
     // FUNÇÕES AUXILIARES
@@ -752,7 +964,6 @@
           { id: '5', date: dates[7], type: 'dn', location: 'HRL', value: 1900, notes: 'Final de semana' }
         ];
         
-        // Criar uma troca de exemplo
         swaps = [
           { 
             id: generateId(), 
@@ -1090,7 +1301,6 @@
 
     function deleteShift(id) {
       if (confirm('Excluir plantão?')) {
-        // Verificar se o plantão está em alguma troca
         const swap = swaps.find(s => s.shift1Id === id || s.shift2Id === id);
         if (swap) {
           if (confirm('Este plantão está em uma troca. Deseja excluir a troca também?')) {
@@ -1110,14 +1320,13 @@
       }
     }
 
-    // SISTEMA DE TROCA MELHORADO
+    // SISTEMA DE TROCA
     function initiateSwap(shift1Id) {
       closeDetailModal();
       
       const shift1 = getShiftById(shift1Id);
       if (!shift1) return;
       
-      // Encontrar plantões disponíveis para troca (excluindo o próprio e plantões já em troca)
       const unavailableShiftIds = new Set();
       swaps.forEach(swap => {
         if (swap.status === 'pending' || swap.status === 'confirmed') {
@@ -1167,7 +1376,6 @@
       if (!shift1 || !shift2) return;
       
       if (confirm(`Confirmar proposta de troca?\n${formatFullDate(shift1.date)} ⇄ ${formatFullDate(shift2.date)}`)) {
-        // Criar nova troca pendente
         const newSwap = {
           id: generateId(),
           shift1Id: shift1Id,
@@ -1280,12 +1488,102 @@
       closeGeneratorModal();
     }
 
+    // FUNÇÕES DE RELATÓRIO
+    function changeReportMonth(delta) {
+      reportDate.setMonth(reportDate.getMonth() + delta);
+      renderReports();
+    }
+
+    function renderReports() {
+      const year = reportDate.getFullYear();
+      const month = reportDate.getMonth();
+      
+      document.getElementById('reportPeriod').innerHTML = reportDate.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
+      
+      const monthShifts = shifts.filter(s => {
+        const d = new Date(s.date + 'T12:00:00');
+        return d.getMonth() === month && d.getFullYear() === year;
+      });
+
+      // Totais gerais
+      const totalShifts = monthShifts.length;
+      const totalHours = monthShifts.reduce((sum, s) => sum + SHIFT_TYPES[s.type].hours, 0);
+      const totalRevenue = monthShifts.reduce((sum, s) => sum + (Number(s.value) || 0), 0);
+      
+      // Horas extraordinárias (DN = 24h -> 12h base + 12h extra)
+      const extraHours = monthShifts
+        .filter(s => s.type === 'dn')
+        .reduce((sum, s) => sum + 12, 0); // Cada DN rende 12h extras
+
+      document.getElementById('reportTotalShifts').innerHTML = totalShifts;
+      document.getElementById('reportTotalHours').innerHTML = totalHours + 'h';
+      document.getElementById('reportExtraHours').innerHTML = extraHours + 'h';
+      document.getElementById('reportTotalRevenue').innerHTML = formatCurrency(totalRevenue);
+
+      // Relatório por local
+      const locations = [...new Set(monthShifts.map(s => s.location))];
+      let locationHtml = '';
+      
+      locations.forEach(loc => {
+        const locShifts = monthShifts.filter(s => s.location === loc);
+        const locCount = locShifts.length;
+        const locHours = locShifts.reduce((sum, s) => sum + SHIFT_TYPES[s.type].hours, 0);
+        const locRevenue = locShifts.reduce((sum, s) => sum + (Number(s.value) || 0), 0);
+        const locationInfo = getLocationInfo(loc);
+        
+        locationHtml += `
+          <div class="report-stat">
+            <span class="report-label">
+              <span class="location-badge-sm ${locationInfo.color}"></span>
+              ${loc}
+            </span>
+            <span class="report-value">${locCount} plantões • ${locHours}h • ${formatCurrency(locRevenue)}</span>
+          </div>
+        `;
+      });
+
+      if (locations.length === 0) {
+        locationHtml = '<p class="text-gray-400 text-center py-2">Nenhum plantão no período</p>';
+      }
+
+      document.getElementById('reportByLocation').innerHTML = locationHtml;
+
+      // Relatório por tipo
+      const typeCounts = {
+        sd: monthShifts.filter(s => s.type === 'sd').length,
+        sn: monthShifts.filter(s => s.type === 'sn').length,
+        dn: monthShifts.filter(s => s.type === 'dn').length
+      };
+
+      const typeHours = {
+        sd: monthShifts.filter(s => s.type === 'sd').reduce((sum, s) => sum + SHIFT_TYPES[s.type].hours, 0),
+        sn: monthShifts.filter(s => s.type === 'sn').reduce((sum, s) => sum + SHIFT_TYPES[s.type].hours, 0),
+        dn: monthShifts.filter(s => s.type === 'dn').reduce((sum, s) => sum + SHIFT_TYPES[s.type].hours, 0)
+      };
+
+      document.getElementById('reportByType').innerHTML = `
+        <div class="report-stat">
+          <span class="report-label">SD (12h)</span>
+          <span class="report-value">${typeCounts.sd}x • ${typeHours.sd}h</span>
+        </div>
+        <div class="report-stat">
+          <span class="report-label">SN (12h)</span>
+          <span class="report-value">${typeCounts.sn}x • ${typeHours.sn}h</span>
+        </div>
+        <div class="report-stat">
+          <span class="report-label">DN (24h)</span>
+          <span class="report-value">${typeCounts.dn}x • ${typeHours.dn}h</span>
+        </div>
+      `;
+    }
+
     // INICIALIZAÇÃO
     document.addEventListener('DOMContentLoaded', () => {
       loadData();
       renderCalendar();
       renderUpcoming();
       renderSwaps();
+      renderReports();
       
       document.getElementById('filterType').addEventListener('change', applyFilters);
       document.getElementById('filterLocation').addEventListener('change', applyFilters);
