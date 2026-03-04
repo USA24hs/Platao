@@ -823,15 +823,18 @@
       }
 
       document.getElementById('calendarGrid').innerHTML = html;
-      updateStats();
+      updateStats(); // Atualiza as estatísticas com base no mês atual
     }
 
-    // STATS
+    // STATS - CORRIGIDO: Agora usa o mês do calendário atual
     function updateStats() {
-      const now = new Date();
+      const year = currentDate.getFullYear();
+      const month = currentDate.getMonth();
+      
+      // Filtra plantões do mês atual do calendário
       const monthShifts = shifts.filter(s => {
         const d = new Date(s.date + 'T12:00:00');
-        return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+        return d.getMonth() === month && d.getFullYear() === year;
       });
 
       const totalHours = monthShifts.reduce((sum, s) => sum + SHIFT_TYPES[s.type].hours, 0);
