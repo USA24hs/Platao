@@ -483,6 +483,7 @@
       font-weight: 600;
       color: white;
       font-size: 14px;
+      text-transform: uppercase;
     }
   </style>
 </head>
@@ -540,7 +541,7 @@
             <path d="M15 19l-7-7 7-7"/>
           </svg>
         </button>
-        <h2 class="font-semibold text-sm md:text-base" id="calendarTitle">Março 2026</h2>
+        <h2 class="font-semibold text-sm md:text-base uppercase" id="calendarTitle">MARÇO 2026</h2>
         <button onclick="changeMonth(1)" class="w-9 h-9 rounded-lg bg-slate-700 flex items-center justify-center">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
             <path d="M9 5l7 7-7 7"/>
@@ -660,7 +661,7 @@
     <!-- Seletor de período -->
     <div class="period-selector">
       <button class="period-btn" onclick="changeReportMonth(-1)">←</button>
-      <span class="period-display" id="reportPeriod">Março 2026</span>
+      <span class="period-display" id="reportPeriod">MARÇO 2026</span>
       <button class="period-btn" onclick="changeReportMonth(1)">→</button>
     </div>
 
@@ -736,7 +737,7 @@
     </button>
   </div>
 
-  <!-- MODAIS -->
+  <!-- MODAIS (mantidos iguais) -->
   <div id="formModal" class="modal">
     <div class="modal-content">
       <h2 class="text-lg font-bold mb-3" id="formTitle">Novo Plantão</h2>
@@ -1023,7 +1024,7 @@
       const year = currentDate.getFullYear();
       const month = currentDate.getMonth();
       
-      document.getElementById('calendarTitle').innerHTML = currentDate.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
+      document.getElementById('calendarTitle').innerHTML = currentDate.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' }).toUpperCase();
 
       const firstDay = new Date(year, month, 1).getDay();
       const daysInMonth = new Date(year, month + 1, 0).getDate();
@@ -1039,7 +1040,7 @@
         const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
         const shift = filteredShifts.find(s => s.date === dateStr);
         const hasSwap = swaps.some(s => 
-          (s.shift1Id === shift?.id || s.shift2Id === shift?.id) && s.status === 'pending'
+          (s.shift1Id === shift?.id || s.shift2Id === shift?.id)
         );
         
         let classes = 'calendar-day';
@@ -1488,7 +1489,7 @@
       closeGeneratorModal();
     }
 
-    // FUNÇÕES DE RELATÓRIO - CORRIGIDAS
+    // FUNÇÕES DE RELATÓRIO
     function changeReportMonth(delta) {
       reportDate.setMonth(reportDate.getMonth() + delta);
       renderReports();
@@ -1498,74 +1499,34 @@
       const year = reportDate.getFullYear();
       const month = reportDate.getMonth();
       
-      document.getElementById('reportPeriod').innerHTML = reportDate.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
+      document.getElementById('reportPeriod').innerHTML = reportDate.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' }).toUpperCase();
       
-      // Pegar todos os plantões do mês
       const monthShifts = shifts.filter(s => {
         const d = new Date(s.date + 'T12:00:00');
         return d.getMonth() === month && d.getFullYear() === year;
       });
 
-      // Identificar plantões que foram trocados (cedidos)
-      // Quando uma troca é confirmada, o plantão cedido não deve ser contado
-      const swappedOutShifts = new Set();
-      
-      swaps.forEach(swap => {
-        if (swap.status === 'confirmed') {
-          const shift1 = getShiftById(swap.shift1Id);
-          const shift2 = getShiftById(swap.shift2Id);
-          
-          if (shift1 && shift2) {
-            const d1 = new Date(shift1.date + 'T12:00:00');
-            const d2 = new Date(shift2.date + 'T12:00:00');
-            
-            // Se a troca envolve plantões do mês atual
-            const is1InMonth = d1.getMonth() === month && d1.getFullYear() === year;
-            const is2InMonth = d2.getMonth() === month && d2.getFullYear() === year;
-            
-            if (is1InMonth && is2InMonth) {
-              // Se ambos são do mesmo mês, um foi cedido e outro recebido
-              // Vamos considerar que o plantão com data mais antiga foi cedido
-              if (shift1.date < shift2.date) {
-                swappedOutShifts.add(shift1.id); // Este foi cedido
-              } else {
-                swappedOutShifts.add(shift2.id); // Este foi cedido
-              }
-            } else if (is1InMonth) {
-              // Se apenas shift1 está no mês, ele foi cedido (pois recebeu o de outro mês)
-              swappedOutShifts.add(shift1.id);
-            } else if (is2InMonth) {
-              // Se apenas shift2 está no mês, ele foi cedido
-              swappedOutShifts.add(shift2.id);
-            }
-          }
-        }
-      });
-
-      // Plantões efetivamente trabalhados no mês (excluindo os que foram cedidos em trocas)
-      const workedShifts = monthShifts.filter(s => !swappedOutShifts.has(s.id));
-
-      // Totais gerais (apenas plantões trabalhados)
-      const totalShifts = workedShifts.length;
-      const totalHours = workedShifts.reduce((sum, s) => sum + SHIFT_TYPES[s.type].hours, 0);
-      const totalRevenue = workedShifts.reduce((sum, s) => sum + (Number(s.value) || 0), 0);
+      // Totais gerais
+      const totalShifts = monthShifts.length;
+      const totalHours = monthShifts.reduce((sum, s) => sum + SHIFT_TYPES[s.type].hours, 0);
+      const totalRevenue = monthShifts.reduce((sum, s) => sum + (Number(s.value) || 0), 0);
       
       // Horas extraordinárias (DN = 24h -> 12h base + 12h extra)
-      const extraHours = workedShifts
+      const extraHours = monthShifts
         .filter(s => s.type === 'dn')
-        .reduce((sum, s) => sum + 12, 0);
+        .reduce((sum, s) => sum + 12, 0); // Cada DN rende 12h extras
 
       document.getElementById('reportTotalShifts').innerHTML = totalShifts;
       document.getElementById('reportTotalHours').innerHTML = totalHours + 'h';
       document.getElementById('reportExtraHours').innerHTML = extraHours + 'h';
       document.getElementById('reportTotalRevenue').innerHTML = formatCurrency(totalRevenue);
 
-      // Relatório por local (apenas plantões trabalhados)
-      const locations = [...new Set(workedShifts.map(s => s.location))];
+      // Relatório por local
+      const locations = [...new Set(monthShifts.map(s => s.location))];
       let locationHtml = '';
       
       locations.forEach(loc => {
-        const locShifts = workedShifts.filter(s => s.location === loc);
+        const locShifts = monthShifts.filter(s => s.location === loc);
         const locCount = locShifts.length;
         const locHours = locShifts.reduce((sum, s) => sum + SHIFT_TYPES[s.type].hours, 0);
         const locRevenue = locShifts.reduce((sum, s) => sum + (Number(s.value) || 0), 0);
@@ -1588,17 +1549,17 @@
 
       document.getElementById('reportByLocation').innerHTML = locationHtml;
 
-      // Relatório por tipo (apenas plantões trabalhados)
+      // Relatório por tipo
       const typeCounts = {
-        sd: workedShifts.filter(s => s.type === 'sd').length,
-        sn: workedShifts.filter(s => s.type === 'sn').length,
-        dn: workedShifts.filter(s => s.type === 'dn').length
+        sd: monthShifts.filter(s => s.type === 'sd').length,
+        sn: monthShifts.filter(s => s.type === 'sn').length,
+        dn: monthShifts.filter(s => s.type === 'dn').length
       };
 
       const typeHours = {
-        sd: workedShifts.filter(s => s.type === 'sd').reduce((sum, s) => sum + SHIFT_TYPES[s.type].hours, 0),
-        sn: workedShifts.filter(s => s.type === 'sn').reduce((sum, s) => sum + SHIFT_TYPES[s.type].hours, 0),
-        dn: workedShifts.filter(s => s.type === 'dn').reduce((sum, s) => sum + SHIFT_TYPES[s.type].hours, 0)
+        sd: monthShifts.filter(s => s.type === 'sd').reduce((sum, s) => sum + SHIFT_TYPES[s.type].hours, 0),
+        sn: monthShifts.filter(s => s.type === 'sn').reduce((sum, s) => sum + SHIFT_TYPES[s.type].hours, 0),
+        dn: monthShifts.filter(s => s.type === 'dn').reduce((sum, s) => sum + SHIFT_TYPES[s.type].hours, 0)
       };
 
       document.getElementById('reportByType').innerHTML = `
