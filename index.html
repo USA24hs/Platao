@@ -736,7 +736,7 @@
     </button>
   </div>
 
-  <!-- MODAIS (mantidos iguais) -->
+  <!-- MODAIS -->
   <div id="formModal" class="modal">
     <div class="modal-content">
       <h2 class="text-lg font-bold mb-3" id="formTitle">Novo Plantão</h2>
@@ -1488,7 +1488,7 @@
       closeGeneratorModal();
     }
 
-    // FUNÇÕES DE RELATÓRIO
+    // FUNÇÕES DE RELATÓRIO - CORRIGIDAS
     function changeReportMonth(delta) {
       reportDate.setMonth(reportDate.getMonth() + delta);
       renderReports();
@@ -1500,32 +1500,72 @@
       
       document.getElementById('reportPeriod').innerHTML = reportDate.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
       
+      // Pegar todos os plantões do mês
       const monthShifts = shifts.filter(s => {
         const d = new Date(s.date + 'T12:00:00');
         return d.getMonth() === month && d.getFullYear() === year;
       });
 
-      // Totais gerais
-      const totalShifts = monthShifts.length;
-      const totalHours = monthShifts.reduce((sum, s) => sum + SHIFT_TYPES[s.type].hours, 0);
-      const totalRevenue = monthShifts.reduce((sum, s) => sum + (Number(s.value) || 0), 0);
+      // Identificar plantões que foram trocados (cedidos)
+      // Quando uma troca é confirmada, o plantão cedido não deve ser contado
+      const swappedOutShifts = new Set();
+      
+      swaps.forEach(swap => {
+        if (swap.status === 'confirmed') {
+          const shift1 = getShiftById(swap.shift1Id);
+          const shift2 = getShiftById(swap.shift2Id);
+          
+          if (shift1 && shift2) {
+            const d1 = new Date(shift1.date + 'T12:00:00');
+            const d2 = new Date(shift2.date + 'T12:00:00');
+            
+            // Se a troca envolve plantões do mês atual
+            const is1InMonth = d1.getMonth() === month && d1.getFullYear() === year;
+            const is2InMonth = d2.getMonth() === month && d2.getFullYear() === year;
+            
+            if (is1InMonth && is2InMonth) {
+              // Se ambos são do mesmo mês, um foi cedido e outro recebido
+              // Vamos considerar que o plantão com data mais antiga foi cedido
+              if (shift1.date < shift2.date) {
+                swappedOutShifts.add(shift1.id); // Este foi cedido
+              } else {
+                swappedOutShifts.add(shift2.id); // Este foi cedido
+              }
+            } else if (is1InMonth) {
+              // Se apenas shift1 está no mês, ele foi cedido (pois recebeu o de outro mês)
+              swappedOutShifts.add(shift1.id);
+            } else if (is2InMonth) {
+              // Se apenas shift2 está no mês, ele foi cedido
+              swappedOutShifts.add(shift2.id);
+            }
+          }
+        }
+      });
+
+      // Plantões efetivamente trabalhados no mês (excluindo os que foram cedidos em trocas)
+      const workedShifts = monthShifts.filter(s => !swappedOutShifts.has(s.id));
+
+      // Totais gerais (apenas plantões trabalhados)
+      const totalShifts = workedShifts.length;
+      const totalHours = workedShifts.reduce((sum, s) => sum + SHIFT_TYPES[s.type].hours, 0);
+      const totalRevenue = workedShifts.reduce((sum, s) => sum + (Number(s.value) || 0), 0);
       
       // Horas extraordinárias (DN = 24h -> 12h base + 12h extra)
-      const extraHours = monthShifts
+      const extraHours = workedShifts
         .filter(s => s.type === 'dn')
-        .reduce((sum, s) => sum + 12, 0); // Cada DN rende 12h extras
+        .reduce((sum, s) => sum + 12, 0);
 
       document.getElementById('reportTotalShifts').innerHTML = totalShifts;
       document.getElementById('reportTotalHours').innerHTML = totalHours + 'h';
       document.getElementById('reportExtraHours').innerHTML = extraHours + 'h';
       document.getElementById('reportTotalRevenue').innerHTML = formatCurrency(totalRevenue);
 
-      // Relatório por local
-      const locations = [...new Set(monthShifts.map(s => s.location))];
+      // Relatório por local (apenas plantões trabalhados)
+      const locations = [...new Set(workedShifts.map(s => s.location))];
       let locationHtml = '';
       
       locations.forEach(loc => {
-        const locShifts = monthShifts.filter(s => s.location === loc);
+        const locShifts = workedShifts.filter(s => s.location === loc);
         const locCount = locShifts.length;
         const locHours = locShifts.reduce((sum, s) => sum + SHIFT_TYPES[s.type].hours, 0);
         const locRevenue = locShifts.reduce((sum, s) => sum + (Number(s.value) || 0), 0);
@@ -1548,17 +1588,17 @@
 
       document.getElementById('reportByLocation').innerHTML = locationHtml;
 
-      // Relatório por tipo
+      // Relatório por tipo (apenas plantões trabalhados)
       const typeCounts = {
-        sd: monthShifts.filter(s => s.type === 'sd').length,
-        sn: monthShifts.filter(s => s.type === 'sn').length,
-        dn: monthShifts.filter(s => s.type === 'dn').length
+        sd: workedShifts.filter(s => s.type === 'sd').length,
+        sn: workedShifts.filter(s => s.type === 'sn').length,
+        dn: workedShifts.filter(s => s.type === 'dn').length
       };
 
       const typeHours = {
-        sd: monthShifts.filter(s => s.type === 'sd').reduce((sum, s) => sum + SHIFT_TYPES[s.type].hours, 0),
-        sn: monthShifts.filter(s => s.type === 'sn').reduce((sum, s) => sum + SHIFT_TYPES[s.type].hours, 0),
-        dn: monthShifts.filter(s => s.type === 'dn').reduce((sum, s) => sum + SHIFT_TYPES[s.type].hours, 0)
+        sd: workedShifts.filter(s => s.type === 'sd').reduce((sum, s) => sum + SHIFT_TYPES[s.type].hours, 0),
+        sn: workedShifts.filter(s => s.type === 'sn').reduce((sum, s) => sum + SHIFT_TYPES[s.type].hours, 0),
+        dn: workedShifts.filter(s => s.type === 'dn').reduce((sum, s) => sum + SHIFT_TYPES[s.type].hours, 0)
       };
 
       document.getElementById('reportByType').innerHTML = `
