@@ -678,6 +678,47 @@
         font-size: 18px;
       }
     }
+
+    /* Novos estilos para opções de troca */
+    .swap-option {
+      background: linear-gradient(145deg, #2d3748, #1e293b);
+      border: 2px solid #334155;
+      border-radius: 16px;
+      padding: 16px;
+      margin-bottom: 12px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .swap-option:hover {
+      border-color: #10b981;
+      transform: translateY(-2px);
+    }
+
+    .swap-option.selected {
+      border-color: #10b981;
+      background: rgba(16, 185, 129, 0.1);
+    }
+
+    .swap-option-title {
+      font-size: 16px;
+      font-weight: 600;
+      margin-bottom: 8px;
+      color: #10b981;
+    }
+
+    .quick-swap-btn {
+      background: #f59e0b;
+      color: black;
+      padding: 8px 16px;
+      border-radius: 30px;
+      font-size: 13px;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      margin: 5px 0;
+    }
   </style>
 </head>
 <body>
@@ -1033,10 +1074,10 @@
     </div>
   </div>
   
-  <div id="confirmSwapModal" class="modal">
+  <div id="quickSwapModal" class="modal">
     <div class="modal-content">
-      <h2 class="text-xl font-bold mb-4">✅ Confirmar Troca</h2>
-      <div id="confirmSwapContent"></div>
+      <h2 class="text-xl font-bold mb-4">⚡ Troca Rápida</h2>
+      <div id="quickSwapContent"></div>
     </div>
   </div>
 
@@ -1045,6 +1086,44 @@
       <h2 class="text-xl font-bold mb-4" id="dayShiftsTitle">Plantões do Dia</h2>
       <div id="dayShiftsList" class="space-y-2"></div>
       <button onclick="closeDayShiftsModal()" class="w-full mt-4 bg-slate-600 hover:bg-slate-500 text-white px-4 py-3 rounded-lg text-sm font-medium transition">Fechar</button>
+    </div>
+  </div>
+
+  <div id="newShiftSwapModal" class="modal">
+    <div class="modal-content">
+      <h2 class="text-xl font-bold mb-4">🔄 Criar Plantão para Troca</h2>
+      <form id="newShiftSwapForm" onsubmit="createShiftForSwap(event)">
+        <input type="hidden" id="swapShift1Id">
+        
+        <label class="block text-sm font-medium mb-2">Data do Novo Plantão</label>
+        <input type="date" id="swapNewDate" required class="mb-4">
+
+        <div class="grid grid-cols-2 gap-3 mb-4">
+          <div>
+            <label class="block text-sm font-medium mb-2">Tipo</label>
+            <select id="swapNewType" required class="w-full">
+              <option value="sd">SD (12h)</option>
+              <option value="sn">SN (12h)</option>
+              <option value="dn">DN (24h)</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-sm font-medium mb-2">Valor (R$)</label>
+            <input type="number" id="swapNewValue" step="0.01" min="0" class="w-full">
+          </div>
+        </div>
+
+        <label class="block text-sm font-medium mb-2">Local</label>
+        <input type="text" id="swapNewLocation" required list="locationList" class="mb-4">
+
+        <label class="block text-sm font-medium mb-2">Observações</label>
+        <textarea id="swapNewNotes" rows="2" class="mb-4" placeholder="Plantão criado para troca"></textarea>
+
+        <div class="flex gap-3 mt-4">
+          <button type="submit" class="btn-primary flex-1">Criar e Trocar</button>
+          <button type="button" onclick="closeNewShiftSwapModal()" class="bg-slate-600 hover:bg-slate-500 text-white px-4 py-3 rounded-lg flex-1 text-sm font-medium transition">Cancelar</button>
+        </div>
+      </form>
     </div>
   </div>
 
@@ -1070,6 +1149,7 @@
     let reportDate = new Date();
     let currentFilters = { type: 'all', location: 'all' };
     let currentTab = 'calendar';
+    let selectedShiftForSwap = null;
 
     // FUNÇÕES DE TOAST
     function showToast(message, type = 'success') {
@@ -1300,27 +1380,57 @@
       updateStats();
     }
 
-    // STATS
+    // STATS (CORRIGIDO - Conta apenas UM plantão por troca confirmada)
     function updateStats() {
       const year = currentDate.getFullYear();
       const month = currentDate.getMonth();
       
+      // Pegar todos os plantões do mês
       const monthShifts = shifts.filter(s => {
         const d = new Date(s.date + 'T12:00:00');
         return d.getMonth() === month && d.getFullYear() === year;
       });
 
-      const totalHours = monthShifts.reduce((sum, s) => sum + SHIFT_TYPES[s.type].hours, 0);
-      const totalRevenue = monthShifts.reduce((sum, s) => sum + (Number(s.value) || 0), 0);
+      // Identificar IDs de plantões envolvidos em trocas confirmadas
+      const swappedShiftIds = new Set();
+      const swapsCount = swaps.filter(s => s.status === 'confirmed').length;
       
-      document.getElementById('totalShifts').innerHTML = monthShifts.length;
+      // Para cada troca confirmada, vamos manter APENAS UM dos plantões
+      // Vamos marcar o outro como "descartado" para não contar
+      const discardedShiftIds = new Set();
+      
+      swaps
+        .filter(s => s.status === 'confirmed')
+        .forEach(swap => {
+          // Adiciona ambos ao conjunto de IDs trocados
+          swappedShiftIds.add(swap.shift1Id);
+          swappedShiftIds.add(swap.shift2Id);
+          
+          // Decide qual descartar (vamos descartar o shift2, mantendo o shift1)
+          // Isso é arbitrário - poderíamos escolher qualquer um
+          discardedShiftIds.add(swap.shift2Id);
+        });
+
+      // Plantões do mês que NÃO estão descartados (inclui UM de cada troca)
+      const activeShifts = monthShifts.filter(s => !discardedShiftIds.has(s.id));
+      
+      // Totais baseados apenas nos plantões ativos
+      const totalHours = activeShifts.reduce((sum, s) => sum + SHIFT_TYPES[s.type].hours, 0);
+      const totalRevenue = activeShifts.reduce((sum, s) => sum + (Number(s.value) || 0), 0);
+      
+      // Atualizar os cards
+      document.getElementById('totalShifts').innerHTML = activeShifts.length;
       document.getElementById('totalHours').innerHTML = totalHours;
       document.getElementById('totalRevenue').innerHTML = formatCurrency(totalRevenue);
 
+      // Próximo plantão (considerando apenas ativos)
       const todayStr = formatDate(new Date());
-      const nextShift = shifts.filter(s => s.date >= todayStr).sort((a, b) => a.date.localeCompare(b.date))[0];
+      const nextShift = activeShifts
+        .filter(s => s.date >= todayStr)
+        .sort((a, b) => a.date.localeCompare(b.date))[0];
       document.getElementById('nextShift').innerHTML = nextShift ? formatDisplayDate(nextShift.date) : '-';
 
+      // Contagem de trocas
       const pendingSwaps = swaps.filter(s => s.status === 'pending').length;
       const confirmedSwaps = swaps.filter(s => s.status === 'confirmed').length;
       
@@ -1332,7 +1442,19 @@
     // PRÓXIMOS PLANTÕES
     function renderUpcoming() {
       const todayStr = formatDate(new Date());
-      const upcoming = getFilteredShifts().filter(s => s.date >= todayStr).sort((a, b) => a.date.localeCompare(b.date)).slice(0, 5);
+      
+      // Para próximos plantões, também precisamos filtrar os descartados
+      const discardedShiftIds = new Set();
+      swaps
+        .filter(s => s.status === 'confirmed')
+        .forEach(swap => {
+          discardedShiftIds.add(swap.shift2Id); // Descarta o segundo plantão
+        });
+      
+      const upcoming = getFilteredShifts()
+        .filter(s => s.date >= todayStr && !discardedShiftIds.has(s.id))
+        .sort((a, b) => a.date.localeCompare(b.date))
+        .slice(0, 5);
       
       document.getElementById('upcomingShifts').innerHTML = upcoming.length ? upcoming.map(s => {
         const typeInfo = SHIFT_TYPES[s.type];
@@ -1599,13 +1721,16 @@
       }
     }
 
-    // SISTEMA DE TROCA
+    // NOVO SISTEMA DE TROCA COM OPÇÕES
     function initiateSwap(shift1Id) {
       closeDetailModal();
       
       const shift1 = getShiftById(shift1Id);
       if (!shift1) return;
       
+      selectedShiftForSwap = shift1Id;
+      
+      // IDs de plantões indisponíveis (já em trocas)
       const unavailableShiftIds = new Set();
       swaps.forEach(swap => {
         if (swap.status === 'pending' || swap.status === 'confirmed') {
@@ -1614,38 +1739,159 @@
         }
       });
       
+      // Plantões disponíveis para troca (excluindo o atual e os já em troca)
       const availableShifts = shifts.filter(s => 
         s.id !== shift1Id && 
         !unavailableShiftIds.has(s.id) &&
         new Date(s.date + 'T12:00:00') > new Date()
       );
-      
-      if (availableShifts.length === 0) {
-        showToast('Nenhum plantão disponível para troca', 'info');
-        return;
-      }
 
       let html = `
-        <p class="text-sm mb-4">Selecione o plantão para trocar com <strong>${formatFullDate(shift1.date)}</strong>:</p>
-        <div class="space-y-2 max-h-60 overflow-y-auto mb-4 pr-2">
+        <div class="mb-4 p-3 bg-slate-800 rounded-lg">
+          <p class="text-sm font-medium">Plantão selecionado:</p>
+          <p class="text-base font-bold mt-1">${formatFullDate(shift1.date)} - ${shift1.location} (${SHIFT_TYPES[shift1.type].name})</p>
+        </div>
+        
+        <h3 class="font-medium mb-3">Escolha uma opção:</h3>
+        
+        <div class="swap-option" onclick="selectSwapOption('existing')">
+          <div class="swap-option-title">📋 Plantão existente</div>
+          <p class="text-sm text-gray-400 mb-2">Trocar com um plantão já cadastrado</p>
+          <span class="quick-swap-btn">${availableShifts.length} disponíveis →</span>
+        </div>
+        
+        <div class="swap-option" onclick="selectSwapOption('new')">
+          <div class="swap-option-title">🆕 Criar novo plantão</div>
+          <p class="text-sm text-gray-400 mb-2">Criar um novo plantão específico para esta troca</p>
+          <span class="quick-swap-btn">Criar novo →</span>
+        </div>
       `;
       
-      availableShifts.forEach(s => {
+      if (availableShifts.length > 0) {
         html += `
-          <div onclick="proposeSwap('${shift1Id}', '${s.id}')" class="p-4 bg-slate-800 rounded-xl border-l-4 ${getLocationInfo(s.location).border} cursor-pointer hover:bg-slate-700 transition">
-            <div class="font-medium mb-1">${formatFullDate(s.date)}</div>
-            <div class="flex justify-between text-sm">
-              <span class="text-gray-400">${s.location} - ${SHIFT_TYPES[s.type].name}</span>
-              <span class="text-emerald-400">${formatCurrency(s.value)}</span>
-            </div>
-          </div>
+          <div class="mt-3 pt-3 border-t border-gray-700">
+            <h4 class="font-medium mb-2 text-sm">Plantões disponíveis:</h4>
+            <div class="space-y-2 max-h-40 overflow-y-auto">
         `;
-      });
+        
+        availableShifts.slice(0, 3).forEach(s => {
+          html += `
+            <div onclick="proposeSwap('${shift1Id}', '${s.id}')" class="p-3 bg-slate-700 rounded-lg cursor-pointer hover:bg-slate-600 transition">
+              <div class="flex justify-between">
+                <span class="font-medium">${formatFullDate(s.date)}</span>
+                <span class="text-xs px-2 py-0.5 rounded-full ${SHIFT_TYPES[s.type].color}">${SHIFT_TYPES[s.type].name}</span>
+              </div>
+              <div class="flex justify-between text-xs text-gray-400 mt-1">
+                <span>${s.location}</span>
+                <span class="text-emerald-400">${formatCurrency(s.value)}</span>
+              </div>
+            </div>
+          `;
+        });
+        
+        if (availableShifts.length > 3) {
+          html += `<p class="text-xs text-center text-gray-500 mt-2">+${availableShifts.length - 3} outros plantões disponíveis</p>`;
+        }
+        
+        html += '</div></div>';
+      }
       
-      html += '</div><button onclick="closeSwapModal()" class="w-full bg-slate-600 hover:bg-slate-500 py-3 rounded-xl text-sm font-medium transition">Cancelar</button>';
+      html += '<button onclick="closeSwapModal()" class="w-full mt-4 bg-slate-600 hover:bg-slate-500 py-3 rounded-xl text-sm font-medium transition">Cancelar</button>';
       
       document.getElementById('swapModalContent').innerHTML = html;
       document.getElementById('swapModal').style.display = 'flex';
+    }
+
+    function selectSwapOption(option) {
+      closeSwapModal();
+      
+      if (option === 'existing') {
+        // Já mostramos os plantões disponíveis na lista, então só fechar
+        showToast('Selecione um plantão da lista', 'info');
+      } else if (option === 'new') {
+        openNewShiftSwapModal();
+      }
+    }
+
+    function openNewShiftSwapModal() {
+      if (!selectedShiftForSwap) return;
+      
+      const shift1 = getShiftById(selectedShiftForSwap);
+      if (!shift1) return;
+      
+      document.getElementById('swapShift1Id').value = selectedShiftForSwap;
+      document.getElementById('swapNewForm').reset();
+      
+      // Sugerir data futura (próxima semana)
+      const nextWeek = new Date();
+      nextWeek.setDate(nextWeek.getDate() + 7);
+      document.getElementById('swapNewDate').value = formatDate(nextWeek);
+      
+      document.getElementById('newShiftSwapModal').style.display = 'flex';
+    }
+
+    function closeNewShiftSwapModal() {
+      document.getElementById('newShiftSwapModal').style.display = 'none';
+      selectedShiftForSwap = null;
+    }
+
+    function createShiftForSwap(e) {
+      e.preventDefault();
+      
+      const shift1Id = document.getElementById('swapShift1Id').value;
+      const shift1 = getShiftById(shift1Id);
+      
+      if (!shift1) {
+        showToast('Erro: plantão original não encontrado', 'error');
+        return;
+      }
+      
+      const date = document.getElementById('swapNewDate').value;
+      const type = document.getElementById('swapNewType').value;
+      const value = parseFloat(document.getElementById('swapNewValue').value) || 0;
+      const location = document.getElementById('swapNewLocation').value;
+      const notes = document.getElementById('swapNewNotes').value || 'Criado para troca';
+
+      if (!date || !type || !location) {
+        showToast('Preencha todos os campos!', 'error');
+        return;
+      }
+
+      // Criar novo plantão
+      const newShiftId = generateId();
+      const newShift = {
+        id: newShiftId,
+        date,
+        type,
+        value,
+        location,
+        notes: `🔄 Criado para troca. ${notes}`
+      };
+      
+      shifts.push(newShift);
+      
+      // Criar troca
+      const newSwap = {
+        id: generateId(),
+        shift1Id: shift1Id,
+        shift2Id: newShiftId,
+        date1: shift1.date,
+        date2: date,
+        status: 'pending',
+        createdAt: new Date().toISOString()
+      };
+      
+      swaps.push(newSwap);
+      
+      saveData();
+      
+      renderCalendar();
+      renderUpcoming();
+      renderSwaps();
+      closeNewShiftSwapModal();
+      closeSwapModal();
+      
+      showToast('Novo plantão criado e troca proposta!', 'success');
     }
 
     function proposeSwap(shift1Id, shift2Id) {
@@ -1708,6 +1954,7 @@
 
     function closeSwapModal() {
       document.getElementById('swapModal').style.display = 'none';
+      selectedShiftForSwap = null;
     }
 
     // GERADOR DE ESCALA
@@ -1738,12 +1985,6 @@
         shiftDate.setDate(start.getDate() + (i * 4));
         const dateStr = formatDate(shiftDate);
         
-        // Permitir múltiplos plantões no mesmo dia
-        // if (shifts.find(s => s.date === dateStr)) {
-        //   conflicts++;
-        //   continue;
-        // }
-
         newShifts.push({
           id: generateId(),
           date: dateStr, 
@@ -1768,7 +2009,7 @@
       closeGeneratorModal();
     }
 
-    // FUNÇÕES DE RELATÓRIO
+    // FUNÇÕES DE RELATÓRIO (CORRIGIDO)
     function changeReportMonth(delta) {
       reportDate.setMonth(reportDate.getMonth() + delta);
       renderReports();
@@ -1785,27 +2026,40 @@
         return d.getMonth() === month && d.getFullYear() === year;
       });
 
-      // Totais gerais
-      const totalShifts = monthShifts.length;
-      const totalHours = monthShifts.reduce((sum, s) => sum + SHIFT_TYPES[s.type].hours, 0);
-      const totalRevenue = monthShifts.reduce((sum, s) => sum + (Number(s.value) || 0), 0);
+      // Identificar plantões descartados (apenas UM por troca confirmada)
+      const discardedShiftIds = new Set();
       
-      // Horas extraordinárias (DN = 24h -> 12h base + 12h extra)
-      const extraHours = monthShifts
+      swaps
+        .filter(s => s.status === 'confirmed')
+        .forEach(swap => {
+          // Descarta o segundo plantão de cada troca
+          discardedShiftIds.add(swap.shift2Id);
+        });
+
+      // Plantões do mês que NÃO estão descartados (inclui UM de cada troca)
+      const activeShifts = monthShifts.filter(s => !discardedShiftIds.has(s.id));
+
+      // Totais gerais (apenas plantões ativos)
+      const totalShifts = activeShifts.length;
+      const totalHours = activeShifts.reduce((sum, s) => sum + SHIFT_TYPES[s.type].hours, 0);
+      const totalRevenue = activeShifts.reduce((sum, s) => sum + (Number(s.value) || 0), 0);
+      
+      // Horas extraordinárias (apenas plantões ativos)
+      const extraHours = activeShifts
         .filter(s => s.type === 'dn')
-        .reduce((sum, s) => sum + 12, 0); // Cada DN rende 12h extras
+        .reduce((sum, s) => sum + 12, 0);
 
       document.getElementById('reportTotalShifts').innerHTML = totalShifts;
       document.getElementById('reportTotalHours').innerHTML = totalHours + 'h';
       document.getElementById('reportExtraHours').innerHTML = extraHours + 'h';
       document.getElementById('reportTotalRevenue').innerHTML = formatCurrency(totalRevenue);
 
-      // Relatório por local
-      const locations = [...new Set(monthShifts.map(s => s.location))];
+      // Relatório por local (apenas plantões ativos)
+      const locations = [...new Set(activeShifts.map(s => s.location))];
       let locationHtml = '';
       
       locations.forEach(loc => {
-        const locShifts = monthShifts.filter(s => s.location === loc);
+        const locShifts = activeShifts.filter(s => s.location === loc);
         const locCount = locShifts.length;
         const locHours = locShifts.reduce((sum, s) => sum + SHIFT_TYPES[s.type].hours, 0);
         const locRevenue = locShifts.reduce((sum, s) => sum + (Number(s.value) || 0), 0);
@@ -1828,17 +2082,17 @@
 
       document.getElementById('reportByLocation').innerHTML = locationHtml;
 
-      // Relatório por tipo
+      // Relatório por tipo (apenas plantões ativos)
       const typeCounts = {
-        sd: monthShifts.filter(s => s.type === 'sd').length,
-        sn: monthShifts.filter(s => s.type === 'sn').length,
-        dn: monthShifts.filter(s => s.type === 'dn').length
+        sd: activeShifts.filter(s => s.type === 'sd').length,
+        sn: activeShifts.filter(s => s.type === 'sn').length,
+        dn: activeShifts.filter(s => s.type === 'dn').length
       };
 
       const typeHours = {
-        sd: monthShifts.filter(s => s.type === 'sd').reduce((sum, s) => sum + SHIFT_TYPES[s.type].hours, 0),
-        sn: monthShifts.filter(s => s.type === 'sn').reduce((sum, s) => sum + SHIFT_TYPES[s.type].hours, 0),
-        dn: monthShifts.filter(s => s.type === 'dn').reduce((sum, s) => sum + SHIFT_TYPES[s.type].hours, 0)
+        sd: activeShifts.filter(s => s.type === 'sd').reduce((sum, s) => sum + SHIFT_TYPES[s.type].hours, 0),
+        sn: activeShifts.filter(s => s.type === 'sn').reduce((sum, s) => sum + SHIFT_TYPES[s.type].hours, 0),
+        dn: activeShifts.filter(s => s.type === 'dn').reduce((sum, s) => sum + SHIFT_TYPES[s.type].hours, 0)
       };
 
       document.getElementById('reportByType').innerHTML = `
