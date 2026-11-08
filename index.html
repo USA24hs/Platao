@@ -500,7 +500,7 @@
             localStorage.setItem('frotaKms_hci', JSON.stringify(frotaKms));
             
             let assinatura = ''; try { assinatura = canvas.toDataURL(); } catch(e) {}
-            localStorage.setItem('sistemaDeslocamentoHCI_v23', JSON.stringify({ 
+            localStorage.setItem('sistemaDeslocamentoHCI_v24', JSON.stringify({ 
                 rows: registros, observacao: observacaoEl.value, condutor: condutorEl.value, unidade: unidadeEl.value, 
                 ambulancia: ambulanciaEl.value, placa: placaEl.value, plantao: plantaoEl.value, kmInicial: kmInicialEl.value, 
                 nomeLegivel: nomeLegivelEl.value, mes: parseInt(mesSelect.value), ano: parseInt(anoSelect.value), assinaturaImg: assinatura,
@@ -701,6 +701,7 @@
 
             let texto = `*🚑 RELATÓRIO DE DESLOCAMENTO*\n`;
             texto += `📅 Data: ${formatDateBR(hoje())} | Plantão: ${plantaoEl.value}\n`;
+            texto += `🏥 Base: ${unidadeEl.value}\n`;
             texto += `🚑 Veículo: ${ambulanciaEl.value} (${placaEl.value})\n`;
             texto += `👨‍⚕️ Condutor: ${condutorEl.value}\n`;
             texto += `-----------------------------------\n\n`;
@@ -765,7 +766,7 @@
 
         // ======================= PERSISTÊNCIA =======================
         function carregarLocalStorage() {
-            let raw = localStorage.getItem('sistemaDeslocamentoHCI_v23'); 
+            let raw = localStorage.getItem('sistemaDeslocamentoHCI_v24'); 
             if(!raw) { prepararFormulario(); return false; }
             try {
                 let d = JSON.parse(raw); 
