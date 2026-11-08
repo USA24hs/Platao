@@ -1,2133 +1,598 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
-  <title>Minha Escala Mobile</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-      font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
-    }
-    
-    body {
-      background: #0a0f1a;
-      color: #f1f5f9;
-      min-height: 100vh;
-      padding: 10px;
-      padding-bottom: 80px;
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=yes">
+    <title>Sistema de Deslocamento - Ambulância HCI</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        :root { --primary: #0e5a77; --primary-dark: #0a3d4f; --bg-body: #f1f5f9; --card-bg: #ffffff; --border: #e2e8f0; --success: #15803d; --danger: #ef4444; --base: #dc2626; --info: #3b82f6; }
+        
+        body { background: var(--bg-body); font-family: 'Inter', sans-serif; padding: 0.5rem; padding-bottom: calc(70px + env(safe-area-inset-bottom)); overflow-x: hidden; }
+        .report-container { max-width: 1000px; margin: 0 auto; background: var(--card-bg); border-radius: 16px; box-shadow: 0 4px 15px -5px rgba(0,0,0,0.08); overflow: hidden; border: 1px solid var(--border); }
+        
+        /* HEADER COMPACTO */
+        .header { background: linear-gradient(135deg, var(--primary-dark), var(--primary)); padding: 0.8rem 1rem; color: #fff; transition: all 0.3s ease; }
+        .header-top { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 0.75rem; padding-bottom: 0.75rem; border-bottom: 1px solid rgba(255,255,255,0.15); transition: all 0.3s ease; }
+        .header-top h1 { font-size: 1.15rem; font-weight: 800; display: flex; align-items: center; gap: 6px; }
+        .toggle-header-btn { background: rgba(255,255,255,0.15); border: none; color: white; width: 30px; height: 30px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 0.85rem; transition: 0.3s; }
+        
+        .header-collapsed .toggle-header-btn i { transform: rotate(180deg); }
+        .header-collapsed .info-grid { display: none; }
+        .header-collapsed .header-top { margin-bottom: 0; padding-bottom: 0; border-bottom: none; }
+        .header-collapsed { padding: 0.6rem 1rem; }
 
-    /* Cores dos locais */
-    .location-hrl { background: #ef4444; color: white; }
-    .location-hto { background: #8b5cf6; color: white; }
-    .location-EXTRA { background: #3b82f6; color: white; }
-    .location-cia { background: #f97316; color: white; }
-    
-    .border-hrl { border-left-color: #ef4444; }
-    .border-hto { border-left-color: #8b5cf6; }
-    .border-EXTRA { border-left-color: #3b82f6; }
-    .border-cia { border-left-color: #f97316; }
-    
-    /* Cards */
-    .card {
-      background: #1e293b;
-      border: 1px solid #334155;
-      border-radius: 16px;
-      padding: 12px;
-    }
-    
-    /* CALENDÁRIO */
-    .calendar-grid {
-      display: grid;
-      grid-template-columns: repeat(7, 1fr);
-      gap: 2px;
-      margin-bottom: 12px;
-    }
-    
-    .calendar-day {
-      aspect-ratio: 1 / 1;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: flex-start;
-      background: #0f172a;
-      border-radius: 8px;
-      border: 1.5px solid transparent;
-      font-size: 13px;
-      cursor: pointer;
-      padding: 2px;
-      min-height: 45px;
-      max-height: 80px;
-      position: relative;
-      overflow-y: auto;
-      scrollbar-width: none;
-    }
-    
-    .calendar-day::-webkit-scrollbar {
-      display: none;
-    }
-    
-    @media (max-width: 380px) {
-      .calendar-day {
-        min-height: 42px;
-        max-height: 70px;
-        font-size: 12px;
-      }
-    }
-    
-    @media (min-width: 450px) {
-      .calendar-day {
-        min-height: 60px;
-        max-height: 90px;
-        font-size: 14px;
-      }
-    }
-    
-    .calendar-day.today {
-      border-color: #10b981;
-      box-shadow: 0 0 8px #10b98180;
-    }
-    
-    .calendar-day.has-swap {
-      border-color: #f59e0b;
-    }
-    
-    .calendar-day .day-number {
-      font-weight: bold;
-      font-size: 1em;
-      line-height: 1.2;
-      margin-bottom: 1px;
-      position: sticky;
-      top: 0;
-      background: #0f172a;
-      width: 100%;
-      text-align: center;
-      z-index: 1;
-    }
-    
-    .calendar-day .shift-badge-container {
-      display: flex;
-      flex-direction: column;
-      gap: 1px;
-      width: 100%;
-      padding: 1px;
-    }
-    
-    .calendar-day .shift-badge {
-      font-size: 0.55rem;
-      padding: 1px 2px;
-      border-radius: 4px;
-      width: 100%;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-      font-weight: 600;
-      letter-spacing: 0.2px;
-      box-shadow: 0 1px 2px rgba(0,0,0,0.2);
-      line-height: 1.2;
-      text-align: center;
-    }
-    
-    @media (min-width: 450px) {
-      .calendar-day .shift-badge {
-        font-size: 0.65rem;
-        padding: 2px 3px;
-      }
-    }
-    
-    /* Stats cards */
-    .stat-card {
-      background: linear-gradient(145deg, #2d3748, #1e293b);
-      border: 1px solid #334155;
-      border-radius: 16px;
-      padding: 12px;
-      min-width: 100px;
-      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-    }
-    
-    /* Header com botões */
-    .header-container {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 15px;
-      flex-wrap: wrap;
-      gap: 10px;
-      background: linear-gradient(145deg, #1e293b, #0f172a);
-      padding: 10px 15px;
-      border-radius: 20px;
-      border: 1px solid #334155;
-    }
+        .month-selector { background: rgba(255,255,255,0.1); backdrop-filter: blur(4px); border-radius: 8px; padding: 4px 8px; display: flex; align-items: center; gap: 6px; font-size: 0.8rem; font-weight: 600; }
+        .month-selector select, .month-selector input { background: #fff; border: none; padding: 2px 6px; border-radius: 6px; font-weight: 700; color: var(--primary-dark); font-family: 'Inter', sans-serif; font-size: 0.8rem; }
+        
+        .info-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 0.5rem; margin-top: 0.5rem; transition: 0.3s; }
+        .info-item { background: rgba(255,255,255,0.08); border-radius: 8px; padding: 6px 10px; }
+        .info-item label { font-size: 0.6rem; text-transform: uppercase; opacity: 0.8; display: block; margin-bottom: 2px; letter-spacing: 0.5px; }
+        .info-item input, .info-item select { background: rgba(255,255,255,0.95); border: none; padding: 6px 8px; border-radius: 6px; font-weight: 700; color: var(--primary-dark); width: 100%; font-family: 'Inter', sans-serif; font-size: 0.85rem; }
+        
+        /* CONTEÚDO */
+        .content { padding: 0.8rem; overflow-x: hidden; }
+        .card { background: var(--card-bg); border-radius: 12px; padding: 0.8rem; margin-bottom: 0.8rem; border: 1px solid var(--border); width: 100%; overflow: hidden; }
+        .card-title { font-size: 0.95rem; font-weight: 700; margin-bottom: 0.75rem; color: var(--primary-dark); display: flex; align-items: center; gap: 6px; }
+        
+        /* CAIXA DE LANÇAMENTO (FORMULÁRIO) */
+        .form-card { background: #f0fdf4; border: 1px solid #bbf7d0; }
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 10px; width: 100%; }
+        .form-item { display: flex; flex-direction: column; min-width: 0; }
+        .form-item.full { grid-column: 1 / -1; }
+        .form-item label { font-size: 0.65rem; font-weight: 700; color: #166534; text-transform: uppercase; margin-bottom: 2px; }
+        
+        .form-item input { 
+            width: 100%; min-width: 0; padding: 8px; border-radius: 8px; border: 1px solid #86efac; 
+            font-family: 'Inter'; font-size: 0.95rem; font-weight: 600; color: #064e3b; background: #fff; box-sizing: border-box;
+        }
+        .form-item input:focus { outline: 2px solid #15803d; border-color: transparent; }
+        
+        /* Botões em Grid 2x2 para caber perfeitamente no celular */
+        .form-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; width: 100%; }
+        .form-actions button { 
+            border: none; color: #fff; padding: 12px 4px; border-radius: 8px; font-weight: 800; cursor: pointer; 
+            font-size: 0.85rem; display: flex; align-items: center; justify-content: center; gap: 6px; 
+            transition: 0.2s; font-family: 'Inter'; width: 100%;
+        }
+        
+        .btn-form-saida { background: var(--primary); }
+        .btn-form-chegada { background: var(--success); } /* Verde para Chegada */
+        .btn-form-retorno { background: #f59e0b; } /* Laranja para retorno */
+        .btn-form-base { background: var(--base); }
 
-    .header-left {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
+        /* TABELA (VISUALIZAÇÃO DO HISTÓRICO) */
+        .table-wrapper { overflow-x: auto; margin: 0 -0.5rem; padding: 0 0.5rem; -webkit-overflow-scrolling: touch; }
+        .log-table { width: 100%; border-collapse: collapse; font-size: 0.8rem; min-width: 800px; }
+        .log-table th { background: #f8fafc; padding: 8px 4px; border-bottom: 2px solid var(--border); color: #64748b; font-weight: 700; font-size: 0.65rem; text-transform: uppercase; text-align: center; }
+        .log-table td { padding: 6px 4px; border-bottom: 1px solid #f1f5f9; vertical-align: middle; text-align: center; font-weight: 500; }
+        
+        .km-rodado { font-weight: 800; padding: 3px 6px; border-radius: 12px; display: inline-block; font-size: 0.7rem; min-width: 50px; text-align: center; }
+        .km-ok { background: #dcfce7; color: #166534; }
+        .km-erro { background: #fee2e2; color: #991b1b; }
+        
+        .btn-del-row { background: none; border: none; color: #cbd5e1; cursor: pointer; padding: 6px; border-radius: 6px; font-size: 0.9rem; transition: 0.2s; }
+        .btn-del-row:hover { color: var(--danger); background: #fee2e2; }
 
-    .logo {
-      width: 45px;
-      height: 45px;
-      border-radius: 15px;
-      background: linear-gradient(145deg, #10b981, #059669);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      box-shadow: 0 4px 10px rgba(16, 185, 129, 0.3);
-    }
+        .total-bar { display: flex; justify-content: space-between; align-items: center; margin-top: 0.8rem; background: #eff6ff; padding: 10px; border-radius: 8px; font-weight: 700; font-size: 0.9rem; color: var(--primary-dark); }
+        
+        .two-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 0.8rem; }
+        .obs-box textarea { width: 100%; padding: 8px; border-radius: 8px; border: 1px solid var(--border); font-family: 'Inter'; font-size: 0.8rem; resize: vertical; background: #f8fafc; }
+        .sign-box { background: #f8fafc; border-radius: 12px; padding: 0.8rem; border: 1px solid var(--border); }
+        canvas { border: 1px dashed #cbd5e1; border-radius: 8px; width: 100%; height: 90px; background: #fff; touch-action: none; cursor: crosshair; }
+        .sign-actions { display: flex; justify-content: flex-end; margin-top: 2px; }
+        .btn-clear { background: none; border: none; color: #64748b; font-size: 0.65rem; cursor: pointer; }
+        .legible-name input { width: 100%; padding: 8px; border-radius: 8px; border: 1px solid var(--border); margin-top: 6px; font-size: 0.85rem; }
+        
+        .btn-pdf { background: linear-gradient(135deg, #dc2626, #b91c1c); color: #fff; border: none; padding: 12px 20px; border-radius: 10px; font-weight: 800; cursor: pointer; font-size: 0.95rem; display: flex; align-items: center; gap: 8px; justify-content: center; width: 100%; font-family: 'Inter'; transition: 0.2s; margin-top: 0.5rem; }
 
-    .header-right {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
+        /* MOBILE */
+        @media (max-width: 768px) {
+            body { padding: 0; background: #fff; }
+            .report-container { border-radius: 0; border: none; box-shadow: none; }
+            .header { padding: 0.6rem 0.8rem; border-bottom-left-radius: 16px; border-bottom-right-radius: 16px; }
+            .header-top h1 { font-size: 1rem; }
+            .header-top { margin-bottom: 0.5rem; padding-bottom: 0.5rem; }
+            .info-grid { grid-template-columns: 1fr 1fr; gap: 4px; margin-top: 4px; }
+            .info-item { padding: 4px 6px; border-radius: 6px; }
+            .info-item label { font-size: 0.55rem; margin-bottom: 1px; }
+            .info-item input, .info-item select { padding: 4px 6px; font-size: 0.8rem; border-radius: 4px; }
 
-    .header-btn {
-      width: 42px;
-      height: 42px;
-      border-radius: 12px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: white;
-      font-size: 20px;
-      border: none;
-      cursor: pointer;
-      transition: all 0.2s;
-      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-    }
+            .content { padding: 0.5rem; }
+            .card { padding: 0.6rem; margin-bottom: 0.5rem; border-radius: 10px; }
+            
+            .two-cols { grid-template-columns: 1fr; gap: 0.5rem; }
+            
+            /* FORMULÁRIO MOBILE */
+            .form-grid { gap: 6px; }
+            .form-item label { font-size: 0.6rem; }
+            .form-item input { font-size: 16px !important; padding: 6px; }
+            
+            .form-actions button { font-size: 0.8rem; padding: 10px 2px; }
+            .form-actions button i { font-size: 0.9rem; }
 
-    .header-btn:hover, .header-btn:active {
-      transform: translateY(-2px);
-      box-shadow: 0 6px 12px rgba(0,0,0,0.3);
-    }
-
-    .header-btn.checklist {
-      background: linear-gradient(145deg, #8b5cf6, #7c3aed);
-    }
-
-    .header-btn.ponto {
-      background: linear-gradient(145deg, #f97316, #ea580c);
-    }
-
-    .header-btn.generator {
-      background: linear-gradient(145deg, #3b82f6, #2563eb);
-    }
-
-    .header-btn.add {
-      background: linear-gradient(145deg, #10b981, #059669);
-    }
-    
-    /* Bottom nav */
-    .bottom-nav {
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      background: linear-gradient(145deg, #1e293b, #0f172a);
-      border-top: 1px solid #334155;
-      padding: 8px 16px;
-      display: flex;
-      justify-content: space-around;
-      z-index: 50;
-      backdrop-filter: blur(10px);
-    }
-    
-    .nav-item {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 4px;
-      color: #94a3b8;
-      font-size: 11px;
-      background: none;
-      border: none;
-      padding: 8px;
-      cursor: pointer;
-      transition: all 0.2s;
-      border-radius: 12px;
-    }
-    
-    .nav-item.active {
-      color: #10b981;
-      background: rgba(16, 185, 129, 0.1);
-    }
-    
-    .nav-item svg {
-      width: 22px;
-      height: 22px;
-      stroke: currentColor;
-      fill: none;
-    }
-    
-    /* Modal */
-    .modal {
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: rgba(0,0,0,0.8);
-      backdrop-filter: blur(8px);
-      display: none;
-      align-items: center;
-      justify-content: center;
-      z-index: 100;
-      padding: 12px;
-    }
-    
-    .modal-content {
-      background: linear-gradient(145deg, #1e293b, #0f172a);
-      border: 1px solid #334155;
-      border-radius: 24px;
-      padding: 20px;
-      width: 100%;
-      max-width: 400px;
-      max-height: 85vh;
-      overflow-y: auto;
-      box-shadow: 0 20px 40px rgba(0,0,0,0.4);
-    }
-    
-    /* Form elements */
-    input, select, textarea {
-      background: #0f172a;
-      border: 2px solid #334155;
-      color: white;
-      padding: 12px;
-      border-radius: 12px;
-      width: 100%;
-      font-size: 15px;
-      margin-bottom: 12px;
-      transition: all 0.2s;
-    }
-    
-    input:focus, select:focus, textarea:focus {
-      border-color: #10b981;
-      outline: none;
-      box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2);
-    }
-    
-    button {
-      min-height: 44px;
-      touch-action: manipulation;
-      border: none;
-      font-size: 15px;
-      font-weight: 500;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-    
-    .btn-primary {
-      background: linear-gradient(145deg, #10b981, #059669);
-      color: white;
-      padding: 12px;
-      border-radius: 12px;
-      width: 100%;
-      font-weight: 600;
-    }
-    
-    .btn-secondary {
-      background: linear-gradient(145deg, #3b82f6, #2563eb);
-      color: white;
-      padding: 12px;
-      border-radius: 12px;
-      width: 100%;
-      font-weight: 600;
-    }
-    
-    /* Scroll horizontal */
-    .scroll-x {
-      display: flex;
-      gap: 10px;
-      overflow-x: auto;
-      padding: 8px 0 12px;
-      -webkit-overflow-scrolling: touch;
-      scrollbar-width: none;
-    }
-    
-    .scroll-x::-webkit-scrollbar {
-      display: none;
-    }
-
-    /* Toast/Notificação */
-    .toast {
-      position: fixed;
-      top: 20px;
-      left: 50%;
-      transform: translateX(-50%) translateY(-100px);
-      background: linear-gradient(145deg, #1e293b, #0f172a);
-      border-left: 4px solid #10b981;
-      border-radius: 16px;
-      padding: 14px 18px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-      z-index: 1000;
-      min-width: 300px;
-      max-width: 90%;
-      transition: transform 0.3s ease;
-      border: 1px solid #334155;
-    }
-
-    .toast.show {
-      transform: translateX(-50%) translateY(0);
-    }
-
-    .toast.success { border-left-color: #10b981; }
-    .toast.warning { border-left-color: #f59e0b; }
-    .toast.error { border-left-color: #ef4444; }
-    .toast.info { border-left-color: #3b82f6; }
-
-    .toast-content {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-
-    .toast-icon {
-      width: 32px;
-      height: 32px;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 18px;
-      background: rgba(255,255,255,0.1);
-    }
-
-    .toast-message {
-      flex: 1;
-      font-size: 14px;
-      font-weight: 500;
-    }
-
-    .toast-close {
-      background: none;
-      border: none;
-      color: #94a3b8;
-      font-size: 18px;
-      padding: 6px 8px;
-      min-height: auto;
-      cursor: pointer;
-    }
-
-    /* Badge de troca */
-    .swap-badge {
-      background: #f59e0b;
-      color: black;
-      font-size: 10px;
-      padding: 3px 8px;
-      border-radius: 20px;
-      font-weight: 600;
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-    }
-
-    .swap-status {
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-      padding: 4px 10px;
-      border-radius: 20px;
-      font-size: 11px;
-      font-weight: 600;
-    }
-    
-    .swap-status-pending {
-      background: #f59e0b20;
-      color: #f59e0b;
-      border: 1px solid #f59e0b;
-    }
-    
-    .swap-status-confirmed {
-      background: #10b98120;
-      color: #10b981;
-      border: 1px solid #10b981;
-    }
-
-    /* Card de troca */
-    .trade-card {
-      background: linear-gradient(145deg, #2d3748, #1e293b);
-      border-left: 4px solid #f59e0b;
-      border-radius: 16px;
-      padding: 14px;
-      transition: all 0.2s;
-      border: 1px solid #334155;
-    }
-    
-    .trade-card.confirmed {
-      border-left-color: #10b981;
-    }
-    
-    /* Dias da semana */
-    .week-day {
-      text-align: center;
-      font-size: 12px;
-      font-weight: 600;
-      color: #94a3b8;
-      padding: 4px 0;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
-    
-    @media (max-width: 350px) {
-      .week-day {
-        font-size: 11px;
-      }
-    }
-
-    /* Relatórios */
-    .report-card {
-      background: linear-gradient(145deg, #2d3748, #1e293b);
-      border-radius: 20px;
-      padding: 18px;
-      margin-bottom: 15px;
-      border: 1px solid #334155;
-      box-shadow: 0 8px 16px rgba(0,0,0,0.2);
-    }
-
-    .report-header {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      margin-bottom: 18px;
-      padding-bottom: 12px;
-      border-bottom: 2px solid #334155;
-    }
-
-    .report-title {
-      font-size: 18px;
-      font-weight: 700;
-      color: #10b981;
-    }
-
-    .report-stat {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 10px 0;
-      border-bottom: 1px dashed #334155;
-    }
-
-    .report-stat:last-child {
-      border-bottom: none;
-    }
-
-    .report-label {
-      color: #94a3b8;
-      font-size: 14px;
-    }
-
-    .report-value {
-      font-weight: 600;
-      font-size: 16px;
-    }
-
-    .report-highlight {
-      color: #10b981;
-      font-size: 20px;
-      font-weight: 700;
-    }
-
-    .location-badge-sm {
-      display: inline-block;
-      width: 12px;
-      height: 12px;
-      border-radius: 4px;
-      margin-right: 8px;
-    }
-
-    /* Abas */
-    .tabs {
-      display: flex;
-      gap: 10px;
-      margin-bottom: 20px;
-    }
-
-    .tab {
-      flex: 1;
-      padding: 12px;
-      background: linear-gradient(145deg, #1e293b, #0f172a);
-      border: 1px solid #334155;
-      border-radius: 16px;
-      text-align: center;
-      font-size: 14px;
-      font-weight: 600;
-      color: #94a3b8;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-
-    .tab.active {
-      background: linear-gradient(145deg, #10b981, #059669);
-      color: white;
-      border-color: #10b981;
-      box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
-    }
-
-    .tab-content {
-      display: none;
-    }
-
-    .tab-content.active {
-      display: block;
-    }
-
-    /* Seletores de mês/ano */
-    .period-selector {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 20px;
-      background: linear-gradient(145deg, #1e293b, #0f172a);
-      padding: 12px 18px;
-      border-radius: 40px;
-      border: 1px solid #334155;
-    }
-
-    .period-btn {
-      background: none;
-      border: none;
-      color: #94a3b8;
-      font-size: 20px;
-      padding: 6px 16px;
-      min-height: auto;
-      cursor: pointer;
-      border-radius: 30px;
-      transition: all 0.2s;
-    }
-
-    .period-btn:hover {
-      background: rgba(255,255,255,0.1);
-      color: white;
-    }
-
-    .period-display {
-      font-weight: 700;
-      color: white;
-      font-size: 16px;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-    }
-
-    /* Lista de plantões do dia */
-    .day-shifts-list {
-      margin-top: 20px;
-    }
-
-    .day-shift-item {
-      background: linear-gradient(145deg, #2d3748, #1e293b);
-      border-radius: 16px;
-      padding: 15px;
-      margin-bottom: 10px;
-      border: 1px solid #334155;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-
-    .day-shift-item:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 8px 16px rgba(0,0,0,0.2);
-    }
-
-    .day-shift-info {
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-    }
-
-    .day-shift-type {
-      font-weight: 700;
-      font-size: 16px;
-    }
-
-    .day-shift-location {
-      font-size: 13px;
-      color: #94a3b8;
-    }
-
-    .day-shift-value {
-      font-weight: 600;
-      color: #10b981;
-    }
-
-    /* Ajuste para mobile */
-    @media (max-width: 480px) {
-      .header-container {
-        flex-direction: column;
-        align-items: stretch;
-      }
-      
-      .header-left {
-        justify-content: center;
-      }
-      
-      .header-right {
-        justify-content: space-around;
-      }
-      
-      .header-btn {
-        width: 38px;
-        height: 38px;
-        font-size: 18px;
-      }
-    }
-
-    /* Novos estilos para opções de troca */
-    .swap-option {
-      background: linear-gradient(145deg, #2d3748, #1e293b);
-      border: 2px solid #334155;
-      border-radius: 16px;
-      padding: 16px;
-      margin-bottom: 12px;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-
-    .swap-option:hover {
-      border-color: #10b981;
-      transform: translateY(-2px);
-    }
-
-    .swap-option.selected {
-      border-color: #10b981;
-      background: rgba(16, 185, 129, 0.1);
-    }
-
-    .swap-option-title {
-      font-size: 16px;
-      font-weight: 600;
-      margin-bottom: 8px;
-      color: #10b981;
-    }
-
-    .quick-swap-btn {
-      background: #f59e0b;
-      color: black;
-      padding: 8px 16px;
-      border-radius: 30px;
-      font-size: 13px;
-      font-weight: 600;
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      margin: 5px 0;
-    }
-  </style>
+            /* Tabela vira lista de cards */
+            .log-table, .log-table tbody, .log-table tr, .log-table td { display: block; width: 100% !important; min-width: 0 !important; }
+            .log-table thead { display: none; }
+            .log-table tr { margin-bottom: 0.5rem; border: 1px solid var(--border); border-radius: 10px; padding: 6px; padding-top: 30px; background: #f8fafc; position: relative; }
+            .log-table td { display: flex; justify-content: space-between; align-items: center; padding: 3px 0; border-bottom: 1px dashed #e2e8f0; text-align: right; }
+            .log-table td:last-child { border-bottom: none; }
+            .log-table td::before { content: attr(data-label); font-weight: 700; color: var(--primary-dark); font-size: 0.65rem; text-transform: uppercase; margin-right: 8px; text-align: left; flex-shrink: 0; }
+            
+            .btn-del-row { position: absolute; top: 4px; right: 4px; background: #fee2e2; color: #b91c1c; padding: 4px 8px; border-radius: 6px; font-size: 0.75rem; }
+            td:nth-child(9)::before { display: none; } 
+            td:nth-child(9) { display: none; }
+            
+            .btn-pdf { padding: 10px; font-size: 0.85rem; }
+        }
+        
+        .toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(100px); background: #0f172a; color: #fff; padding: 10px 20px; border-radius: 30px; font-size: 0.8rem; transition: 0.3s; z-index: 11000; opacity: 0; pointer-events: none; max-width: 90vw; text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.15); }
+        .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+    </style>
 </head>
 <body>
-
-  <!-- Toast Container -->
-  <div id="toast" class="toast">
-    <div class="toast-content">
-      <div class="toast-icon" id="toastIcon">✅</div>
-      <div class="toast-message" id="toastMessage">Mensagem</div>
-      <button class="toast-close" onclick="hideToast()">✕</button>
-    </div>
-  </div>
-
-  <!-- Header com todos os botões -->
-  <div class="header-container">
-    <div class="header-left">
-      <div class="logo">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
-          <path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-        </svg>
-      </div>
-      <div>
-        <h1 class="text-xl font-bold">Minha Escala</h1>
-        <p class="text-xs text-gray-400">24x72 • Sistema de Trocas</p>
-      </div>
+<div class="report-container">
+    <!-- HEADER -->
+    <div class="header" id="mainHeader">
+        <div class="header-top">
+            <h1><i class="fas fa-ambulance"></i> Deslocamento</h1>
+            <div style="display:flex; align-items:center; gap:6px;">
+                <div class="month-selector"><i class="far fa-calendar-alt"></i><select id="mesSelect"></select><input type="number" id="anoSelect" style="width:55px;" value="2026"></div>
+                <button id="toggleHeaderBtn" class="toggle-header-btn"><i class="fas fa-chevron-up"></i></button>
+            </div>
+        </div>
+        <div class="info-grid">
+            <div class="info-item"><label>🏥 Unidade</label><input type="text" id="unidadeHeader" value="HCI"></div>
+            <div class="info-item"><label>👨‍⚕️ Condutor</label><input type="text" id="condutorHeader" value="Anderson Martins"></div>
+            <div class="info-item"><label>⏱️ Plantão</label><select id="plantaoHeader"><option value="SD 12hs">SD 12hs</option><option value="SN 12hs">SN 12hs</option><option value="DN 24hs">DN 24hs</option></select></div>
+            <div class="info-item"><label>🚑 Ambulância</label><input type="text" id="ambulanciaHeader" value="Ducato"></div>
+            <div class="info-item"><label>🔖 Placa</label><input type="text" id="placaHeader" value="RKD-5A25"></div>
+            <div class="info-item"><label>🔢 Km Inicial</label><input type="number" id="kmInicialHeader" value="" placeholder="Ex: 62000" step="0.1"></div>
+        </div>
     </div>
     
-    <div class="header-right">
-      <!-- Botão Check List (roxo) -->
-      <button class="header-btn checklist" onclick="abrirChecklist()" title="Abrir Check List">
-        📋
-      </button>
-      
-      <!-- Botão Folha de Ponto (laranja) -->
-      <button class="header-btn ponto" onclick="abrirFolhaPonto()" title="Abrir Folha de Ponto">
-        📄
-      </button>
-      
-      <!-- Botão Gerar Escala (azul) -->
-      <button class="header-btn generator" onclick="openGeneratorModal()" title="Gerar Escala">
-        ⚙️
-      </button>
-      
-      <!-- Botão Adicionar Plantão (verde) -->
-      <button class="header-btn add" onclick="openFormModal()" title="Adicionar Plantão">
-        +
-      </button>
-    </div>
-  </div>
-
-  <!-- Abas principais -->
-  <div class="tabs">
-    <div class="tab active" onclick="switchTab('calendar')">📅 Calendário</div>
-    <div class="tab" onclick="switchTab('reports')">📊 Relatórios</div>
-  </div>
-
-  <!-- Conteúdo da aba Calendário -->
-  <div id="calendarTab" class="tab-content active">
-    <!-- Calendário -->
-    <div class="card mb-3">
-      <div class="flex items-center justify-between mb-3">
-        <button onclick="changeMonth(-1)" class="w-9 h-9 rounded-lg bg-slate-700 flex items-center justify-center hover:bg-slate-600 transition">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
-            <path d="M15 19l-7-7 7-7"/>
-          </svg>
-        </button>
-        <h2 class="font-semibold text-sm md:text-base uppercase" id="calendarTitle">MARÇO 2026</h2>
-        <button onclick="changeMonth(1)" class="w-9 h-9 rounded-lg bg-slate-700 flex items-center justify-center hover:bg-slate-600 transition">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
-            <path d="M9 5l7 7-7 7"/>
-          </svg>
-        </button>
-      </div>
-
-      <!-- Dias da Semana -->
-      <div class="grid grid-cols-7 gap-[2px] mb-1">
-        <div class="week-day">DOM</div>
-        <div class="week-day">SEG</div>
-        <div class="week-day">TER</div>
-        <div class="week-day">QUA</div>
-        <div class="week-day">QUI</div>
-        <div class="week-day">SEX</div>
-        <div class="week-day">SÁB</div>
-      </div>
-
-      <!-- Grid do Calendário -->
-      <div id="calendarGrid" class="calendar-grid"></div>
-
-      <!-- Legenda Compacta -->
-      <div class="flex flex-wrap gap-3 pt-3 border-t border-gray-700 text-[11px]">
-        <div class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-emerald-500"></span><span>SD (12h)</span></div>
-        <div class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-purple-500"></span><span>SN (12h)</span></div>
-        <div class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-blue-500"></span><span>DN (24h)</span></div>
-        <div class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full border border-emerald-500"></span><span>Hoje</span></div>
-      </div>
-    </div>
-
-    <!-- Stats Scroll -->
-    <div class="scroll-x mb-3">
-      <div class="stat-card">
-        <div class="text-[11px] text-gray-400 mb-1">Plantões</div>
-        <div class="text-2xl font-bold" id="totalShifts">0</div>
-        <div class="text-[10px] text-gray-500">no mês</div>
-      </div>
-      <div class="stat-card">
-        <div class="text-[11px] text-gray-400 mb-1">Horas</div>
-        <div class="text-2xl font-bold" id="totalHours">0</div>
-        <div class="text-[10px] text-gray-500">totais</div>
-      </div>
-      <div class="stat-card">
-        <div class="text-[11px] text-gray-400 mb-1">Receita</div>
-        <div class="text-xl font-bold text-emerald-400" id="totalRevenue">R$ 0</div>
-        <div class="text-[10px] text-gray-500">previsto</div>
-      </div>
-      <div class="stat-card">
-        <div class="text-[11px] text-gray-400 mb-1">Próximo</div>
-        <div class="text-xl font-bold" id="nextShift">-</div>
-        <div class="text-[10px] text-gray-500">plantão</div>
-      </div>
-      <div class="stat-card">
-        <div class="text-[11px] text-gray-400 mb-1">Trocas</div>
-        <div class="text-2xl font-bold text-yellow-500" id="swapCount">0</div>
-        <div class="text-[10px] text-gray-500">ativas</div>
-      </div>
-    </div>
-
-    <!-- Filtros Compactos -->
-    <div class="card mb-3 p-3">
-      <div class="flex gap-2">
-        <select id="filterType" class="flex-1 text-sm p-2 bg-slate-800 border-slate-700 rounded-lg">
-          <option value="all">Todos os tipos</option>
-          <option value="sd">SD</option>
-          <option value="sn">SN</option>
-          <option value="dn">DN</option>
-        </select>
+    <!-- CONTEÚDO -->
+    <div class="content">
         
-        <select id="filterLocation" class="flex-1 text-sm p-2 bg-slate-800 border-slate-700 rounded-lg">
-          <option value="all">Todos locais</option>
-        </select>
+        <!-- CAIXA DE LANÇAMENTO -->
+        <div class="card form-card">
+            <div class="card-title" style="color: #166534;"><i class="fas fa-edit"></i> Novo Lançamento</div>
+            <div class="form-grid">
+                <div class="form-item">
+                    <label>Data</label>
+                    <input type="date" id="fData">
+                </div>
+                <div class="form-item">
+                    <label>Hora</label>
+                    <input type="time" id="fHora">
+                </div>
+                <div class="form-item">
+                    <label>KM (Odômetro)</label>
+                    <input type="number" id="fKm" step="0.1" placeholder="0.0">
+                </div>
+                <div class="form-item">
+                    <label>Plantão</label>
+                    <input type="text" id="fPlantaoInfo" readonly style="background:#e2e8f0; color:#64748b; border-color:#cbd5e1;">
+                </div>
+                <div class="form-item full">
+                    <label>Local / Destino</label>
+                    <input type="text" id="fLocal" placeholder="🏥 Origem → Destino">
+                </div>
+            </div>
+            
+            <!-- Grid 2x2 para os botões -->
+            <div class="form-actions">
+                <button class="btn-form-saida" id="btnRegSaida"><i class="fas fa-sign-out-alt"></i> Saída</button>
+                <button class="btn-form-chegada" id="btnRegChegada"><i class="fas fa-map-marker-alt"></i> Chegada</button>
+                <button class="btn-form-retorno" id="btnRegRetorno"><i class="fas fa-undo-alt"></i> Retorno</button>
+                <button class="btn-form-base" id="btnRegBase"><i class="fas fa-home"></i> Base</button>
+            </div>
+        </div>
+
+        <!-- TABELA (HISTÓRICO) -->
+        <div class="card">
+            <div class="card-title"><i class="fas fa-list-ol"></i> Histórico de Lançamentos</div>
+            <div class="table-wrapper">
+                <table class="log-table" id="logTable">
+                    <thead><tr><th>Data</th><th>Tipo</th><th>H Saída</th><th>Km Saída</th><th>Local / Destino</th><th>H Chegada</th><th>Km Chegada</th><th>Km Rod.</th><th style="width:40px">Ações</th></tr></thead>
+                    <tbody id="tableBody"></tbody>
+                </table>
+            </div>
+            <div class="total-bar">
+                <span><i class="fas fa-tachometer-alt"></i> Total Rodado</span>
+                <span><strong id="totalKmValue">0</strong> km</span>
+            </div>
+        </div>
         
-        <button onclick="clearFilters()" class="px-4 py-2 bg-slate-700 hover:bg-slate-600 rounded-lg text-sm whitespace-nowrap transition">
-          Limpar
-        </button>
-      </div>
-    </div>
-
-    <!-- Trocas Pendentes -->
-    <div class="card mb-3 border-l-4 border-yellow-500 p-4">
-      <div class="flex items-center justify-between mb-3">
-        <h3 class="text-base font-semibold flex items-center gap-2">
-          <span class="text-yellow-500">🔄</span>
-          Trocas Pendentes
-        </h3>
-        <span class="bg-yellow-500 text-black px-3 py-1 rounded-full text-sm font-bold" id="pendingSwapsCount">0</span>
-      </div>
-      <div id="pendingSwapsList" class="space-y-2"></div>
-    </div>
-
-    <!-- Trocas Confirmadas -->
-    <div class="card mb-3 border-l-4 border-emerald-500 p-4">
-      <div class="flex items-center justify-between mb-3">
-        <h3 class="text-base font-semibold flex items-center gap-2">
-          <span class="text-emerald-500">✅</span>
-          Trocas Confirmadas
-        </h3>
-        <span class="bg-emerald-500 text-black px-3 py-1 rounded-full text-sm font-bold" id="confirmedSwapsCount">0</span>
-      </div>
-      <div id="confirmedSwapsList" class="space-y-2"></div>
-    </div>
-
-    <!-- Próximos Plantões -->
-    <div class="card p-4">
-      <h3 class="text-base font-semibold mb-3 flex items-center gap-2">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2">
-          <path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
-        </svg>
-        Próximos Plantões
-      </h3>
-      <div id="upcomingShifts" class="space-y-2"></div>
-    </div>
-  </div>
-
-  <!-- Conteúdo da aba Relatórios -->
-  <div id="reportsTab" class="tab-content">
-    <!-- Seletor de período -->
-    <div class="period-selector">
-      <button class="period-btn" onclick="changeReportMonth(-1)">←</button>
-      <span class="period-display" id="reportPeriod">MARÇO 2026</span>
-      <button class="period-btn" onclick="changeReportMonth(1)">→</button>
-    </div>
-
-    <!-- Cards de resumo geral -->
-    <div class="report-card">
-      <div class="report-header">
-        <span class="text-3xl">📊</span>
-        <span class="report-title">Resumo do Mês</span>
-      </div>
-      <div class="report-stat">
-        <span class="report-label">Total de Plantões</span>
-        <span class="report-value" id="reportTotalShifts">0</span>
-      </div>
-      <div class="report-stat">
-        <span class="report-label">Total de Horas</span>
-        <span class="report-value" id="reportTotalHours">0h</span>
-      </div>
-      <div class="report-stat">
-        <span class="report-label">Horas Extras</span>
-        <span class="report-value text-yellow-400" id="reportExtraHours">0h</span>
-      </div>
-      <div class="report-stat">
-        <span class="report-label">Faturamento</span>
-        <span class="report-highlight" id="reportTotalRevenue">R$ 0</span>
-      </div>
-      <div class="text-[11px] text-gray-500 mt-3">* DN (24h) = 12h base + 12h extras</div>
-    </div>
-
-    <!-- Por Local -->
-    <div class="report-card">
-      <div class="report-header">
-        <span class="text-3xl">📍</span>
-        <span class="report-title">Por Local</span>
-      </div>
-      <div id="reportByLocation"></div>
-    </div>
-
-    <!-- Resumo por Tipo -->
-    <div class="report-card">
-      <div class="report-header">
-        <span class="text-3xl">🕒</span>
-        <span class="report-title">Por Tipo</span>
-      </div>
-      <div id="reportByType"></div>
-    </div>
-  </div>
-
-  <!-- Bottom Navigation -->
-  <div class="bottom-nav">
-    <button class="nav-item active" onclick="switchTab('calendar')">
-      <svg viewBox="0 0 24 24">
-        <path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-      </svg>
-      <span>Calendário</span>
-    </button>
-    <button class="nav-item" onclick="switchTab('reports')">
-      <svg viewBox="0 0 24 24">
-        <path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
-      </svg>
-      <span>Relatórios</span>
-    </button>
-    <button class="nav-item" onclick="openFormModal()">
-      <svg viewBox="0 0 24 24">
-        <path d="M12 4v16m8-8H4"/>
-      </svg>
-      <span>Turnos</span>
-    </button>
-    <button class="nav-item" onclick="openGeneratorModal()">
-      <svg viewBox="0 0 24 24">
-        <path d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
-      </svg>
-      <span>Gerar</span>
-    </button>
-  </div>
-
-  <!-- MODAIS -->
-  <div id="formModal" class="modal">
-    <div class="modal-content">
-      <h2 class="text-xl font-bold mb-4" id="formTitle">Novo Plantão</h2>
-      <form id="shiftForm" onsubmit="saveShift(event)">
-        <input type="hidden" id="shiftId">
-        
-        <label class="block text-sm font-medium mb-2">Data</label>
-        <input type="date" id="shiftDate" required class="mb-4">
-
-        <div class="grid grid-cols-2 gap-3 mb-4">
-          <div>
-            <label class="block text-sm font-medium mb-2">Tipo</label>
-            <select id="shiftType" required class="w-full">
-              <option value="sd">SD (12h)</option>
-              <option value="sn">SN (12h)</option>
-              <option value="dn">DN (24h)</option>
-            </select>
-          </div>
-          <div>
-            <label class="block text-sm font-medium mb-2">Valor (R$)</label>
-            <input type="number" id="shiftValue" step="0.01" min="0" class="w-full">
-          </div>
+        <div class="two-cols">
+            <div class="obs-box card"><div class="card-title"><i class="fas fa-clipboard-list"></i> Observações</div><textarea id="observacao" rows="2" placeholder="Intercorrências..."></textarea></div>
+            <div class="sign-box"><div class="card-title"><i class="fas fa-signature"></i> Assinatura</div><canvas id="signCanvas" width="400" height="90" style="width:100%;height:90px;"></canvas><div class="sign-actions"><button class="btn-clear" id="clearCanvasBtn"><i class="fas fa-eraser"></i> Limpar</button></div><div class="legible-name"><input type="text" id="nomeLegivel" placeholder="Nome completo" value="Anderson Martins"></div></div>
         </div>
 
-        <label class="block text-sm font-medium mb-2">Local</label>
-        <input type="text" id="shiftLocation" required list="locationList" class="mb-4">
-        <datalist id="locationList">
-          <option value="HRL">HRL</option>
-          <option value="HTO">HTO</option>
-          <option value="EXTRA">EXTRA</option>
-          <option value="CIA">CIA</option>
-        </datalist>
-
-        <label class="block text-sm font-medium mb-2">Observações</label>
-        <textarea id="shiftNotes" rows="3" class="mb-4"></textarea>
-
-        <div class="flex gap-3 mt-4">
-          <button type="submit" class="btn-primary flex-1">Salvar</button>
-          <button type="button" onclick="closeFormModal()" class="bg-slate-600 hover:bg-slate-500 text-white px-4 py-3 rounded-lg flex-1 text-sm font-medium transition">Cancelar</button>
-        </div>
-      </form>
+        <button class="btn-pdf" id="pdfBtn"><i class="fas fa-file-pdf"></i> Gerar Relatório (PDF)</button>
     </div>
-  </div>
+</div>
 
-  <div id="generatorModal" class="modal">
-    <div class="modal-content">
-      <h2 class="text-xl font-bold mb-4">⚙️ Gerar Escala 24x72</h2>
-      <form id="generatorForm" onsubmit="generateScale(event)">
-        <label class="block text-sm font-medium mb-2">Data Inicial</label>
-        <input type="date" id="startDate" required class="mb-4">
+<div class="toast" id="toast"></div>
 
-        <label class="block text-sm font-medium mb-2">Local</label>
-        <select id="generatorLocation" required class="w-full mb-4">
-          <option value="HRL">HRL</option>
-          <option value="HTO">HTO</option>
-          <option value="EXTRA">EXTRA</option>
-          <option value="CIA">CIA</option>
-        </select>
+<script>
+    (function() {
+        // ======================= FUNÇÕES AUXILIARES =======================
+        const hoje = () => new Date().toISOString().slice(0,10);
+        const getHoraAtual = () => { const now = new Date(); return `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`; };
+        const formatDateBR = (s) => s ? s.split('-').reverse().join('/') : '';
+        const nomeMes = (m) => ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'][m-1];
+        const diasNoMes = (m,a) => new Date(a, m, 0).getDate();
+        const showToast = (msg) => { const t = document.getElementById('toast'); t.textContent = msg; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 3000); };
 
-        <label class="block text-sm font-medium mb-2">Tipo</label>
-        <select id="generatorType" required class="w-full mb-4">
-          <option value="sd">SD (12h)</option>
-          <option value="sn">SN (12h)</option>
-          <option value="dn">DN (24h)</option>
-        </select>
+        // Elementos DOM
+        const tbody = document.getElementById('tableBody');
+        const totalSpan = document.getElementById('totalKmValue');
+        const observacaoEl = document.getElementById('observacao');
+        const condutorEl = document.getElementById('condutorHeader');
+        const unidadeEl = document.getElementById('unidadeHeader');
+        const ambulanciaEl = document.getElementById('ambulanciaHeader');
+        const placaEl = document.getElementById('placaHeader');
+        const plantaoEl = document.getElementById('plantaoHeader');
+        const kmInicialEl = document.getElementById('kmInicialHeader');
+        const nomeLegivelEl = document.getElementById('nomeLegivel');
+        const mesSelect = document.getElementById('mesSelect');
+        const anoSelect = document.getElementById('anoSelect');
+        const mainHeader = document.getElementById('mainHeader');
 
-        <label class="block text-sm font-medium mb-2">Valor (R$)</label>
-        <input type="number" id="generatorValue" step="0.01" min="0" class="w-full mb-4">
+        // Elementos do Form
+        const fData = document.getElementById('fData');
+        const fHora = document.getElementById('fHora');
+        const fKm = document.getElementById('fKm');
+        const fLocal = document.getElementById('fLocal');
+        const fPlantaoInfo = document.getElementById('fPlantaoInfo');
 
-        <label class="block text-sm font-medium mb-2">Nº de Plantões</label>
-        <input type="number" id="generatorCount" min="1" max="30" value="8" required class="w-full mb-4">
+        let registros = []; // Array que guarda os lançamentos
 
-        <div class="flex gap-3 mt-4">
-          <button type="submit" class="btn-secondary flex-1">Gerar</button>
-          <button type="button" onclick="closeGeneratorModal()" class="bg-slate-600 hover:bg-slate-500 text-white px-4 py-3 rounded-lg flex-1 text-sm font-medium transition">Cancelar</button>
-        </div>
-      </form>
-    </div>
-  </div>
+        // Inicialização do seletor de meses
+        for(let m = 1; m <= 12; m++) { let opt = document.createElement('option'); opt.value = m; opt.textContent = nomeMes(m).substring(0,3); mesSelect.appendChild(opt); }
+        const hojeData = new Date(); mesSelect.value = hojeData.getMonth() + 1; anoSelect.value = hojeData.getFullYear();
 
-  <div id="detailModal" class="modal">
-    <div class="modal-content" id="detailContent"></div>
-  </div>
+        function getPeriodo() { let m = parseInt(mesSelect.value); let a = parseInt(anoSelect.value); return { mes: m, ano: a, min: `${a}-${String(m).padStart(2,'0')}-01`, max: `${a}-${String(m).padStart(2,'0')}-${diasNoMes(m,a)}` }; }
+        function atualizarLimitesDatas() { const p = getPeriodo(); fData.min = p.min; fData.max = p.max; }
 
-  <div id="swapModal" class="modal">
-    <div class="modal-content">
-      <h2 class="text-xl font-bold mb-4">🔄 Fazer Troca</h2>
-      <div id="swapModalContent"></div>
-    </div>
-  </div>
-  
-  <div id="quickSwapModal" class="modal">
-    <div class="modal-content">
-      <h2 class="text-xl font-bold mb-4">⚡ Troca Rápida</h2>
-      <div id="quickSwapContent"></div>
-    </div>
-  </div>
-
-  <div id="dayShiftsModal" class="modal">
-    <div class="modal-content">
-      <h2 class="text-xl font-bold mb-4" id="dayShiftsTitle">Plantões do Dia</h2>
-      <div id="dayShiftsList" class="space-y-2"></div>
-      <button onclick="closeDayShiftsModal()" class="w-full mt-4 bg-slate-600 hover:bg-slate-500 text-white px-4 py-3 rounded-lg text-sm font-medium transition">Fechar</button>
-    </div>
-  </div>
-
-  <div id="newShiftSwapModal" class="modal">
-    <div class="modal-content">
-      <h2 class="text-xl font-bold mb-4">🔄 Criar Plantão para Troca</h2>
-      <form id="newShiftSwapForm" onsubmit="createShiftForSwap(event)">
-        <input type="hidden" id="swapShift1Id">
-        
-        <label class="block text-sm font-medium mb-2">Data do Novo Plantão</label>
-        <input type="date" id="swapNewDate" required class="mb-4">
-
-        <div class="grid grid-cols-2 gap-3 mb-4">
-          <div>
-            <label class="block text-sm font-medium mb-2">Tipo</label>
-            <select id="swapNewType" required class="w-full">
-              <option value="sd">SD (12h)</option>
-              <option value="sn">SN (12h)</option>
-              <option value="dn">DN (24h)</option>
-            </select>
-          </div>
-          <div>
-            <label class="block text-sm font-medium mb-2">Valor (R$)</label>
-            <input type="number" id="swapNewValue" step="0.01" min="0" class="w-full">
-          </div>
-        </div>
-
-        <label class="block text-sm font-medium mb-2">Local</label>
-        <input type="text" id="swapNewLocation" required list="locationList" class="mb-4">
-
-        <label class="block text-sm font-medium mb-2">Observações</label>
-        <textarea id="swapNewNotes" rows="2" class="mb-4" placeholder="Plantão criado para troca"></textarea>
-
-        <div class="flex gap-3 mt-4">
-          <button type="submit" class="btn-primary flex-1">Criar e Trocar</button>
-          <button type="button" onclick="closeNewShiftSwapModal()" class="bg-slate-600 hover:bg-slate-500 text-white px-4 py-3 rounded-lg flex-1 text-sm font-medium transition">Cancelar</button>
-        </div>
-      </form>
-    </div>
-  </div>
-
-  <script>
-    // CONSTANTES
-    const SHIFT_TYPES = {
-      sd: { name: 'SD', fullName: 'Plantão SD', hours: 12, color: 'bg-emerald-500', textColor: 'text-white' },
-      sn: { name: 'SN', fullName: 'Plantão SN', hours: 12, color: 'bg-purple-500', textColor: 'text-white' },
-      dn: { name: 'DN', fullName: 'Plantão DN', hours: 24, color: 'bg-blue-500', textColor: 'text-white' }
-    };
-
-    const LOCATIONS = [
-      { id: 'HRL', name: 'HRL', icon: '🏥', color: 'bg-red-500', border: 'border-red-500' },
-      { id: 'HTO', name: 'HTO', icon: '🏥', color: 'bg-purple-500', border: 'border-purple-500' },
-      { id: 'EXTRA', name: 'EXTRA', icon: '🏥', color: 'bg-blue-500', border: 'border-blue-500' },
-      { id: 'CIA', name: 'CIA', icon: '🚑', color: 'bg-orange-500', border: 'border-orange-500' }
-    ];
-
-    // ESTADO
-    let shifts = [];
-    let swaps = [];
-    let currentDate = new Date();
-    let reportDate = new Date();
-    let currentFilters = { type: 'all', location: 'all' };
-    let currentTab = 'calendar';
-    let selectedShiftForSwap = null;
-
-    // FUNÇÕES DE TOAST
-    function showToast(message, type = 'success') {
-      const toast = document.getElementById('toast');
-      const icon = document.getElementById('toastIcon');
-      const msg = document.getElementById('toastMessage');
-      
-      toast.className = 'toast ' + type;
-      msg.textContent = message;
-      
-      const icons = { success: '✅', warning: '⚠️', error: '❌', info: 'ℹ️' };
-      icon.textContent = icons[type] || '✅';
-      
-      toast.classList.add('show');
-      setTimeout(() => toast.classList.remove('show'), 3000);
-    }
-
-    function hideToast() {
-      document.getElementById('toast').classList.remove('show');
-    }
-
-    // FUNÇÕES PARA ABRIR OS LINKS EXTERNOS
-    function abrirChecklist() {
-      window.open('https://usa24hs.github.io/Check-List-/', '_blank');
-      showToast('Abrindo Check List...', 'info');
-    }
-
-    function abrirFolhaPonto() {
-      window.open('https://usa24hs.github.io/ponto/', '_blank');
-      showToast('Abrindo Folha de Ponto...', 'info');
-    }
-
-    // FUNÇÕES DE ABA
-    function switchTab(tab) {
-      currentTab = tab;
-      
-      // Atualizar classes das abas
-      document.querySelectorAll('.tab').forEach((el, index) => {
-        if (index === 0 && tab === 'calendar') el.classList.add('active');
-        else if (index === 1 && tab === 'reports') el.classList.add('active');
-        else el.classList.remove('active');
-      });
-      
-      // Mostrar/esconder conteúdo
-      document.getElementById('calendarTab').classList.toggle('active', tab === 'calendar');
-      document.getElementById('reportsTab').classList.toggle('active', tab === 'reports');
-      
-      // Atualizar bottom nav
-      document.querySelectorAll('.nav-item').forEach((el, index) => {
-        if (index === 0 && tab === 'calendar') el.classList.add('active');
-        else if (index === 1 && tab === 'reports') el.classList.add('active');
-        else el.classList.remove('active');
-      });
-      
-      // Se for relatórios, renderizar
-      if (tab === 'reports') {
-        renderReports();
-      }
-    }
-
-    // FUNÇÕES AUXILIARES
-    function formatDate(date) {
-      const year = date.getFullYear();
-      const month = String(date.getMonth() + 1).padStart(2, '0');
-      const day = String(date.getDate()).padStart(2, '0');
-      return `${year}-${month}-${day}`;
-    }
-
-    function formatDisplayDate(dateStr) {
-      const d = new Date(dateStr + 'T12:00:00');
-      return d.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' });
-    }
-
-    function formatFullDate(dateStr) {
-      const d = new Date(dateStr + 'T12:00:00');
-      return d.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: '2-digit' });
-    }
-
-    function formatCurrency(value) {
-      return 'R$ ' + (value || 0).toFixed(2).replace('.', ',');
-    }
-
-    function generateId() {
-      return Date.now() + '-' + Math.random().toString(36).substr(2, 9);
-    }
-
-    function getLocationInfo(locationId) {
-      return LOCATIONS.find(l => l.id === locationId) || LOCATIONS[0];
-    }
-
-    function getShiftById(id) {
-      return shifts.find(s => s.id === id);
-    }
-
-    // CARREGAR DADOS
-    function loadData() {
-      const saved = localStorage.getItem('minhaEscalaV5');
-      if (saved) {
-        const data = JSON.parse(saved);
-        shifts = data.shifts || [];
-        swaps = data.swaps || [];
-      } else {
-        // Criar dados de exemplo com múltiplos plantões no mesmo dia
-        const today = new Date();
-        const dates = [];
-        for (let i = 0; i < 10; i++) {
-          const d = new Date(today);
-          d.setDate(d.getDate() + i);
-          dates.push(formatDate(d));
+        // ======================= AUTO-OCULTAR CABEÇALHO =======================
+        function checkAndCollapseHeader() {
+            if (window.innerWidth > 768) return;
+            if (unidadeEl.value.trim() && condutorEl.value.trim() && ambulanciaEl.value.trim() && placaEl.value.trim() && kmInicialEl.value.trim()) {
+                mainHeader.classList.add('header-collapsed');
+            }
         }
+        [unidadeEl, condutorEl, ambulanciaEl, placaEl, kmInicialEl, plantaoEl].forEach(el => {
+            el.addEventListener('blur', checkAndCollapseHeader);
+            el.addEventListener('change', checkAndCollapseHeader);
+        });
+        document.getElementById('toggleHeaderBtn').addEventListener('click', () => { mainHeader.classList.toggle('header-collapsed'); });
+
+        // ======================= ASSINATURA DIGITAL =======================
+        const canvas = document.getElementById('signCanvas'); const ctx = canvas.getContext('2d'); let desenhando = false;
+        function redimencionarCanvas() { const w = canvas.clientWidth; const h = 90; canvas.width = w; canvas.height = h; ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, w, h); ctx.strokeStyle = '#1e293b'; ctx.lineWidth = 2; ctx.lineCap = 'round'; }
+        window.addEventListener('resize', () => redimencionarCanvas());
+        function getCoords(e) { const rect = canvas.getBoundingClientRect(); const sx = canvas.width / rect.width; const sy = canvas.height / rect.height; let cx, cy; if(e.touches) { cx = e.touches[0].clientX; cy = e.touches[0].clientY; } else { cx = e.clientX; cy = e.clientY; } return { x: Math.min(Math.max(0, (cx - rect.left) * sx), canvas.width), y: Math.min(Math.max(0, (cy - rect.top) * sy), canvas.height) }; }
+        function iniciarDesenho(e) { desenhando = true; const {x,y} = getCoords(e); ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x, y); ctx.stroke(); e.preventDefault(); }
+        function desenhar(e) { if(!desenhando) return; const {x,y} = getCoords(e); ctx.lineTo(x, y); ctx.stroke(); ctx.beginPath(); ctx.moveTo(x, y); e.preventDefault(); }
+        function pararDesenho() { desenhando = false; ctx.beginPath(); saveToLocal(); }
+        canvas.addEventListener('mousedown', iniciarDesenho); canvas.addEventListener('mousemove', desenhar); canvas.addEventListener('mouseup', pararDesenho); canvas.addEventListener('touchstart', iniciarDesenho, {passive: false}); canvas.addEventListener('touchmove', desenhar, {passive: false}); canvas.addEventListener('touchend', pararDesenho);
+        document.getElementById('clearCanvasBtn').addEventListener('click', () => { ctx.clearRect(0, 0, canvas.width, canvas.height); ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, canvas.width, canvas.height); saveToLocal(); });
+        redimencionarCanvas();
+
+        // ======================= LÓGICA DE NEGÓCIO =======================
+        function limparNomeLocal(str) { if (!str) return ''; return str.replace(/🏥/g, '').trim(); }
         
-        // Adicionar múltiplos plantões no mesmo dia (exemplo)
-        shifts = [
-          { id: '1', date: dates[0], type: 'sd', location: 'HRL', value: 800, notes: 'UTI' },
-          { id: '2', date: dates[0], type: 'sn', location: 'HTO', value: 850, notes: 'Exemplo de múltiplos plantões' }, // MESMO DIA
-          { id: '3', date: dates[1], type: 'sd', location: 'HRL', value: 800, notes: '' },
-          { id: '4', date: dates[2], type: 'dn', location: 'EXTRA', value: 1800, notes: 'Emergência' },
-          { id: '5', date: dates[3], type: 'sd', location: 'CIA', value: 780, notes: '' },
-          { id: '6', date: dates[3], type: 'sn', location: 'HRL', value: 820, notes: 'Outro plantão no mesmo dia' }, // MESMO DIA
-          { id: '7', date: dates[5], type: 'dn', location: 'HRL', value: 1900, notes: 'Final de semana' }
-        ];
-        
-        swaps = [
-          { 
-            id: generateId(), 
-            shift1Id: '1', 
-            shift2Id: '3', 
-            date1: dates[0], 
-            date2: dates[1], 
-            status: 'confirmed',
-            createdAt: new Date().toISOString()
-          }
-        ];
-        
-        saveData();
-      }
-      updateLocationFilter();
-    }
-
-    function saveData() {
-      localStorage.setItem('minhaEscalaV5', JSON.stringify({ shifts, swaps }));
-    }
-
-    // FILTROS
-    function updateLocationFilter() {
-      const select = document.getElementById('filterLocation');
-      const locations = [...new Set(shifts.map(s => s.location))];
-      select.innerHTML = '<option value="all">Todos locais</option>';
-      locations.forEach(loc => select.innerHTML += `<option value="${loc}">${loc}</option>`);
-    }
-
-    function applyFilters() {
-      currentFilters.type = document.getElementById('filterType').value;
-      currentFilters.location = document.getElementById('filterLocation').value;
-      renderCalendar();
-      renderUpcoming();
-      renderSwaps();
-    }
-
-    function clearFilters() {
-      document.getElementById('filterType').value = 'all';
-      document.getElementById('filterLocation').value = 'all';
-      currentFilters = { type: 'all', location: 'all' };
-      renderCalendar();
-      renderUpcoming();
-      renderSwaps();
-    }
-
-    function getFilteredShifts() {
-      return shifts.filter(s => {
-        const typeMatch = currentFilters.type === 'all' || s.type === currentFilters.type;
-        const locationMatch = currentFilters.location === 'all' || s.location === currentFilters.location;
-        return typeMatch && locationMatch;
-      });
-    }
-
-    // CALENDÁRIO
-    function renderCalendar() {
-      const year = currentDate.getFullYear();
-      const month = currentDate.getMonth();
-      
-      document.getElementById('calendarTitle').innerHTML = currentDate.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' }).toUpperCase();
-
-      const firstDay = new Date(year, month, 1).getDay();
-      const daysInMonth = new Date(year, month + 1, 0).getDate();
-      const todayStr = formatDate(new Date());
-
-      const filteredShifts = getFilteredShifts();
-
-      let html = '';
-      
-      for (let i = 0; i < firstDay; i++) html += '<div></div>';
-
-      for (let d = 1; d <= daysInMonth; d++) {
-        const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
-        const dayShifts = filteredShifts.filter(s => s.date === dateStr);
-        const hasSwap = dayShifts.some(shift => 
-          swaps.some(s => (s.shift1Id === shift.id || s.shift2Id === shift.id))
-        );
-        
-        let classes = 'calendar-day';
-        if (dayShifts.length > 0) {
-          if (hasSwap) classes += ' has-swap';
+        function getUltimoKmChegada() { 
+            const veiculoAtual = `${ambulanciaEl.value.trim()} - ${placaEl.value.trim()}`;
+            for(let i = 0; i < registros.length; i++) { 
+                if (registros[i].veiculo !== veiculoAtual) continue; 
+                if(registros[i].kmChegada) return registros[i].kmChegada; 
+                if(registros[i].kmSaida) return registros[i].kmSaida; 
+            } 
+            return kmInicialEl.value || ''; 
         }
-        if (dateStr === todayStr) classes += ' today';
-        
-        let badgeHtml = '';
-        if (dayShifts.length > 0) {
-          badgeHtml = '<div class="shift-badge-container">';
-          dayShifts.slice(0, 3).forEach(shift => { // Mostrar até 3 plantões por dia
-            const typeInfo = SHIFT_TYPES[shift.type];
-            const locationInfo = getLocationInfo(shift.location);
-            badgeHtml += `<div class="shift-badge ${locationInfo.color} text-white" title="${shift.type.toUpperCase()} - ${shift.location}">${typeInfo.name}</div>`;
-          });
-          if (dayShifts.length > 3) {
-            badgeHtml += `<div class="shift-badge bg-gray-600 text-white">+${dayShifts.length - 3}</div>`;
-          }
-          badgeHtml += '</div>';
+
+        function getUltimoLocal() {
+            const veiculoAtual = `${ambulanciaEl.value.trim()} - ${placaEl.value.trim()}`;
+            for (let i = 0; i < registros.length; i++) {
+                if (registros[i].veiculo !== veiculoAtual) continue;
+                const local = registros[i].local || '';
+                if (!local) continue;
+                
+                // Se tem chegada, a ambulância está parada no destino final.
+                // Se não tem chegada, ela está no destino da saída atual.
+                if (registros[i].horaChegada) {
+                    const partes = local.split('→');
+                    return partes.length >= 2 ? limparNomeLocal(partes[1]) : limparNomeLocal(local);
+                } else {
+                    const partes = local.split('→');
+                    return partes.length >= 2 ? limparNomeLocal(partes[1]) : limparNomeLocal(local);
+                }
+            }
+            return null;
         }
+
+        function prepararFormulario() {
+            fData.value = hoje();
+            fHora.value = getHoraAtual();
+            
+            let kmRef = getUltimoKmChegada();
+            if (kmRef) fKm.value = kmRef;
+            
+            const unidade = limparNomeLocal(unidadeEl.value.trim()) || 'HCI';
+            const ultimoLocal = getUltimoLocal();
+            
+            // Se for a primeira viagem do dia, sai da unidade
+            if (!ultimoLocal) {
+                fLocal.value = `🏥 ${unidade} → `;
+            } else {
+                // Se já estava em algum lugar, a próxima saída começa de lá
+                fLocal.value = `🏥 ${ultimoLocal} → `;
+            }
+
+            fPlantaoInfo.value = `${plantaoEl.value} | ${unidade}`;
+            atualizarLimitesDatas();
+        }
+
+        function adicionarRegistro(tipo) {
+            const data = fData.value;
+            const hora = fHora.value;
+            const km = parseFloat(fKm.value);
+            let local = fLocal.value.trim();
+
+            if (!hora || isNaN(km)) return showToast('⚠️ Preencha Hora e KM corretamente.');
+            if (!local) local = tipo === 'saida' ? `🏥 ${unidadeEl.value} → ` : `→ 🏥 ${unidadeEl.value}`;
+
+            const veiculoAtual = `${ambulanciaEl.value.trim()} - ${placaEl.value.trim()}`;
+
+            if (tipo === 'saida') {
+                // Abre uma nova viagem
+                registros.unshift({
+                    id: Date.now().toString(),
+                    data: data,
+                    tipo: 'saida',
+                    horaSaida: hora,
+                    kmSaida: km.toString(),
+                    local: local,
+                    horaChegada: '',
+                    kmChegada: '',
+                    veiculo: veiculoAtual
+                });
+                showToast('🚑 Saída registrada!');
+            } 
+            else if (tipo === 'chegada' || tipo === 'retorno' || tipo === 'base') {
+                // Tenta fechar a viagem em aberto mais recente
+                const index = registros.findIndex(r => r.veiculo === veiculoAtual && !r.horaChegada);
+
+                if (index !== -1) {
+                    registros[index].horaChegada = hora;
+                    registros[index].kmChegada = km.toString();
+                    
+                    if (tipo === 'base') {
+                        registros[index].tipo = 'base';
+                        const unidade = limparNomeLocal(unidadeEl.value.trim()) || 'HCI';
+                        const origem = limparNomeLocal(registros[index].local.split('→')[0]);
+                        registros[index].local = `🏥 ${origem} → 🏥 ${unidade}`;
+                    } else if (tipo === 'retorno') {
+                        registros[index].tipo = 'retorno';
+                    } else {
+                        registros[index].tipo = 'chegada';
+                    }
+                    
+                    showToast(tipo === 'base' ? '🏥 Retorno à Base!' : '📍 Chegada registrada!');
+                } else {
+                    // Se não achou viagem em aberto, cria um registro avulso de chegada
+                    registros.unshift({
+                        id: Date.now().toString(),
+                        data: data,
+                        tipo: tipo,
+                        horaSaida: '',
+                        kmSaida: '',
+                        local: local,
+                        horaChegada: hora,
+                        kmChegada: km.toString(),
+                        veiculo: veiculoAtual
+                    });
+                    showToast('📍 Chegada avulsa registrada!');
+                }
+            }
+
+            salvarERenderizar();
+            prepararFormulario();
+            if (window.innerWidth <= 768) mainHeader.classList.add('header-collapsed');
+        }
+
+        function deletarRegistro(id) {
+            if (!confirm('Excluir este lançamento do histórico?')) return;
+            registros = registros.filter(r => r.id !== id);
+            salvarERenderizar();
+            showToast('🗑️ Lançamento excluído');
+        }
+        window.deletarRegistro = deletarRegistro;
+
+        // ======================= RENDERIZAÇÃO =======================
+        function salvarERenderizar() {
+            const frotaKms = JSON.parse(localStorage.getItem('frotaKms_hci') || '{}');
+            registros.forEach(r => {
+                if (r.veiculo) {
+                    if (r.kmChegada) frotaKms[r.veiculo] = r.kmChegada;
+                    else if (r.kmSaida && !frotaKms[r.veiculo]) frotaKms[r.veiculo] = r.kmSaida;
+                }
+            });
+            localStorage.setItem('frotaKms_hci', JSON.stringify(frotaKms));
+            
+            let assinatura = ''; try { assinatura = canvas.toDataURL(); } catch(e) {}
+            localStorage.setItem('sistemaDeslocamentoHCI_v14', JSON.stringify({ 
+                rows: registros, observacao: observacaoEl.value, condutor: condutorEl.value, unidade: unidadeEl.value, 
+                ambulancia: ambulanciaEl.value, placa: placaEl.value, plantao: plantaoEl.value, kmInicial: kmInicialEl.value, 
+                nomeLegivel: nomeLegivelEl.value, mes: parseInt(mesSelect.value), ano: parseInt(anoSelect.value), assinaturaImg: assinatura 
+            }));
+
+            renderizarTabela();
+        }
+
+        function renderizarTabela() {
+            tbody.innerHTML = '';
+            let totalGeral = 0;
+
+            registros.forEach(r => {
+                const tr = document.createElement('tr');
+                
+                let kmRod = 0;
+                let kmClass = 'km-ok';
+                let kmText = '0.0';
+                if (r.kmSaida && r.kmChegada) {
+                    let s = parseFloat(r.kmSaida); let c = parseFloat(r.kmChegada);
+                    if (c >= s) { kmRod = c - s; kmText = kmRod.toFixed(1); totalGeral += kmRod; } 
+                    else { kmText = 'Inválido'; kmClass = 'km-erro'; }
+                }
+
+                let labelTipo = '';
+                if (r.tipo === 'saida') labelTipo = '🚑 Saída';
+                else if (r.tipo === 'base') labelTipo = '🏥 Base';
+                else if (r.tipo === 'retorno') labelTipo = '🔄 Retorno';
+                else labelTipo = '📍 Chegada';
+
+                tr.innerHTML = `
+                    <td data-label="Data">${formatDateBR(r.data)}</td>
+                    <td data-label="Tipo">${labelTipo}</td>
+                    <td data-label="H Saída">${r.horaSaida || '-'}</td>
+                    <td data-label="Km Saída">${r.kmSaida || '-'}</td>
+                    <td data-label="Local" style="text-align:left; font-size:0.75rem;">${r.local}</td>
+                    <td data-label="H Chegada">${r.horaChegada || '-'}</td>
+                    <td data-label="Km Chegada">${r.kmChegada || '-'}</td>
+                    <td data-label="Km Rod."><span class="km-rodado ${kmClass}">${kmText}</span></td>
+                    <td data-label="Ações"><button class="btn-del-row" onclick="deletarRegistro('${r.id}')"><i class="fas fa-trash-alt"></i></button></td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            totalSpan.innerText = totalGeral.toFixed(1);
+        }
+
+        // ======================= PERSISTÊNCIA =======================
+        function carregarLocalStorage() {
+            let raw = localStorage.getItem('sistemaDeslocamentoHCI_v14'); 
+            if(!raw) {
+                prepararFormulario();
+                return false;
+            }
+            try {
+                let d = JSON.parse(raw); 
+                condutorEl.value = d.condutor || 'Anderson Martins'; unidadeEl.value = d.unidade || 'HCI'; ambulanciaEl.value = d.ambulancia || 'Ducato'; placaEl.value = d.placa || 'RKD-5A25'; plantaoEl.value = d.plantao || 'SD 12hs'; kmInicialEl.value = d.kmInicial || ''; nomeLegivelEl.value = d.nomeLegivel || 'Anderson Martins'; observacaoEl.value = d.observacao || '';
+                if(d.mes) mesSelect.value = d.mes; if(d.ano) anoSelect.value = d.ano;
+                
+                registros = d.rows || [];
+                
+                if(d.assinaturaImg && d.assinaturaImg !== 'data:,') { 
+                    let img = new Image(); img.onload = () => ctx.drawImage(img, 0, 0, canvas.width, canvas.height); img.src = d.assinaturaImg; 
+                }
+                
+                renderizarTabela(); 
+                prepararFormulario();
+                
+                if (window.innerWidth <= 768 && registros.length > 0) mainHeader.classList.add('header-collapsed');
+                return true;
+            } catch(e) { 
+                prepararFormulario();
+                return false; 
+            }
+        }
+
+        // ======================= RELATÓRIO PDF =======================
+        async function gerarRelatorio() {
+            const btn = document.getElementById('pdfBtn'); btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Gerando...';
+            try {
+                const dataHora = new Date().toLocaleString('pt-BR'); const assinaturaImg = canvas.toDataURL('image/png'); const mesNome2 = nomeMes(parseInt(mesSelect.value)); const ano = anoSelect.value;
+                let linhasHTML = '';
+                
+                registros.forEach((l, idx) => {
+                    let kmR = '0.0'; let kmRodStyle = 'color:#0b8043; font-weight:bold;';
+                    if(l.kmSaida && l.kmChegada) {
+                        let s = parseFloat(l.kmSaida); let c = parseFloat(l.kmChegada);
+                        if(c >= s) kmR = (c-s).toFixed(1); else { kmR = 'Inválido'; kmRodStyle = 'color:#cc0000; font-weight:bold;'; }
+                    } else { kmR = '-'; kmRodStyle = 'color:#666;'; }
+                    
+                    let tipoLabel = '';
+                    if (l.tipo === 'saida') tipoLabel = '🚑 SAÍDA';
+                    else if (l.tipo === 'base') tipoLabel = '🏥 BASE';
+                    else if (l.tipo === 'retorno') tipoLabel = '🔄 RETORNO';
+                    else tipoLabel = '📍 CHEGADA';
+
+                    const bg = idx % 2 === 0 ? '#fff' : '#f8f9fa'; 
+                    
+                    linhasHTML += `<tr style="background:${bg}">
+                        <td style="padding:6px; border:1px solid #ddd; text-align:center;">${idx+1}</td>
+                        <td style="padding:6px; border:1px solid #ddd; text-align:center;">${formatDateBR(l.data)}</td>
+                        <td style="padding:6px; border:1px solid #ddd; text-align:center;">${tipoLabel}</td>
+                        <td style="padding:6px; border:1px solid #ddd; text-align:center;">${l.horaSaida || '-'}</td>
+                        <td style="padding:6px; border:1px solid #ddd; text-align:right;">${l.kmSaida || '-'}</td>
+                        <td style="padding:6px; border:1px solid #ddd; text-align:left;">${l.local}</td>
+                        <td style="padding:6px; border:1px solid #ddd; text-align:center;">${l.horaChegada || '-'}</td>
+                        <td style="padding:6px; border:1px solid #ddd; text-align:right;">${l.kmChegada || '-'}</td>
+                        <td style="padding:6px; border:1px solid #ddd; text-align:right; ${kmRodStyle}">${kmR}</td>
+                    </tr>`;
+                });
+                
+                const obsHTML = observacaoEl.value ? `<tr><td colspan="9" style="padding:8px; border:1px solid #ddd; background:#f9f9f9;"><strong>📋 Obs:</strong> ${observacaoEl.value.replace(/\n/g, '<br>')}</td></tr>` : '';
+                const totalKm = totalSpan.innerText;
+
+                const relatorioHTML = `
+                    <!DOCTYPE html><html><head><meta charset="UTF-8"><title>Relatório 🚑</title>
+                    <style>* { margin:0; padding:0; box-sizing:border-box; } body { font-family: Arial, sans-serif; background:#fff; padding:20px; color:#202124; } .container { max-width:1280px; margin:0 auto; } h1 { font-size:18pt; color:#0e5a77; margin-bottom:5px; } .sub { font-size:10pt; color:#5f6368; margin-bottom:20px; border-bottom:1px solid #dadce0; padding-bottom:10px; } .info-table { width:100%; border-collapse:collapse; margin-bottom:20px; font-size:9pt; } .info-table td { padding:6px 10px; border:1px solid #dadce0; } .info-table td:first-child { background:#f1f3f4; font-weight:600; width:15%; } .data-table { width:100%; border-collapse:collapse; margin-bottom:20px; font-size:8.5pt; } .data-table th { background:#f1f3f4; padding:8px 6px; border:1px solid #dadce0; text-align:center; font-weight:700; } .footer { margin-top:30px; display:flex; justify-content:space-between; align-items:center; border-top:1px solid #dadce0; padding-top:20px; } .signature { display:flex; gap:30px; align-items:center; } .signature img { max-height:60px; border:1px solid #ccc; background:#fff; } @media print { body { padding:0; margin:0; } .no-print { display:none; } }</style>
+                    </head><body><div class="container">
+                        <h1>📄 Relatório de Deslocamento</h1><div class="sub">Controle de Frota · ${mesNome2} / ${ano}</div>
+                        <table class="info-table">
+                            <tr><td>Condutor</td><td>${condutorEl.value}</td><td>Plantão</td><td>${plantaoEl.value}</td></tr>
+                            <tr><td>Ambulância</td><td>${ambulanciaEl.value}</td><td>Placa</td><td>${placaEl.value}</td></tr>
+                            <tr><td>Km Inicial</td><td>${kmInicialEl.value || '-'}</td><td>Gerado em</td><td>${dataHora}</td></tr>
+                        </table>
+                        <table class="data-table"><thead><tr><th>#</th><th>Data</th><th>Tipo</th><th>H Saída</th><th>Km Saída</th><th>Local / Destino</th><th>H Chegada</th><th>Km Chegada</th><th>Km Rod.</th></tr></thead>
+                            <tbody>${linhasHTML}<tr style="background:#f1f3f4; font-weight:bold;"><td colspan="8" style="text-align:right;">TOTAL</td><td style="text-align:right;">${totalKm}</td></tr>${obsHTML}</tbody>
+                        </table>
+                        <div class="footer"><div class="signature"><div>Assinatura:</div><img src="${assinaturaImg}" alt="Assinatura"></div><div><strong>Condutor:</strong> ${nomeLegivelEl.value}</div></div>
+                    </div><div class="no-print" style="text-align:center; margin-top:20px;"><button onclick="window.print()" style="padding:10px 20px; font-size:14px;">🖨️ Imprimir PDF</button> <button onclick="window.close()" style="padding:10px 20px; font-size:14px;">❌ Fechar</button></div></body></html>`;
+                const win = window.open('', '_blank'); win.document.write(relatorioHTML); win.document.close(); win.focus();
+                showToast('✅ PDF Gerado!');
+            } catch(err) { showToast('❌ Erro'); } finally { btn.disabled = false; btn.innerHTML = '<i class="fas fa-file-pdf"></i> Gerar Relatório (PDF)'; }
+        }
+
+        // ======================= EVENTOS =======================
+        document.getElementById('btnRegSaida').addEventListener('click', () => adicionarRegistro('saida'));
+        document.getElementById('btnRegChegada').addEventListener('click', () => adicionarRegistro('chegada'));
+        document.getElementById('btnRegRetorno').addEventListener('click', () => adicionarRegistro('retorno'));
+        document.getElementById('btnRegBase').addEventListener('click', () => adicionarRegistro('base'));
+        document.getElementById('pdfBtn').addEventListener('click', gerarRelatorio);
+
+        [condutorEl, unidadeEl, ambulanciaEl, placaEl, kmInicialEl, nomeLegivelEl, observacaoEl].forEach(el => { el.addEventListener('input', () => salvarERenderizar()); });
+        [plantaoEl, mesSelect, anoSelect].forEach(el => { el.addEventListener('change', () => { atualizarLimitesDatas(); salvarERenderizar(); }); });
         
-        html += `<div class="${classes}" onclick="handleDayClick('${dateStr}')">
-          <span class="day-number">${d}</span>
-          ${badgeHtml}
-        </div>`;
-      }
-
-      document.getElementById('calendarGrid').innerHTML = html;
-      updateStats();
-    }
-
-    // STATS (CORRIGIDO - Conta apenas UM plantão por troca confirmada)
-    function updateStats() {
-      const year = currentDate.getFullYear();
-      const month = currentDate.getMonth();
-      
-      // Pegar todos os plantões do mês
-      const monthShifts = shifts.filter(s => {
-        const d = new Date(s.date + 'T12:00:00');
-        return d.getMonth() === month && d.getFullYear() === year;
-      });
-
-      // Identificar IDs de plantões envolvidos em trocas confirmadas
-      const swappedShiftIds = new Set();
-      const swapsCount = swaps.filter(s => s.status === 'confirmed').length;
-      
-      // Para cada troca confirmada, vamos manter APENAS UM dos plantões
-      // Vamos marcar o outro como "descartado" para não contar
-      const discardedShiftIds = new Set();
-      
-      swaps
-        .filter(s => s.status === 'confirmed')
-        .forEach(swap => {
-          // Adiciona ambos ao conjunto de IDs trocados
-          swappedShiftIds.add(swap.shift1Id);
-          swappedShiftIds.add(swap.shift2Id);
-          
-          // Decide qual descartar (vamos descartar o shift2, mantendo o shift1)
-          // Isso é arbitrário - poderíamos escolher qualquer um
-          discardedShiftIds.add(swap.shift2Id);
+        ambulanciaEl.addEventListener('change', () => {
+            const veiculoKey = `${ambulanciaEl.value.trim()} - ${placaEl.value.trim()}`;
+            const frotaKms = JSON.parse(localStorage.getItem('frotaKms_hci') || '{}');
+            if (frotaKms[veiculoKey]) kmInicialEl.value = frotaKms[veiculoKey];
+            else kmInicialEl.value = '';
+            prepararFormulario();
         });
 
-      // Plantões do mês que NÃO estão descartados (inclui UM de cada troca)
-      const activeShifts = monthShifts.filter(s => !discardedShiftIds.has(s.id));
-      
-      // Totais baseados apenas nos plantões ativos
-      const totalHours = activeShifts.reduce((sum, s) => sum + SHIFT_TYPES[s.type].hours, 0);
-      const totalRevenue = activeShifts.reduce((sum, s) => sum + (Number(s.value) || 0), 0);
-      
-      // Atualizar os cards
-      document.getElementById('totalShifts').innerHTML = activeShifts.length;
-      document.getElementById('totalHours').innerHTML = totalHours;
-      document.getElementById('totalRevenue').innerHTML = formatCurrency(totalRevenue);
-
-      // Próximo plantão (considerando apenas ativos)
-      const todayStr = formatDate(new Date());
-      const nextShift = activeShifts
-        .filter(s => s.date >= todayStr)
-        .sort((a, b) => a.date.localeCompare(b.date))[0];
-      document.getElementById('nextShift').innerHTML = nextShift ? formatDisplayDate(nextShift.date) : '-';
-
-      // Contagem de trocas
-      const pendingSwaps = swaps.filter(s => s.status === 'pending').length;
-      const confirmedSwaps = swaps.filter(s => s.status === 'confirmed').length;
-      
-      document.getElementById('swapCount').innerHTML = confirmedSwaps;
-      document.getElementById('pendingSwapsCount').innerHTML = pendingSwaps;
-      document.getElementById('confirmedSwapsCount').innerHTML = confirmedSwaps;
-    }
-
-    // PRÓXIMOS PLANTÕES
-    function renderUpcoming() {
-      const todayStr = formatDate(new Date());
-      
-      // Para próximos plantões, também precisamos filtrar os descartados
-      const discardedShiftIds = new Set();
-      swaps
-        .filter(s => s.status === 'confirmed')
-        .forEach(swap => {
-          discardedShiftIds.add(swap.shift2Id); // Descarta o segundo plantão
-        });
-      
-      const upcoming = getFilteredShifts()
-        .filter(s => s.date >= todayStr && !discardedShiftIds.has(s.id))
-        .sort((a, b) => a.date.localeCompare(b.date))
-        .slice(0, 5);
-      
-      document.getElementById('upcomingShifts').innerHTML = upcoming.length ? upcoming.map(s => {
-        const typeInfo = SHIFT_TYPES[s.type];
-        const locationInfo = getLocationInfo(s.location);
-        const hasPendingSwap = swaps.some(swap => 
-          (swap.shift1Id === s.id || swap.shift2Id === s.id) && swap.status === 'pending'
-        );
-        
-        return `
-        <div onclick="openDetailModal('${s.id}')" class="p-3 bg-slate-800 rounded-xl border-l-4 ${locationInfo.border} text-sm hover:bg-slate-700 transition cursor-pointer">
-          <div class="flex justify-between items-center">
-            <span class="font-medium">${formatDisplayDate(s.date)}</span>
-            <span class="px-2 py-1 rounded-full text-xs ${typeInfo.color} text-white">${typeInfo.name}</span>
-          </div>
-          <div class="flex justify-between items-center mt-1">
-            <span class="text-gray-400">${s.location}</span>
-            ${s.value ? `<span class="text-emerald-400 font-medium">${formatCurrency(s.value)}</span>` : ''}
-          </div>
-          ${hasPendingSwap ? '<div class="mt-1 text-yellow-500 text-xs">🔄 Troca pendente</div>' : ''}
-        </div>
-      `}).join('') : '<p class="text-gray-400 text-center py-4 text-sm">Nenhum plantão programado</p>';
-    }
-
-    // TROCAS
-    function renderSwaps() {
-      const pendingSwaps = swaps.filter(s => s.status === 'pending');
-      const confirmedSwaps = swaps.filter(s => s.status === 'confirmed');
-      
-      document.getElementById('pendingSwapsList').innerHTML = pendingSwaps.length ? pendingSwaps.map(s => {
-        const shift1 = getShiftById(s.shift1Id);
-        const shift2 = getShiftById(s.shift2Id);
-        
-        if (!shift1 || !shift2) return '';
-        
-        return `
-        <div class="bg-slate-800 rounded-xl p-3 text-sm trade-card">
-          <div class="flex justify-between items-center mb-2">
-            <span class="font-medium">Troca pendente</span>
-            <span class="swap-status swap-status-pending">⏳ Aguardando</span>
-          </div>
-          <div class="grid grid-cols-2 gap-2 mb-2">
-            <div class="text-center p-2 bg-slate-700 rounded-lg">
-              <div class="font-bold">${formatDisplayDate(shift1.date)}</div>
-              <div class="text-xs text-gray-400">${shift1.location}</div>
-            </div>
-            <div class="text-center p-2 bg-slate-700 rounded-lg">
-              <div class="font-bold">${formatDisplayDate(shift2.date)}</div>
-              <div class="text-xs text-gray-400">${shift2.location}</div>
-            </div>
-          </div>
-          <div class="flex gap-2">
-            <button onclick="confirmSwap('${s.id}')" class="flex-1 bg-emerald-600 hover:bg-emerald-500 py-2 rounded-lg text-xs font-medium transition">✅ Confirmar</button>
-            <button onclick="cancelSwap('${s.id}')" class="flex-1 bg-red-600 hover:bg-red-500 py-2 rounded-lg text-xs font-medium transition">❌ Cancelar</button>
-          </div>
-        </div>
-      `}).join('') : '<p class="text-gray-400 text-center py-3 text-sm">Nenhuma troca pendente</p>';
-
-      document.getElementById('confirmedSwapsList').innerHTML = confirmedSwaps.length ? confirmedSwaps.map(s => {
-        const shift1 = getShiftById(s.shift1Id);
-        const shift2 = getShiftById(s.shift2Id);
-        
-        if (!shift1 || !shift2) return '';
-        
-        return `
-        <div class="bg-slate-800 rounded-xl p-3 text-sm trade-card confirmed">
-          <div class="flex justify-between items-center mb-2">
-            <span class="font-medium">Troca confirmada</span>
-            <span class="swap-status swap-status-confirmed">✅ Realizada</span>
-          </div>
-          <div class="grid grid-cols-2 gap-2">
-            <div class="text-center p-2 bg-slate-700 rounded-lg">
-              <div class="font-bold">${formatDisplayDate(shift1.date)}</div>
-              <div class="text-xs text-gray-400">${shift1.location}</div>
-            </div>
-            <div class="text-center p-2 bg-slate-700 rounded-lg">
-              <div class="font-bold">${formatDisplayDate(shift2.date)}</div>
-              <div class="text-xs text-gray-400">${shift2.location}</div>
-            </div>
-          </div>
-        </div>
-      `}).join('') : '<p class="text-gray-400 text-center py-3 text-sm">Nenhuma troca confirmada</p>';
-    }
-
-    // HANDLE DAY CLICK
-    function handleDayClick(dateStr) {
-      const dayShifts = shifts.filter(s => s.date === dateStr);
-      
-      if (dayShifts.length === 1) {
-        openDetailModal(dayShifts[0].id);
-      } else if (dayShifts.length > 1) {
-        openDayShiftsModal(dateStr, dayShifts);
-      } else {
-        document.getElementById('shiftDate').value = dateStr;
-        openFormModal();
-      }
-    }
-
-    function openDayShiftsModal(dateStr, dayShifts) {
-      const modal = document.getElementById('dayShiftsModal');
-      const title = document.getElementById('dayShiftsTitle');
-      const list = document.getElementById('dayShiftsList');
-      
-      title.innerHTML = `Plantões - ${formatFullDate(dateStr)}`;
-      
-      list.innerHTML = dayShifts.map(shift => {
-        const typeInfo = SHIFT_TYPES[shift.type];
-        const locationInfo = getLocationInfo(shift.location);
-        
-        return `
-          <div onclick="openDetailModal('${shift.id}')" class="day-shift-item cursor-pointer">
-            <div class="day-shift-info">
-              <div class="flex items-center gap-2">
-                <span class="px-2 py-1 rounded-full text-xs ${typeInfo.color} text-white">${typeInfo.name}</span>
-                <span class="font-medium">${shift.location}</span>
-              </div>
-              ${shift.notes ? `<div class="text-xs text-gray-400">${shift.notes}</div>` : ''}
-            </div>
-            <div class="day-shift-value">${formatCurrency(shift.value)}</div>
-          </div>
-        `;
-      }).join('');
-      
-      modal.style.display = 'flex';
-    }
-
-    function closeDayShiftsModal() {
-      document.getElementById('dayShiftsModal').style.display = 'none';
-    }
-
-    function changeMonth(delta) {
-      currentDate.setMonth(currentDate.getMonth() + delta);
-      renderCalendar();
-    }
-
-    // MODAIS
-    function openFormModal() {
-      document.getElementById('shiftId').value = '';
-      document.getElementById('shiftForm').reset();
-      document.getElementById('formTitle').innerHTML = 'Novo Plantão';
-      document.getElementById('formModal').style.display = 'flex';
-    }
-
-    function closeFormModal() {
-      document.getElementById('formModal').style.display = 'none';
-    }
-
-    function saveShift(e) {
-      e.preventDefault();
-      const id = document.getElementById('shiftId').value;
-      const date = document.getElementById('shiftDate').value;
-      const type = document.getElementById('shiftType').value;
-      const value = parseFloat(document.getElementById('shiftValue').value) || 0;
-      const location = document.getElementById('shiftLocation').value;
-      const notes = document.getElementById('shiftNotes').value;
-
-      if (!date || !type || !location) {
-        showToast('Preencha todos os campos!', 'error');
-        return;
-      }
-
-      if (id) {
-        const index = shifts.findIndex(s => s.id === id);
-        if (index !== -1) shifts[index] = { ...shifts[index], date, type, value, location, notes };
-        showToast('Plantão atualizado!', 'success');
-      } else {
-        shifts.push({ id: generateId(), date, type, value, location, notes });
-        showToast('Plantão salvo!', 'success');
-      }
-
-      saveData();
-      updateLocationFilter();
-      renderCalendar();
-      renderUpcoming();
-      renderSwaps();
-      closeFormModal();
-    }
-
-    function openDetailModal(id) {
-      const shift = shifts.find(s => s.id === id);
-      if (!shift) return;
-      
-      const typeInfo = SHIFT_TYPES[shift.type];
-      const locationInfo = getLocationInfo(shift.location);
-      const swap = swaps.find(s => s.shift1Id === id || s.shift2Id === id);
-      
-      document.getElementById('detailContent').innerHTML = `
-        <div>
-          <h2 class="text-xl font-bold mb-4">${formatFullDate(shift.date)}</h2>
-          <div class="flex gap-2 mb-4">
-            <span class="px-3 py-1.5 rounded-full text-sm ${typeInfo.color} text-white font-medium">${typeInfo.name}</span>
-            <span class="px-3 py-1.5 rounded-full text-sm ${locationInfo.color} text-white font-medium">${shift.location}</span>
-          </div>
-          <div class="grid grid-cols-2 gap-3 mb-4">
-            <div class="bg-slate-800 p-3 rounded-xl">
-              <p class="text-xs text-gray-400 mb-1">Horas</p>
-              <p class="text-2xl font-bold">${typeInfo.hours}h</p>
-            </div>
-            ${shift.value ? `
-              <div class="bg-slate-800 p-3 rounded-xl">
-                <p class="text-xs text-gray-400 mb-1">Valor</p>
-                <p class="text-2xl font-bold text-emerald-400">${formatCurrency(shift.value)}</p>
-              </div>
-            ` : ''}
-          </div>
-          ${shift.notes ? `
-            <div class="bg-slate-800 p-3 rounded-xl mb-4">
-              <p class="text-xs text-gray-400 mb-1">Observações</p>
-              <p class="text-sm">📝 ${shift.notes}</p>
-            </div>
-          ` : ''}
-          ${swap ? `
-            <div class="mb-4 p-3 ${swap.status === 'confirmed' ? 'bg-emerald-900' : 'bg-yellow-900'} rounded-xl">
-              <p class="text-sm">Status da troca: ${swap.status === 'confirmed' ? '✅ Confirmada' : '⏳ Pendente'}</p>
-            </div>
-          ` : ''}
-          <div class="flex gap-2 mt-4">
-            <button onclick="editShift('${shift.id}')" class="flex-1 bg-blue-600 hover:bg-blue-500 py-3 rounded-xl text-sm font-medium transition">✏️ Editar</button>
-            ${!swap ? `<button onclick="initiateSwap('${shift.id}')" class="flex-1 bg-yellow-600 hover:bg-yellow-500 py-3 rounded-xl text-sm font-medium transition">🔄 Trocar</button>` : ''}
-            <button onclick="deleteShift('${shift.id}')" class="flex-1 bg-red-600 hover:bg-red-500 py-3 rounded-xl text-sm font-medium transition">🗑️ Excluir</button>
-          </div>
-          <button onclick="closeDetailModal()" class="w-full mt-3 bg-slate-600 hover:bg-slate-500 py-3 rounded-xl text-sm font-medium transition">Fechar</button>
-        </div>
-      `;
-      document.getElementById('detailModal').style.display = 'flex';
-    }
-
-    function closeDetailModal() {
-      document.getElementById('detailModal').style.display = 'none';
-    }
-
-    function editShift(id) {
-      closeDetailModal();
-      const shift = shifts.find(s => s.id === id);
-      if (shift) {
-        document.getElementById('shiftId').value = shift.id;
-        document.getElementById('shiftDate').value = shift.date;
-        document.getElementById('shiftType').value = shift.type;
-        document.getElementById('shiftValue').value = shift.value;
-        document.getElementById('shiftLocation').value = shift.location;
-        document.getElementById('shiftNotes').value = shift.notes || '';
-        document.getElementById('formTitle').innerHTML = 'Editar Plantão';
-        document.getElementById('formModal').style.display = 'flex';
-      }
-    }
-
-    function deleteShift(id) {
-      if (confirm('Excluir plantão?')) {
-        const swap = swaps.find(s => s.shift1Id === id || s.shift2Id === id);
-        if (swap) {
-          if (confirm('Este plantão está em uma troca. Deseja excluir a troca também?')) {
-            swaps = swaps.filter(s => s.id !== swap.id);
-          } else {
-            return;
-          }
-        }
-        
-        shifts = shifts.filter(s => s.id !== id);
-        saveData();
-        renderCalendar();
-        renderUpcoming();
-        renderSwaps();
-        closeDetailModal();
-        showToast('Plantão excluído!', 'success');
-      }
-    }
-
-    // NOVO SISTEMA DE TROCA COM OPÇÕES
-    function initiateSwap(shift1Id) {
-      closeDetailModal();
-      
-      const shift1 = getShiftById(shift1Id);
-      if (!shift1) return;
-      
-      selectedShiftForSwap = shift1Id;
-      
-      // IDs de plantões indisponíveis (já em trocas)
-      const unavailableShiftIds = new Set();
-      swaps.forEach(swap => {
-        if (swap.status === 'pending' || swap.status === 'confirmed') {
-          unavailableShiftIds.add(swap.shift1Id);
-          unavailableShiftIds.add(swap.shift2Id);
-        }
-      });
-      
-      // Plantões disponíveis para troca (excluindo o atual e os já em troca)
-      const availableShifts = shifts.filter(s => 
-        s.id !== shift1Id && 
-        !unavailableShiftIds.has(s.id) &&
-        new Date(s.date + 'T12:00:00') > new Date()
-      );
-
-      let html = `
-        <div class="mb-4 p-3 bg-slate-800 rounded-lg">
-          <p class="text-sm font-medium">Plantão selecionado:</p>
-          <p class="text-base font-bold mt-1">${formatFullDate(shift1.date)} - ${shift1.location} (${SHIFT_TYPES[shift1.type].name})</p>
-        </div>
-        
-        <h3 class="font-medium mb-3">Escolha uma opção:</h3>
-        
-        <div class="swap-option" onclick="selectSwapOption('existing')">
-          <div class="swap-option-title">📋 Plantão existente</div>
-          <p class="text-sm text-gray-400 mb-2">Trocar com um plantão já cadastrado</p>
-          <span class="quick-swap-btn">${availableShifts.length} disponíveis →</span>
-        </div>
-        
-        <div class="swap-option" onclick="selectSwapOption('new')">
-          <div class="swap-option-title">🆕 Criar novo plantão</div>
-          <p class="text-sm text-gray-400 mb-2">Criar um novo plantão específico para esta troca</p>
-          <span class="quick-swap-btn">Criar novo →</span>
-        </div>
-      `;
-      
-      if (availableShifts.length > 0) {
-        html += `
-          <div class="mt-3 pt-3 border-t border-gray-700">
-            <h4 class="font-medium mb-2 text-sm">Plantões disponíveis:</h4>
-            <div class="space-y-2 max-h-40 overflow-y-auto">
-        `;
-        
-        availableShifts.slice(0, 3).forEach(s => {
-          html += `
-            <div onclick="proposeSwap('${shift1Id}', '${s.id}')" class="p-3 bg-slate-700 rounded-lg cursor-pointer hover:bg-slate-600 transition">
-              <div class="flex justify-between">
-                <span class="font-medium">${formatFullDate(s.date)}</span>
-                <span class="text-xs px-2 py-0.5 rounded-full ${SHIFT_TYPES[s.type].color}">${SHIFT_TYPES[s.type].name}</span>
-              </div>
-              <div class="flex justify-between text-xs text-gray-400 mt-1">
-                <span>${s.location}</span>
-                <span class="text-emerald-400">${formatCurrency(s.value)}</span>
-              </div>
-            </div>
-          `;
-        });
-        
-        if (availableShifts.length > 3) {
-          html += `<p class="text-xs text-center text-gray-500 mt-2">+${availableShifts.length - 3} outros plantões disponíveis</p>`;
-        }
-        
-        html += '</div></div>';
-      }
-      
-      html += '<button onclick="closeSwapModal()" class="w-full mt-4 bg-slate-600 hover:bg-slate-500 py-3 rounded-xl text-sm font-medium transition">Cancelar</button>';
-      
-      document.getElementById('swapModalContent').innerHTML = html;
-      document.getElementById('swapModal').style.display = 'flex';
-    }
-
-    function selectSwapOption(option) {
-      closeSwapModal();
-      
-      if (option === 'existing') {
-        // Já mostramos os plantões disponíveis na lista, então só fechar
-        showToast('Selecione um plantão da lista', 'info');
-      } else if (option === 'new') {
-        openNewShiftSwapModal();
-      }
-    }
-
-    function openNewShiftSwapModal() {
-      if (!selectedShiftForSwap) return;
-      
-      const shift1 = getShiftById(selectedShiftForSwap);
-      if (!shift1) return;
-      
-      document.getElementById('swapShift1Id').value = selectedShiftForSwap;
-      document.getElementById('swapNewForm').reset();
-      
-      // Sugerir data futura (próxima semana)
-      const nextWeek = new Date();
-      nextWeek.setDate(nextWeek.getDate() + 7);
-      document.getElementById('swapNewDate').value = formatDate(nextWeek);
-      
-      document.getElementById('newShiftSwapModal').style.display = 'flex';
-    }
-
-    function closeNewShiftSwapModal() {
-      document.getElementById('newShiftSwapModal').style.display = 'none';
-      selectedShiftForSwap = null;
-    }
-
-    function createShiftForSwap(e) {
-      e.preventDefault();
-      
-      const shift1Id = document.getElementById('swapShift1Id').value;
-      const shift1 = getShiftById(shift1Id);
-      
-      if (!shift1) {
-        showToast('Erro: plantão original não encontrado', 'error');
-        return;
-      }
-      
-      const date = document.getElementById('swapNewDate').value;
-      const type = document.getElementById('swapNewType').value;
-      const value = parseFloat(document.getElementById('swapNewValue').value) || 0;
-      const location = document.getElementById('swapNewLocation').value;
-      const notes = document.getElementById('swapNewNotes').value || 'Criado para troca';
-
-      if (!date || !type || !location) {
-        showToast('Preencha todos os campos!', 'error');
-        return;
-      }
-
-      // Criar novo plantão
-      const newShiftId = generateId();
-      const newShift = {
-        id: newShiftId,
-        date,
-        type,
-        value,
-        location,
-        notes: `🔄 Criado para troca. ${notes}`
-      };
-      
-      shifts.push(newShift);
-      
-      // Criar troca
-      const newSwap = {
-        id: generateId(),
-        shift1Id: shift1Id,
-        shift2Id: newShiftId,
-        date1: shift1.date,
-        date2: date,
-        status: 'pending',
-        createdAt: new Date().toISOString()
-      };
-      
-      swaps.push(newSwap);
-      
-      saveData();
-      
-      renderCalendar();
-      renderUpcoming();
-      renderSwaps();
-      closeNewShiftSwapModal();
-      closeSwapModal();
-      
-      showToast('Novo plantão criado e troca proposta!', 'success');
-    }
-
-    function proposeSwap(shift1Id, shift2Id) {
-      const shift1 = getShiftById(shift1Id);
-      const shift2 = getShiftById(shift2Id);
-      
-      if (!shift1 || !shift2) return;
-      
-      if (confirm(`Confirmar proposta de troca?\n${formatFullDate(shift1.date)} ⇄ ${formatFullDate(shift2.date)}`)) {
-        const newSwap = {
-          id: generateId(),
-          shift1Id: shift1Id,
-          shift2Id: shift2Id,
-          date1: shift1.date,
-          date2: shift2.date,
-          status: 'pending',
-          createdAt: new Date().toISOString()
-        };
-        
-        swaps.push(newSwap);
-        saveData();
-        
-        renderCalendar();
-        renderUpcoming();
-        renderSwaps();
-        closeSwapModal();
-        showToast('Troca proposta com sucesso!', 'success');
-      }
-    }
-
-    function confirmSwap(swapId) {
-      const swap = swaps.find(s => s.id === swapId);
-      if (!swap) return;
-      
-      if (confirm('Confirmar esta troca? Esta ação não pode ser desfeita.')) {
-        swap.status = 'confirmed';
-        saveData();
-        
-        renderCalendar();
-        renderUpcoming();
-        renderSwaps();
-        showToast('Troca confirmada!', 'success');
-      }
-    }
-
-    function cancelSwap(swapId) {
-      const swap = swaps.find(s => s.id === swapId);
-      if (!swap) return;
-      
-      if (confirm('Cancelar esta troca?')) {
-        swaps = swaps.filter(s => s.id !== swapId);
-        saveData();
-        
-        renderCalendar();
-        renderUpcoming();
-        renderSwaps();
-        showToast('Troca cancelada!', 'info');
-      }
-    }
-
-    function closeSwapModal() {
-      document.getElementById('swapModal').style.display = 'none';
-      selectedShiftForSwap = null;
-    }
-
-    // GERADOR DE ESCALA
-    function openGeneratorModal() {
-      document.getElementById('startDate').value = formatDate(new Date());
-      document.getElementById('generatorModal').style.display = 'flex';
-    }
-
-    function closeGeneratorModal() {
-      document.getElementById('generatorModal').style.display = 'none';
-    }
-
-    function generateScale(e) {
-      e.preventDefault();
-      
-      const startDate = document.getElementById('startDate').value;
-      const location = document.getElementById('generatorLocation').value;
-      const type = document.getElementById('generatorType').value;
-      const value = parseFloat(document.getElementById('generatorValue').value) || 0;
-      const count = parseInt(document.getElementById('generatorCount').value);
-
-      const start = new Date(startDate + 'T12:00:00');
-      const newShifts = [];
-      let conflicts = 0;
-
-      for (let i = 0; i < count; i++) {
-        const shiftDate = new Date(start);
-        shiftDate.setDate(start.getDate() + (i * 4));
-        const dateStr = formatDate(shiftDate);
-        
-        newShifts.push({
-          id: generateId(),
-          date: dateStr, 
-          type, 
-          value, 
-          location,
-          notes: 'Gerado 24x72'
-        });
-      }
-
-      if (newShifts.length > 0) {
-        shifts = [...shifts, ...newShifts];
-        saveData();
-        showToast(`${newShifts.length} plantões gerados!`, 'success');
-      } else {
-        showToast('Nenhum plantão gerado', 'warning');
-      }
-
-      renderCalendar();
-      renderUpcoming();
-      renderSwaps();
-      closeGeneratorModal();
-    }
-
-    // FUNÇÕES DE RELATÓRIO (CORRIGIDO)
-    function changeReportMonth(delta) {
-      reportDate.setMonth(reportDate.getMonth() + delta);
-      renderReports();
-    }
-
-    function renderReports() {
-      const year = reportDate.getFullYear();
-      const month = reportDate.getMonth();
-      
-      document.getElementById('reportPeriod').innerHTML = reportDate.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' }).toUpperCase();
-      
-      const monthShifts = shifts.filter(s => {
-        const d = new Date(s.date + 'T12:00:00');
-        return d.getMonth() === month && d.getFullYear() === year;
-      });
-
-      // Identificar plantões descartados (apenas UM por troca confirmada)
-      const discardedShiftIds = new Set();
-      
-      swaps
-        .filter(s => s.status === 'confirmed')
-        .forEach(swap => {
-          // Descarta o segundo plantão de cada troca
-          discardedShiftIds.add(swap.shift2Id);
+        placaEl.addEventListener('change', () => {
+            const veiculoKey = `${ambulanciaEl.value.trim()} - ${placaEl.value.trim()}`;
+            const frotaKms = JSON.parse(localStorage.getItem('frotaKms_hci') || '{}');
+            if (frotaKms[veiculoKey]) kmInicialEl.value = frotaKms[veiculoKey];
+            else kmInicialEl.value = '';
+            prepararFormulario();
         });
 
-      // Plantões do mês que NÃO estão descartados (inclui UM de cada troca)
-      const activeShifts = monthShifts.filter(s => !discardedShiftIds.has(s.id));
+        window.addEventListener('beforeunload', () => salvarERenderizar());
 
-      // Totais gerais (apenas plantões ativos)
-      const totalShifts = activeShifts.length;
-      const totalHours = activeShifts.reduce((sum, s) => sum + SHIFT_TYPES[s.type].hours, 0);
-      const totalRevenue = activeShifts.reduce((sum, s) => sum + (Number(s.value) || 0), 0);
-      
-      // Horas extraordinárias (apenas plantões ativos)
-      const extraHours = activeShifts
-        .filter(s => s.type === 'dn')
-        .reduce((sum, s) => sum + 12, 0);
-
-      document.getElementById('reportTotalShifts').innerHTML = totalShifts;
-      document.getElementById('reportTotalHours').innerHTML = totalHours + 'h';
-      document.getElementById('reportExtraHours').innerHTML = extraHours + 'h';
-      document.getElementById('reportTotalRevenue').innerHTML = formatCurrency(totalRevenue);
-
-      // Relatório por local (apenas plantões ativos)
-      const locations = [...new Set(activeShifts.map(s => s.location))];
-      let locationHtml = '';
-      
-      locations.forEach(loc => {
-        const locShifts = activeShifts.filter(s => s.location === loc);
-        const locCount = locShifts.length;
-        const locHours = locShifts.reduce((sum, s) => sum + SHIFT_TYPES[s.type].hours, 0);
-        const locRevenue = locShifts.reduce((sum, s) => sum + (Number(s.value) || 0), 0);
-        const locationInfo = getLocationInfo(loc);
-        
-        locationHtml += `
-          <div class="report-stat">
-            <span class="report-label">
-              <span class="location-badge-sm ${locationInfo.color}"></span>
-              ${loc}
-            </span>
-            <span class="report-value">${locCount}x • ${locHours}h • ${formatCurrency(locRevenue)}</span>
-          </div>
-        `;
-      });
-
-      if (locations.length === 0) {
-        locationHtml = '<p class="text-gray-400 text-center py-3">Nenhum plantão no período</p>';
-      }
-
-      document.getElementById('reportByLocation').innerHTML = locationHtml;
-
-      // Relatório por tipo (apenas plantões ativos)
-      const typeCounts = {
-        sd: activeShifts.filter(s => s.type === 'sd').length,
-        sn: activeShifts.filter(s => s.type === 'sn').length,
-        dn: activeShifts.filter(s => s.type === 'dn').length
-      };
-
-      const typeHours = {
-        sd: activeShifts.filter(s => s.type === 'sd').reduce((sum, s) => sum + SHIFT_TYPES[s.type].hours, 0),
-        sn: activeShifts.filter(s => s.type === 'sn').reduce((sum, s) => sum + SHIFT_TYPES[s.type].hours, 0),
-        dn: activeShifts.filter(s => s.type === 'dn').reduce((sum, s) => sum + SHIFT_TYPES[s.type].hours, 0)
-      };
-
-      document.getElementById('reportByType').innerHTML = `
-        <div class="report-stat">
-          <span class="report-label">SD (12h)</span>
-          <span class="report-value">${typeCounts.sd}x • ${typeHours.sd}h</span>
-        </div>
-        <div class="report-stat">
-          <span class="report-label">SN (12h)</span>
-          <span class="report-value">${typeCounts.sn}x • ${typeHours.sn}h</span>
-        </div>
-        <div class="report-stat">
-          <span class="report-label">DN (24h)</span>
-          <span class="report-value">${typeCounts.dn}x • ${typeHours.dn}h</span>
-        </div>
-      `;
-    }
-
-    // INICIALIZAÇÃO
-    document.addEventListener('DOMContentLoaded', () => {
-      loadData();
-      renderCalendar();
-      renderUpcoming();
-      renderSwaps();
-      renderReports();
-      
-      document.getElementById('filterType').addEventListener('change', applyFilters);
-      document.getElementById('filterLocation').addEventListener('change', applyFilters);
-      
-      window.onclick = function(event) {
-        if (event.target.classList.contains('modal')) {
-          event.target.style.display = 'none';
-        }
-      };
-    });
-  </script>
+        // Inicialização
+        carregarLocalStorage();
+        atualizarLimitesDatas();
+    })();
+</script>
 </body>
 </html>
