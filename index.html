@@ -65,6 +65,11 @@
         .ficha-header { background: #f8fafc; padding: 8px 12px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; }
         .ficha-header-info { font-size: 0.75rem; color: #475569; font-weight: 600; display: flex; flex-direction: column; gap: 2px; }
         
+        .ficha-actions { display: flex; gap: 6px; }
+        
+        .btn-edit-ficha { background: #e0f2fe; color: #0284c7; border: none; cursor: pointer; padding: 6px 10px; border-radius: 6px; font-size: 0.9rem; transition: 0.2s; display: flex; align-items: center; justify-content: center; }
+        .btn-edit-ficha:hover { background: #bae6fd; }
+        
         .btn-del-ficha { background: #fee2e2; color: #b91c1c; border: none; cursor: pointer; padding: 6px 10px; border-radius: 6px; font-size: 0.9rem; transition: 0.2s; display: flex; align-items: center; justify-content: center; }
         .btn-del-ficha.locked { background: #e2e8f0; color: #64748b; cursor: not-allowed; }
         
@@ -80,7 +85,7 @@
         .timeline-tag.local-tag { color: #94a3b8; }
         .timeline-tag.fim-tag { color: var(--danger); }
         
-        .timeline-content { flex-grow: 1; }
+        .timeline-content { flex-grow: 1; text-transform: uppercase; }
         .ficha-footer { background: #f8fafc; padding: 8px 12px; border-top: 1px dashed #cbd5e1; display: flex; justify-content: space-between; font-size: 0.8rem; font-weight: 700; color: #1e293b; }
 
         /* Outros componentes */
@@ -151,8 +156,8 @@
         <!-- CAIXA DE LANÇAMENTO -->
         <div class="card form-card">
             <div class="card-title">
-                <div class="title-text" style="color: #166534;"><i class="fas fa-edit"></i> Novo Lançamento</div>
-                <button id="btnNovaOcorrencia" class="btn-add-ocorrencia" title="Iniciar nova ocorrência separada"><i class="fas fa-plus"></i></button>
+                <div class="title-text" id="titleLancamento" style="color: #166534;"><i class="fas fa-edit"></i> Novo Lançamento</div>
+                <button id="btnNovaOcorrencia" class="btn-add-ocorrencia" title="Iniciar nova ocorrência / Cancelar Edição"><i class="fas fa-plus"></i></button>
             </div>
             <div class="form-grid">
                 <div class="form-item">
@@ -173,7 +178,7 @@
                 </div>
                 <div class="form-item full">
                     <label>Local / Destino (Origem → Destino)</label>
-                    <input type="text" id="fLocal" placeholder="Ex: 🏥 SÓ SAÚDE → 🏥 MT INFANTIL">
+                    <input type="text" id="fLocal" placeholder="EX: SÓ SAÚDE → MT INFANTIL">
                 </div>
             </div>
             
@@ -228,16 +233,26 @@
         const mesSelect = document.getElementById('mesSelect');
         const anoSelect = document.getElementById('anoSelect');
         const mainHeader = document.getElementById('mainHeader');
-
+        
         // Elementos do Form
         const fData = document.getElementById('fData');
         const fHora = document.getElementById('fHora');
         const fKm = document.getElementById('fKm');
         const fLocal = document.getElementById('fLocal');
         const fPlantaoInfo = document.getElementById('fPlantaoInfo');
+        const titleLancamento = document.getElementById('titleLancamento');
 
         let registros = []; 
-        let currentOcorrenciaId = Date.now().toString(); // ID da ocorrência atual
+        let currentOcorrenciaId = Date.now().toString(); 
+        let editingRecordId = null; // Guarda o ID do registro sendo editado
+
+        // Força Caixa Alta no input de Local
+        fLocal.addEventListener('input', function(e) {
+            const start = this.selectionStart;
+            const end = this.selectionEnd;
+            this.value = this.value.toUpperCase();
+            this.setSelectionRange(start, end);
+        });
 
         // Inicialização do seletor de meses
         for(let m = 1; m <= 12; m++) { let opt = document.createElement('option'); opt.value = m; opt.textContent = nomeMes(m).substring(0,3); mesSelect.appendChild(opt); }
@@ -284,7 +299,10 @@
         redimencionarCanvas();
 
         // ======================= LÓGICA DE NEGÓCIO =======================
-        function limparNomeLocal(str) { if (!str) return ''; return str.replace(/🏥/g, '').trim(); }
+        function limparNomeLocal(str) { 
+            if (!str) return ''; 
+            return str.replace(/🏥/g, '').trim().toUpperCase(); 
+        }
         
         function getUltimoKmChegada() { 
             const veiculoAtual = `${ambulanciaEl.value.trim()} - ${placaEl.value.trim()}`;
@@ -319,31 +337,111 @@
             const ultimoLocal = getUltimoLocal();
             
             if (!ultimoLocal) {
-                fLocal.value = `🏥 ${unidade} → `;
+                fLocal.value = `${unidade} → `;
             } else {
-                fLocal.value = `🏥 ${ultimoLocal} → `;
+                fLocal.value = `${ultimoLocal} → `;
             }
 
             fPlantaoInfo.value = `${plantaoEl.value} | ${unidade}`;
             atualizarLimitesDatas();
         }
 
+        function resetFormUI() {
+            titleLancamento.innerHTML = '<i class="fas fa-edit"></i> Novo Lançamento';
+            titleLancamento.style.color = '#166534';
+            editingRecordId = null;
+            prepararFormulario();
+        }
+
+        // ======================= EDITAR =======================
+        function editarOcorrencia(ocorrenciaId) {
+            // Como `registros` está em ordem decrescente, o primeiro com esse ID é a última ação
+            const lastRecord = registros.find(r => r.ocorrenciaId === ocorrenciaId);
+            if (!lastRecord) return;
+
+            if (!isRecordDeletable(lastRecord.data, lastRecord.shift)) {
+                return showToast('🔒 Plantão encerrado. Não é possível editar.');
+            }
+
+            editingRecordId = lastRecord.id;
+
+            // Popula o formulário com os dados do último registro
+            fData.value = lastRecord.data;
+            fHora.value = lastRecord.horaChegada || lastRecord.horaSaida;
+            fKm.value = lastRecord.kmChegada || lastRecord.kmSaida;
+            fLocal.value = lastRecord.local; // Já vai estar em caixa alta pelas regras de salvamento
+
+            // Altera a UI para indicar Edição
+            titleLancamento.innerHTML = '<i class="fas fa-pen"></i> Editando Registro';
+            titleLancamento.style.color = '#b45309'; // Laranja
+
+            showToast('✏️ Editando o último registro. Altere e clique em Chegada/Saída para salvar.');
+            document.querySelector('.form-card').scrollIntoView({ behavior: 'smooth' });
+        }
+        window.editarOcorrencia = editarOcorrencia;
+
+        // ======================= SALVAR =======================
         function adicionarRegistro(tipo) {
             const data = fData.value;
             const hora = fHora.value;
             const km = parseFloat(fKm.value);
-            let local = fLocal.value.trim();
+            let local = fLocal.value.replace(/🏥/g, '').trim().toUpperCase();
 
             if (!hora || isNaN(km)) return showToast('⚠️ Preencha Hora e KM corretamente.');
             
             const veiculoAtual = `${ambulanciaEl.value.trim()} - ${placaEl.value.trim()}`;
             const plantaoAtual = plantaoEl.value;
 
+            // Se estiver editando, atualiza o registro em vez de criar um novo
+            if (editingRecordId) {
+                if (tipo === 'chegada' || tipo === 'base') {
+                    const index = registros.findIndex(r => r.id === editingRecordId);
+                    if (index !== -1) {
+                        registros[index].horaChegada = hora;
+                        registros[index].kmChegada = km.toString();
+                        
+                        if (tipo === 'base') {
+                            const unidade = limparNomeLocal(unidadeEl.value.trim()) || 'BASE';
+                            const origem = limparNomeLocal(registros[index].local.split('→')[0]);
+                            registros[index].local = `${origem} → ${unidade}`;
+                        } else {
+                            registros[index].local = local;
+                        }
+
+                        showToast('✅ Registro atualizado com sucesso!');
+                    }
+                    resetFormUI();
+                    salvarERenderizar();
+                    if (window.innerWidth <= 768) mainHeader.classList.add('header-collapsed');
+                    return;
+                } else if (tipo === 'saida') {
+                    // Se estava editando e clicou em saída, ele quer corrigir o estado e adicionar nova saída
+                    // Atualizamos o registro anterior com os dados do form
+                    const index = registros.findIndex(r => r.id === editingRecordId);
+                    if (index !== -1) {
+                        if (registros[index].horaChegada) {
+                             registros[index].horaChegada = hora;
+                             registros[index].kmChegada = km.toString();
+                             registros[index].local = local;
+                        } else {
+                             registros[index].horaSaida = hora;
+                             registros[index].kmSaida = km.toString();
+                             registros[index].local = local;
+                        }
+                    }
+                    // Reseta o edit mode para continuar como uma nova Saída
+                    editingRecordId = null;
+                    resetFormUI(); // Importante para limpar a UI, mas prepararFormulario será chamado
+                    // O código abaixo vai criar a nova saída normalmente
+                }
+            }
+
+            // --- CRIAÇÃO NORMAL ---
             if (tipo === 'saida') {
                 if (!local.includes('→')) local += ' → '; 
                 registros.unshift({
                     id: Date.now().toString(),
-                    ocorrenciaId: currentOcorrenciaId, // <--- Agrupa pela ocorrência atual
+                    ocorrenciaId: currentOcorrenciaId, 
                     data: data,
                     shift: plantaoAtual,
                     tipo: 'saida',
@@ -357,7 +455,6 @@
                 showToast('🚑 Saída registrada!');
             } 
             else if (tipo === 'chegada' || tipo === 'base') {
-                // Busca a viagem em aberto DESTA ocorrência
                 const index = registros.findIndex(r => r.veiculo === veiculoAtual && r.ocorrenciaId === currentOcorrenciaId && !r.horaChegada);
 
                 if (index !== -1) {
@@ -367,10 +464,10 @@
                     if (tipo === 'base') {
                         const unidade = limparNomeLocal(unidadeEl.value.trim()) || 'BASE';
                         const origem = limparNomeLocal(registros[index].local.split('→')[0]);
-                        registros[index].local = `🏥 ${origem} → 🏥 ${unidade}`;
+                        registros[index].local = `${origem} → ${unidade}`;
                     }
                     
-                    showToast(tipo === 'base' ? '🏥 Fim de Plantão na Base!' : '📍 Chegada registrada no Local!');
+                    showToast(tipo === 'base' ? '🏥 Fim de Plantão na Base!' : '📍 Chegada registrada!');
                 } else {
                     showToast('⚠️ Não há saída em aberto nesta ocorrência. Clique em SAÍDA primeiro.');
                     return;
@@ -389,7 +486,7 @@
             if (!isRecordDeletable(grupo.data, grupo.shift)) {
                 return showToast('🔒 Plantão encerrado. Não é possível excluir.');
             }
-            if (!confirm(`Deseja excluir ESTA ocorrência do dia ${formatDateBR(grupo.data)}?`)) return;
+            if (!confirm(`Deseja excluir ESTA ocorrência inteira?`)) return;
             
             registros = registros.filter(r => r.ocorrenciaId !== ocorrenciaId);
             salvarERenderizar();
@@ -409,7 +506,7 @@
             localStorage.setItem('frotaKms_hci', JSON.stringify(frotaKms));
             
             let assinatura = ''; try { assinatura = canvas.toDataURL(); } catch(e) {}
-            localStorage.setItem('sistemaDeslocamentoHCI_v19', JSON.stringify({ 
+            localStorage.setItem('sistemaDeslocamentoHCI_v20', JSON.stringify({ 
                 rows: registros, observacao: observacaoEl.value, condutor: condutorEl.value, unidade: unidadeEl.value, 
                 ambulancia: ambulanciaEl.value, placa: placaEl.value, plantao: plantaoEl.value, kmInicial: kmInicialEl.value, 
                 nomeLegivel: nomeLegivelEl.value, mes: parseInt(mesSelect.value), ano: parseInt(anoSelect.value), assinaturaImg: assinatura,
@@ -426,20 +523,17 @@
                 return;
             }
 
-            // Agrupar por ID de Ocorrência
             const gruposMap = new Map();
             registros.forEach(r => {
-                // Fallback para registros antigos sem ocorrenciaId
                 const key = r.ocorrenciaId || `${r.data}_${r.shift}_${r.id}`; 
                 if (!gruposMap.has(key)) {
-                    gruposMap.set(key, { id: key, ocorrenciaId: r.ocorrenciaId, data: r.data, shift: r.shift || 'SD 12hs', items: [] });
+                    gruposMap.set(key, { id: key, ocorrenciaId: r.ocorrenciaId || key, data: r.data, shift: r.shift || 'SD 12hs', items: [] });
                 }
                 gruposMap.get(key).items.push(r);
             });
 
-            // O Map preserva a ordem de inserção, como `registros` é sempre "unshift" (mais novo primeiro), os grupos já saem ordenados corretamente.
             gruposMap.forEach(grupo => {
-                const items = [...grupo.items].reverse(); // Ordem cronológica para a timeline
+                const items = [...grupo.items].reverse(); 
 
                 let kmInicialFicha = 0;
                 let kmFinalFicha = 0;
@@ -449,10 +543,9 @@
                     const isFirst = index === 0;
                     const isLast = index === items.length - 1;
 
-                    let origem = r.local.split('→')[0]?.trim() || '';
-                    let destino = r.local.split('→')[1]?.trim() || '';
+                    let origem = limparNomeLocal(r.local.split('→')[0] || '');
+                    let destino = limparNomeLocal(r.local.split('→')[1] || '');
 
-                    // SE FOR O PRIMEIRO (INÍCIO)
                     if(isFirst) {
                         kmInicialFicha = parseFloat(r.kmSaida) || 0;
                         timelineHTML += `
@@ -472,7 +565,6 @@
                         }
                     }
 
-                    // MOSTRAR A CHEGADA
                     if (r.horaChegada && r.kmChegada) {
                         if(isLast) {
                             kmFinalFicha = parseFloat(r.kmChegada) || 0;
@@ -495,9 +587,11 @@
 
                 const kmRodado = kmFinalFicha > 0 ? (kmFinalFicha - kmInicialFicha) : 0;
                 const canDelete = isRecordDeletable(grupo.data, grupo.shift);
+                
+                const btnEdit = `<button class="btn-edit-ficha" onclick="editarOcorrencia('${grupo.ocorrenciaId}')" title="Editar"><i class="fas fa-pen"></i></button>`;
                 const btnDel = canDelete 
-                    ? `<button class="btn-del-ficha" onclick="deletarFicha('${grupo.id}')" title="Excluir Ocorrência"><i class="fas fa-trash-alt"></i></button>`
-                    : `<button class="btn-del-ficha locked" onclick="deletarFicha('${grupo.id}')" title="Plantão Encerrado"><i class="fas fa-lock"></i></button>`;
+                    ? `<button class="btn-del-ficha" onclick="deletarFicha('${grupo.ocorrenciaId}')" title="Excluir Ocorrência"><i class="fas fa-trash-alt"></i></button>`
+                    : `<button class="btn-del-ficha locked" onclick="deletarFicha('${grupo.ocorrenciaId}')" title="Plantão Encerrado"><i class="fas fa-lock"></i></button>`;
 
                 const cardHTML = `
                     <div class="ficha-card">
@@ -506,7 +600,10 @@
                                 <span><i class="far fa-calendar-alt"></i> DATA: ${formatDateBR(grupo.data)} | ${grupo.shift}</span>
                                 <span>${ambulanciaEl.value} - ${placaEl.value}</span>
                             </div>
-                            ${btnDel}
+                            <div class="ficha-actions">
+                                ${btnEdit}
+                                ${btnDel}
+                            </div>
                         </div>
                         <div class="ficha-body">
                             ${timelineHTML}
@@ -523,14 +620,14 @@
 
         // ======================= PERSISTÊNCIA =======================
         function carregarLocalStorage() {
-            let raw = localStorage.getItem('sistemaDeslocamentoHCI_v19'); 
+            let raw = localStorage.getItem('sistemaDeslocamentoHCI_v20'); 
             if(!raw) { prepararFormulario(); return false; }
             try {
                 let d = JSON.parse(raw); 
                 condutorEl.value = d.condutor || 'Anderson Martins'; unidadeEl.value = d.unidade || 'SÓ SAÚDE'; ambulanciaEl.value = d.ambulancia || 'Master'; placaEl.value = d.placa || 'RKD-5A25'; plantaoEl.value = d.plantao || 'SD 12hs'; kmInicialEl.value = d.kmInicial || ''; nomeLegivelEl.value = d.nomeLegivel || 'Anderson Martins'; observacaoEl.value = d.observacao || '';
                 if(d.mes) mesSelect.value = d.mes; if(d.ano) anoSelect.value = d.ano;
                 registros = d.rows || [];
-                currentOcorrenciaId = d.currentOcorrenciaId || Date.now().toString(); // Recupera ou cria nova
+                currentOcorrenciaId = d.currentOcorrenciaId || Date.now().toString(); 
                 
                 if(d.assinaturaImg && d.assinaturaImg !== 'data:,') { let img = new Image(); img.onload = () => ctx.drawImage(img, 0, 0, canvas.width, canvas.height); img.src = d.assinaturaImg; }
                 renderizarFichas(); 
@@ -562,7 +659,8 @@
 
                     items.forEach((r, index) => {
                         const isFirst = index === 0; const isLast = index === items.length - 1;
-                        let origem = r.local.split('→')[0]?.trim() || ''; let destino = r.local.split('→')[1]?.trim() || '';
+                        let origem = limparNomeLocal(r.local.split('→')[0] || ''); 
+                        let destino = limparNomeLocal(r.local.split('→')[1] || '');
 
                         if(isFirst) { kmIni = parseFloat(r.kmSaida) || 0; timelineStr += `<div style="font-weight:bold; color:#0e5a77;">INICIO: ${origem} H: ${r.horaSaida} KM: ${r.kmSaida}</div>`; } 
                         else if (r.horaSaida) { timelineStr += `<div style="color:#475569;">LOCAL: ${origem} H: ${r.horaSaida} KM: ${r.kmSaida}</div>`; }
@@ -616,11 +714,14 @@
         document.getElementById('btnRegBase').addEventListener('click', () => adicionarRegistro('base'));
         document.getElementById('pdfBtn').addEventListener('click', gerarRelatorio);
 
-        // Evento do botão "+" (Nova Ocorrência)
         document.getElementById('btnNovaOcorrencia').addEventListener('click', () => {
-            currentOcorrenciaId = Date.now().toString(); // Gera novo ID
-            prepararFormulario();
-            showToast('🆕 Nova ocorrência iniciada');
+            if (editingRecordId) {
+                showToast('Edição cancelada. Nova ocorrência iniciada.');
+            } else {
+                showToast('🆕 Nova ocorrência iniciada');
+            }
+            currentOcorrenciaId = Date.now().toString(); 
+            resetFormUI(); 
             fHora.focus();
         });
 
