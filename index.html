@@ -8,7 +8,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        :root { --primary: #0e5a77; --primary-dark: #0a3d4f; --bg-body: #f1f5f9; --card-bg: #ffffff; --border: #e2e8f0; --success: #15803d; --danger: #ef4444; --base: #dc2626; --info: #3b82f6; }
+        :root { --primary: #0e5a77; --primary-dark: #0a3d4f; --bg-body: #f1f5f9; --card-bg: #ffffff; --border: #e2e8f0; --success: #15803d; --danger: #ef4444; --base: #dc2626; --info: #3b82f6; --whatsapp: #25D366; }
         
         body { background: var(--bg-body); font-family: 'Inter', sans-serif; padding: 0.5rem; padding-bottom: calc(70px + env(safe-area-inset-bottom)); overflow-x: hidden; }
         .report-container { max-width: 800px; margin: 0 auto; background: var(--card-bg); border-radius: 16px; box-shadow: 0 4px 15px -5px rgba(0,0,0,0.08); overflow: hidden; border: 1px solid var(--border); }
@@ -36,12 +36,15 @@
         .content { padding: 0.8rem; overflow-x: hidden; }
         .card { background: var(--card-bg); border-radius: 12px; padding: 0.8rem; margin-bottom: 0.8rem; border: 1px solid var(--border); width: 100%; overflow: hidden; }
         
-        /* TÍTULO DO CARD COM BOTÃO + */
+        /* TÍTULO DO CARD */
         .card-title { font-size: 0.95rem; font-weight: 700; margin-bottom: 0.75rem; color: var(--primary-dark); display: flex; align-items: center; justify-content: space-between; gap: 6px; }
         .title-text { display: flex; align-items: center; gap: 6px; }
         
         .btn-add-ocorrencia { background: var(--success); color: white; border: none; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 0.9rem; transition: 0.2s; box-shadow: 0 2px 4px rgba(21,128,61,0.3); }
         .btn-add-ocorrencia:hover { background: #166534; transform: scale(1.05); }
+
+        .btn-whatsapp { background: var(--whatsapp); color: white; border: none; border-radius: 20px; padding: 4px 10px; display: flex; align-items: center; justify-content: center; gap: 4px; cursor: pointer; font-size: 0.75rem; font-weight: 700; transition: 0.2s; box-shadow: 0 2px 4px rgba(37,211,102,0.3); }
+        .btn-whatsapp:hover { background: #128C7E; transform: scale(1.02); }
         
         /* CAIXA DE LANÇAMENTO */
         .form-card { background: #f0fdf4; border: 1px solid #bbf7d0; }
@@ -78,14 +81,25 @@
         .timeline-row { display: flex; align-items: flex-start; gap: 6px; line-height: 1.3; }
         .timeline-tag { width: 70px; flex-shrink: 0; font-size: 0.7rem; font-weight: 800; letter-spacing: 0.5px; text-transform: uppercase; }
         
-        /* Cores das Tags */
         .timeline-tag.inicio { color: var(--primary); }
         .timeline-tag.chegada { color: var(--success); }
-        .timeline-tag.saida { color: #f59e0b; } /* Laranja para diferenciar da saída inicial */
+        .timeline-tag.saida { color: #f59e0b; }
         .timeline-tag.fim { color: var(--danger); }
         
         .timeline-content { flex-grow: 1; text-transform: uppercase; color: #1e293b; font-weight: 500; }
         .ficha-footer { background: #f8fafc; padding: 8px 12px; border-top: 1px dashed #cbd5e1; display: flex; justify-content: space-between; font-size: 0.8rem; font-weight: 700; color: #1e293b; }
+
+        /* RESUMO DO PLANTÃO */
+        .summary-card { background: #f0f9ff; border-color: #bae6fd; }
+        .summary-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
+        .summary-box { background: #fff; border: 1px solid #cbd5e1; border-radius: 8px; padding: 10px; text-align: center; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
+        .summary-box span { display: block; font-size: 0.65rem; color: #64748b; text-transform: uppercase; margin-bottom: 4px; font-weight: 700; }
+        .summary-box strong { font-size: 1.2rem; color: var(--primary-dark); }
+        .req-list { background: #fff; border: 1px solid #cbd5e1; border-radius: 8px; padding: 8px 12px; }
+        .req-title { font-size: 0.7rem; font-weight: 800; color: var(--primary-dark); text-transform: uppercase; margin-bottom: 6px; border-bottom: 1px dashed #e2e8f0; padding-bottom: 4px; }
+        .req-item { display: flex; justify-content: space-between; font-size: 0.8rem; padding: 4px 0; border-bottom: 1px dashed #f1f5f9; color: #334155; font-weight: 600; }
+        .req-item:last-child { border-bottom: none; }
+        .req-item span:last-child { color: var(--primary); font-weight: 800; }
 
         /* Outros componentes */
         .two-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 0.8rem; }
@@ -188,10 +202,21 @@
             </div>
         </div>
 
+        <!-- RESUMO DO PLANTÃO -->
+        <div class="card summary-card">
+            <div class="card-title">
+                <div class="title-text" style="color: #0369a1;"><i class="fas fa-chart-pie"></i> Resumo do Plantão</div>
+            </div>
+            <div id="resumoContainer">
+                <!-- Preenchido via JS -->
+            </div>
+        </div>
+
         <!-- HISTÓRICO DE LANÇAMENTOS -->
         <div class="card">
             <div class="card-title">
                 <div class="title-text"><i class="fas fa-list-ol"></i> Histórico de Ocorrências</div>
+                <button id="btnShareWhats" class="btn-whatsapp" title="Compartilhar no WhatsApp"><i class="fab fa-whatsapp"></i> Enviar</button>
             </div>
             <div id="historicoContainer">
                 <!-- Preenchido via JS -->
@@ -221,6 +246,7 @@
 
         // Elementos DOM
         const historicoContainer = document.getElementById('historicoContainer');
+        const resumoContainer = document.getElementById('resumoContainer');
         const observacaoEl = document.getElementById('observacao');
         const condutorEl = document.getElementById('condutorHeader');
         const unidadeEl = document.getElementById('unidadeHeader');
@@ -290,8 +316,6 @@
         redimencionarCanvas();
 
         // ======================= LÓGICA DE NEGÓCIO =======================
-        
-        // Função para limpar e padronizar os nomes (Caixa Alta, sem emojis)
         function limparNomeLocal(str) { 
             if (!str) return ''; 
             return str.replace(/🏥/g, '').trim().toUpperCase(); 
@@ -307,20 +331,14 @@
             return kmInicialEl.value || ''; 
         }
 
-        // A MÁGICA DO DESTINO AUTOMÁTICO ACONTECE AQUI
         function getLocalAtual() {
             const veiculoAtual = `${ambulanciaEl.value.trim()} - ${placaEl.value.trim()}`;
-            // Busca o registro mais recente desse veículo (independente da ocorrência)
             for (let i = 0; i < registros.length; i++) {
                 if (registros[i].veiculo !== veiculoAtual) continue;
                 const local = registros[i].local || '';
                 if (!local) continue;
-                
                 const partes = local.split('→');
-                // Se tem duas partes (Origem → Destino), o local atual é o Destino
-                if (partes.length >= 2) {
-                    return limparNomeLocal(partes[1]);
-                }
+                if (partes.length >= 2) return limparNomeLocal(partes[1]);
                 return limparNomeLocal(partes[0]);
             }
             return null;
@@ -336,7 +354,6 @@
             const unidade = limparNomeLocal(unidadeEl.value.trim()) || 'BASE';
             const localAtual = getLocalAtual();
             
-            // Preenche automaticamente com o local onde a ambulância parou por último
             if (!localAtual) {
                 fLocal.value = `${unidade} → `;
             } else {
@@ -383,7 +400,6 @@
             const data = fData.value;
             const hora = fHora.value;
             const km = parseFloat(fKm.value);
-            // Força caixa alta e remove ícone
             let local = limparNomeLocal(fLocal.value);
 
             if (!hora || isNaN(km)) return showToast('⚠️ Preencha Hora e KM corretamente.');
@@ -391,7 +407,6 @@
             const veiculoAtual = `${ambulanciaEl.value.trim()} - ${placaEl.value.trim()}`;
             const plantaoAtual = plantaoEl.value;
 
-            // Lógica para forçar a Base quando clica em Base (Fim)
             if (tipo === 'base') {
                 const unidade = limparNomeLocal(unidadeEl.value.trim()) || 'BASE';
                 const origem = local.split('→')[0] ? limparNomeLocal(local.split('→')[0]) : getLocalAtual();
@@ -443,8 +458,8 @@
                 if (index !== -1) {
                     registros[index].horaChegada = hora;
                     registros[index].kmChegada = km.toString();
-                    registros[index].tipo = tipo; // Troca 'saida' por 'chegada' ou 'base'
-                    if (tipo === 'base') registros[index].local = local; // Atualiza com o texto da base
+                    registros[index].tipo = tipo; 
+                    if (tipo === 'base') registros[index].local = local; 
                     
                     showToast(tipo === 'base' ? '🏥 Fim de Plantão na Base!' : '📍 Chegada registrada!');
                 } else {
@@ -485,14 +500,87 @@
             localStorage.setItem('frotaKms_hci', JSON.stringify(frotaKms));
             
             let assinatura = ''; try { assinatura = canvas.toDataURL(); } catch(e) {}
-            localStorage.setItem('sistemaDeslocamentoHCI_v21', JSON.stringify({ 
+            localStorage.setItem('sistemaDeslocamentoHCI_v23', JSON.stringify({ 
                 rows: registros, observacao: observacaoEl.value, condutor: condutorEl.value, unidade: unidadeEl.value, 
                 ambulancia: ambulanciaEl.value, placa: placaEl.value, plantao: plantaoEl.value, kmInicial: kmInicialEl.value, 
                 nomeLegivel: nomeLegivelEl.value, mes: parseInt(mesSelect.value), ano: parseInt(anoSelect.value), assinaturaImg: assinatura,
                 currentOcorrenciaId: currentOcorrenciaId
             }));
 
+            renderizarResumo();
             renderizarFichas();
+        }
+
+        function renderizarResumo() {
+            if(registros.length === 0) {
+                resumoContainer.innerHTML = '<p style="font-size:0.8rem; color:#94a3b8; text-align:center;">Aguardando lançamentos...</p>';
+                return;
+            }
+
+            let totalKm = 0;
+            const gruposMap = new Map();
+            
+            registros.forEach(r => {
+                const key = r.ocorrenciaId || `${r.data}_${r.shift}_${r.id}`; 
+                if (!gruposMap.has(key)) gruposMap.set(key, []);
+                gruposMap.get(key).push(r);
+
+                if (r.kmSaida && r.kmChegada) {
+                    let s = parseFloat(r.kmSaida);
+                    let c = parseFloat(r.kmChegada);
+                    if (c >= s) totalKm += (c - s);
+                }
+            });
+
+            let totalOcorrencias = gruposMap.size;
+            let solicitantes = {};
+
+            gruposMap.forEach(items => {
+                const orderedItems = [...items].reverse(); 
+                const first = orderedItems[0];
+                if (first && first.local) {
+                    const partes = first.local.split('→');
+                    if (partes.length >= 2) {
+                        let destino = partes[1].trim().toUpperCase();
+                        if (destino) {
+                            solicitantes[destino] = (solicitantes[destino] || 0) + 1;
+                        }
+                    }
+                }
+            });
+
+            let solicitantesHTML = '';
+            const sortedSolicitantes = Object.keys(solicitantes).sort((a,b) => solicitantes[b] - solicitantes[a]);
+            
+            sortedSolicitantes.forEach(local => {
+                solicitantesHTML += `
+                    <div class="req-item">
+                        <span>${local}</span>
+                        <span>${solicitantes[local]}</span>
+                    </div>
+                `;
+            });
+
+            if (sortedSolicitantes.length === 0) {
+                solicitantesHTML = '<div style="text-align:center; font-size:0.75rem; color:#94a3b8; padding:5px;">Nenhum destino registrado.</div>';
+            }
+
+            resumoContainer.innerHTML = `
+                <div class="summary-grid">
+                    <div class="summary-box">
+                        <span>Ocorrências</span>
+                        <strong>${totalOcorrencias}</strong>
+                    </div>
+                    <div class="summary-box">
+                        <span>KM Rodados</span>
+                        <strong style="color: var(--success)">${totalKm.toFixed(1)}</strong>
+                    </div>
+                </div>
+                <div class="req-list">
+                    <div class="req-title">Unidades Solicitantes</div>
+                    ${solicitantesHTML}
+                </div>
+            `;
         }
 
         function renderizarFichas() {
@@ -524,7 +612,6 @@
                     let origem = limparNomeLocal(r.local.split('→')[0] || '');
                     let destino = limparNomeLocal(r.local.split('→')[1] || '');
 
-                    // 1. Lógica para imprimir o INICIO ou SAÍDA
                     if (r.horaSaida) {
                         kmInicialFicha = isFirst ? (parseFloat(r.kmSaida) || 0) : kmInicialFicha;
                         
@@ -545,7 +632,6 @@
                         }
                     }
 
-                    // 2. Lógica para imprimir a CHEGADA ou FIM
                     if (r.horaChegada) {
                         kmFinalFicha = parseFloat(r.kmChegada) || 0;
                         
@@ -600,9 +686,86 @@
             });
         }
 
+        // ======================= COMPARTILHAR WHATSAPP =======================
+        function compartilharWhatsApp() {
+            if(registros.length === 0) {
+                return showToast('⚠️ Não há registros para compartilhar.');
+            }
+
+            const gruposMap = new Map();
+            registros.forEach(r => {
+                const key = r.ocorrenciaId || `${r.data}_${r.shift}_${r.id}`; 
+                if (!gruposMap.has(key)) gruposMap.set(key, { id: key, data: r.data, shift: r.shift || 'SD 12hs', items: [] });
+                gruposMap.get(key).items.push(r);
+            });
+
+            let texto = `*🚑 RELATÓRIO DE DESLOCAMENTO*\n`;
+            texto += `📅 Data: ${formatDateBR(hoje())} | Plantão: ${plantaoEl.value}\n`;
+            texto += `🚑 Veículo: ${ambulanciaEl.value} (${placaEl.value})\n`;
+            texto += `👨‍⚕️ Condutor: ${condutorEl.value}\n`;
+            texto += `-----------------------------------\n\n`;
+
+            let totalKmGeral = 0;
+            let solicitantes = {};
+
+            gruposMap.forEach(grupo => {
+                const items = [...grupo.items].reverse();
+                let kmIni = 0; let kmFim = 0;
+
+                const first = items[0];
+                if (first && first.local) {
+                    const partes = first.local.split('→');
+                    if (partes.length >= 2) {
+                        let destino = partes[1].trim().toUpperCase();
+                        if (destino) solicitantes[destino] = (solicitantes[destino] || 0) + 1;
+                    }
+                }
+
+                items.forEach((r, index) => {
+                    const isFirst = index === 0; 
+                    let origem = limparNomeLocal(r.local.split('→')[0] || ''); 
+                    let destino = limparNomeLocal(r.local.split('→')[1] || '');
+
+                    if (r.horaSaida) {
+                        kmIni = isFirst ? (parseFloat(r.kmSaida) || 0) : kmIni;
+                        if (isFirst) texto += `*INICIO:* ${origem} H: ${r.horaSaida} KM: ${r.kmSaida}\n`;
+                        else texto += `*SAÍDA:* ${origem} H: ${r.horaSaida} KM: ${r.kmSaida}\n`;
+                    }
+                    
+                    if (r.horaChegada) {
+                        kmFim = parseFloat(r.kmChegada) || 0;
+                        if (r.tipo === 'base') texto += `*FIM:* ${destino} H: ${r.horaChegada} KM: ${r.kmChegada}\n`;
+                        else texto += `*CHEGADA:* ${destino} H: ${r.horaChegada} KM: ${r.kmChegada}\n`;
+                    }
+                });
+
+                const kmRod = kmFim > 0 ? (kmFim - kmIni) : 0;
+                totalKmGeral += kmRod;
+                texto += `\n*DATA: ${formatDateBR(grupo.data)}  KM ROD: ${kmRod.toFixed(1)}*\n`;
+                texto += `-----------------------------------\n\n`;
+            });
+
+            texto += `*📊 RESUMO DO PLANTÃO*\n`;
+            texto += `Total de Ocorrências: ${gruposMap.size}\n`;
+            texto += `Total KM Rodado: ${totalKmGeral.toFixed(1)} km\n\n`;
+            
+            texto += `*🏥 UNIDADES SOLICITANTES:*\n`;
+            const sortedSolicitantes = Object.keys(solicitantes).sort((a,b) => solicitantes[b] - solicitantes[a]);
+            sortedSolicitantes.forEach(local => {
+                texto += `• ${local}: ${solicitantes[local]}\n`;
+            });
+
+            if (observacaoEl.value.trim()) {
+                texto += `\n*📋 OBSERVAÇÕES:*\n${observacaoEl.value.trim()}`;
+            }
+
+            const url = `https://api.whatsapp.com/send?text=${encodeURIComponent(texto)}`;
+            window.open(url, '_blank');
+        }
+
         // ======================= PERSISTÊNCIA =======================
         function carregarLocalStorage() {
-            let raw = localStorage.getItem('sistemaDeslocamentoHCI_v21'); 
+            let raw = localStorage.getItem('sistemaDeslocamentoHCI_v23'); 
             if(!raw) { prepararFormulario(); return false; }
             try {
                 let d = JSON.parse(raw); 
@@ -612,6 +775,7 @@
                 currentOcorrenciaId = d.currentOcorrenciaId || Date.now().toString(); 
                 
                 if(d.assinaturaImg && d.assinaturaImg !== 'data:,') { let img = new Image(); img.onload = () => ctx.drawImage(img, 0, 0, canvas.width, canvas.height); img.src = d.assinaturaImg; }
+                renderizarResumo();
                 renderizarFichas(); 
                 prepararFormulario();
                 if (window.innerWidth <= 768 && registros.length > 0) mainHeader.classList.add('header-collapsed');
@@ -671,6 +835,45 @@
                     `;
                 });
 
+                let totalKmPdf = 0;
+                let solicitantesPdf = {};
+                gruposMap.forEach(items => {
+                    const orderedItems = [...items.items].reverse(); 
+                    const first = orderedItems[0];
+                    if (first && first.local) {
+                        const partes = first.local.split('→');
+                        if (partes.length >= 2) {
+                            let destino = partes[1].trim().toUpperCase();
+                            if (destino) solicitantesPdf[destino] = (solicitantesPdf[destino] || 0) + 1;
+                        }
+                    }
+                    items.items.forEach(r => {
+                        if (r.kmSaida && r.kmChegada) {
+                            let s = parseFloat(r.kmSaida); let c = parseFloat(r.kmChegada);
+                            if (c >= s) totalKmPdf += (c - s);
+                        }
+                    });
+                });
+
+                let resumoPdfHTML = `
+                    <div style="border:1px solid #bae6fd; background:#f0f9ff; padding:15px; border-radius:8px; margin-bottom:20px;">
+                        <h3 style="color:#0369a1; font-size:12pt; margin-bottom:10px;">RESUMO DO PLANTÃO</h3>
+                        <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
+                            <div><strong>Ocorrências:</strong> ${gruposMap.size}</div>
+                            <div><strong>KM Total Rodado:</strong> ${totalKmPdf.toFixed(1)} km</div>
+                        </div>
+                        <div style="border-top:1px dashed #bae6fd; padding-top:10px;">
+                            <strong style="font-size:10pt; color:#0369a1;">UNIDADES SOLICITANTES:</strong><br>
+                            <ul style="font-size:9pt; margin-left:20px; margin-top:5px; color:#334155;">
+                `;
+                
+                const sortedPdf = Object.keys(solicitantesPdf).sort((a,b) => solicitantesPdf[b] - solicitantesPdf[a]);
+                sortedPdf.forEach(local => {
+                    resumoPdfHTML += `<li>${local}: <strong>${solicitantesPdf[local]}</strong></li>`;
+                });
+                
+                resumoPdfHTML += `</ul></div></div>`;
+
                 const obsHTML = observacaoEl.value ? `<div style="padding:10px; border:1px solid #ddd; background:#f9f9f9; margin-top:20px;"><strong>📋 Observações:</strong> ${observacaoEl.value.replace(/\n/g, '<br>')}</div>` : '';
 
                 const relatorioHTML = `
@@ -684,6 +887,8 @@
                             <tr><td>Km Inicial</td><td>${kmInicialEl.value || '-'}</td><td>Gerado em</td><td>${dataHora}</td></tr>
                         </table>
                         
+                        ${resumoPdfHTML}
+
                         ${fichasHTML}
                         ${obsHTML}
 
@@ -699,6 +904,7 @@
         document.getElementById('btnRegChegada').addEventListener('click', () => adicionarRegistro('chegada'));
         document.getElementById('btnRegBase').addEventListener('click', () => adicionarRegistro('base'));
         document.getElementById('pdfBtn').addEventListener('click', gerarRelatorio);
+        document.getElementById('btnShareWhats').addEventListener('click', compartilharWhatsApp);
 
         document.getElementById('btnNovaOcorrencia').addEventListener('click', () => {
             if (editingRecordId) {
