@@ -11,7 +11,7 @@
         :root { --primary: #0e5a77; --primary-dark: #0a3d4f; --bg-body: #f1f5f9; --card-bg: #ffffff; --border: #e2e8f0; --success: #15803d; --danger: #ef4444; --base: #dc2626; --info: #3b82f6; }
         
         body { background: var(--bg-body); font-family: 'Inter', sans-serif; padding: 0.5rem; padding-bottom: calc(70px + env(safe-area-inset-bottom)); overflow-x: hidden; }
-        .report-container { max-width: 1000px; margin: 0 auto; background: var(--card-bg); border-radius: 16px; box-shadow: 0 4px 15px -5px rgba(0,0,0,0.08); overflow: hidden; border: 1px solid var(--border); }
+        .report-container { max-width: 800px; margin: 0 auto; background: var(--card-bg); border-radius: 16px; box-shadow: 0 4px 15px -5px rgba(0,0,0,0.08); overflow: hidden; border: 1px solid var(--border); }
         
         /* HEADER COMPACTO */
         .header { background: linear-gradient(135deg, var(--primary-dark), var(--primary)); padding: 0.8rem 1rem; color: #fff; transition: all 0.3s ease; }
@@ -55,38 +55,34 @@
         .btn-form-retorno { background: #f59e0b; }
         .btn-form-base { background: var(--base); }
 
-        /* NOVO HISTÓRICO - LIVRO DE REGISTRO */
-        .history-log { display: flex; flex-direction: column; gap: 10px; }
+        /* NOVO VISUAL DO HISTÓRICO (FICHAS) */
+        .ficha-card { background: #fff; border: 1px solid #cbd5e1; border-radius: 10px; margin-bottom: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.02); overflow: hidden; }
         
-        .log-card {
-            background: #fff;
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            padding: 10px;
-            position: relative;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.02);
-        }
+        .ficha-header { background: #f8fafc; padding: 8px 12px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; }
+        .ficha-header-info { font-size: 0.75rem; color: #475569; font-weight: 600; display: flex; flex-direction: column; gap: 2px; }
+        
+        /* Botão de Excluir no topo */
+        .btn-del-ficha { background: #fee2e2; color: #b91c1c; border: none; cursor: pointer; padding: 6px 10px; border-radius: 6px; font-size: 0.9rem; transition: 0.2s; display: flex; align-items: center; justify-content: center; }
+        .btn-del-ficha.locked { background: #e2e8f0; color: #64748b; cursor: not-allowed; }
+        
+        .ficha-body { padding: 10px 12px; display: flex; flex-direction: column; gap: 6px; font-family: 'Inter', monospace; font-size: 0.8rem; }
+        
+        /* Estilos das Linhas da Timeline */
+        .timeline-row { display: flex; align-items: flex-start; gap: 6px; line-height: 1.3; }
+        .timeline-row.inicio { color: var(--primary); font-weight: 700; }
+        .timeline-row.fim { color: var(--danger); font-weight: 700; }
+        .timeline-row.local { color: #475569; font-weight: 500; }
+        
+        .timeline-tag { width: 55px; flex-shrink: 0; font-size: 0.7rem; font-weight: 800; letter-spacing: 0.5px; text-transform: uppercase; }
+        .timeline-tag.inicio-tag { color: var(--primary); }
+        .timeline-tag.local-tag { color: #94a3b8; }
+        .timeline-tag.fim-tag { color: var(--danger); }
+        
+        .timeline-content { flex-grow: 1; }
+        
+        .ficha-footer { background: #f8fafc; padding: 8px 12px; border-top: 1px dashed #cbd5e1; display: flex; justify-content: space-between; font-size: 0.8rem; font-weight: 700; color: #1e293b; }
 
-        .log-content { font-family: monospace; font-size: 0.85rem; color: #334155; line-height: 1.5; padding-right: 35px; }
-        
-        .log-line { margin-bottom: 2px; }
-        .log-line strong { color: var(--primary-dark); }
-        .log-line span { margin-left: 10px; color: #64748b; font-weight: 600; }
-        
-        .log-footer { margin-top: 8px; padding-top: 8px; border-top: 1px dashed #e2e8f0; font-size: 0.75rem; color: #94a3b8; font-family: 'Inter', sans-serif; font-weight: 600; }
-
-        /* Botões de Ação no Card */
-        .btn-del-row { 
-            position: absolute; top: 8px; right: 8px;
-            background: #fee2e2; color: #b91c1c; border: none; cursor: pointer; 
-            padding: 6px 10px; border-radius: 6px; font-size: 0.85rem; transition: 0.2s; 
-        }
-        .btn-del-row:hover { background: #fecaca; }
-        
-        .btn-del-row.locked { background: #e2e8f0; color: #475569; cursor: not-allowed; }
-
-        .total-bar { display: flex; justify-content: space-between; align-items: center; margin-top: 0.8rem; background: #eff6ff; padding: 10px; border-radius: 8px; font-weight: 700; font-size: 0.9rem; color: var(--primary-dark); }
-        
+        /* Outros componentes */
         .two-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 0.8rem; }
         .obs-box textarea { width: 100%; padding: 8px; border-radius: 8px; border: 1px solid var(--border); font-family: 'Inter'; font-size: 0.8rem; resize: vertical; background: #f8fafc; }
         .sign-box { background: #f8fafc; border-radius: 12px; padding: 0.8rem; border: 1px solid var(--border); }
@@ -119,7 +115,6 @@
             .form-item input { font-size: 16px !important; padding: 6px; }
             .form-actions button { font-size: 0.8rem; padding: 10px 2px; }
 
-            .log-content { font-size: 0.75rem; }
             .btn-pdf { padding: 10px; font-size: 0.85rem; }
         }
         
@@ -139,12 +134,12 @@
             </div>
         </div>
         <div class="info-grid">
-            <div class="info-item"><label>🏥 Unidade</label><input type="text" id="unidadeHeader" value="HCI"></div>
+            <div class="info-item"><label>🏥 Unidade</label><input type="text" id="unidadeHeader" value="SÓ SAÚDE"></div>
             <div class="info-item"><label>👨‍⚕️ Condutor</label><input type="text" id="condutorHeader" value="Anderson Martins"></div>
             <div class="info-item"><label>⏱️ Plantão</label><select id="plantaoHeader"><option value="SD 12hs">SD 12hs (07h-19h)</option><option value="SN 12hs">SN 12hs (19h-07h)</option><option value="DN 24hs">DN 24hs</option></select></div>
-            <div class="info-item"><label>🚑 Ambulância</label><input type="text" id="ambulanciaHeader" value="Ducato"></div>
+            <div class="info-item"><label>🚑 Ambulância</label><input type="text" id="ambulanciaHeader" value="Master"></div>
             <div class="info-item"><label>🔖 Placa</label><input type="text" id="placaHeader" value="RKD-5A25"></div>
-            <div class="info-item"><label>🔢 Km Inicial</label><input type="number" id="kmInicialHeader" value="" placeholder="Ex: 62000" step="0.1"></div>
+            <div class="info-item"><label>🔢 Km Inicial</label><input type="number" id="kmInicialHeader" value="34585" step="0.1"></div>
         </div>
     </div>
     
@@ -172,8 +167,8 @@
                     <input type="text" id="fPlantaoInfo" readonly style="background:#e2e8f0; color:#64748b; border-color:#cbd5e1;">
                 </div>
                 <div class="form-item full">
-                    <label>Local / Destino</label>
-                    <input type="text" id="fLocal" placeholder="🏥 Origem → Destino">
+                    <label>Local / Destino (Origem → Destino)</label>
+                    <input type="text" id="fLocal" placeholder="Ex: 🏥 SÓ SAÚDE → 🏥 MT INFANTIL">
                 </div>
             </div>
             
@@ -185,14 +180,11 @@
             </div>
         </div>
 
-        <!-- TABELA (HISTÓRICO) - AGORA COMO LIVRO DE REGISTRO -->
+        <!-- HISTÓRICO DE LANÇAMENTOS (NOVO MODELO) -->
         <div class="card">
             <div class="card-title"><i class="fas fa-list-ol"></i> Histórico de Lançamentos</div>
-            <div class="history-log" id="historyContainer"></div>
-            
-            <div class="total-bar">
-                <span><i class="fas fa-tachometer-alt"></i> Total Rodado</span>
-                <span><strong id="totalKmValue">0</strong> km</span>
+            <div id="historicoContainer">
+                <!-- Preenchido via JS -->
             </div>
         </div>
         
@@ -218,8 +210,7 @@
         const showToast = (msg) => { const t = document.getElementById('toast'); t.textContent = msg; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 3000); };
 
         // Elementos DOM
-        const historyContainer = document.getElementById('historyContainer');
-        const totalSpan = document.getElementById('totalKmValue');
+        const historicoContainer = document.getElementById('historicoContainer');
         const observacaoEl = document.getElementById('observacao');
         const condutorEl = document.getElementById('condutorHeader');
         const unidadeEl = document.getElementById('unidadeHeader');
@@ -249,18 +240,17 @@
         function atualizarLimitesDatas() { const p = getPeriodo(); fData.min = p.min; fData.max = p.max; }
 
         // ======================= REGRA DE BLOQUEIO DE EXCLUSÃO =======================
-        function isRecordDeletable(record) {
-            if (!record.data) return true; 
-            const [year, month, day] = record.data.split('-');
+        function isRecordDeletable(dataStr, shiftStr) {
+            if (!dataStr) return true; 
+            const [year, month, day] = dataStr.split('-');
             let endHour = 19; let endDayOffset = 0;
-            const shift = record.shift || 'SD 12hs'; 
             
-            if (shift === 'SD 12hs') { endHour = 19; endDayOffset = 0; } 
-            else if (shift === 'SN 12hs') { endHour = 7; endDayOffset = 1; } 
-            else if (shift === 'DN 24hs') { endHour = 7; endDayOffset = 1; }
+            if (shiftStr === 'SN 12hs') { endHour = 7; endDayOffset = 1; } 
+            else if (shiftStr === 'DN 24hs') { endHour = 7; endDayOffset = 1; }
             
             const endTime = new Date(year, parseInt(month) - 1, parseInt(day) + endDayOffset, endHour, 0, 0);
-            endTime.setHours(endTime.getHours() + 1); // 1h de tolerância
+            endTime.setHours(endTime.getHours() + 1); // Tolerância de 1h
+            
             return new Date() < endTime;
         }
 
@@ -321,7 +311,7 @@
             let kmRef = getUltimoKmChegada();
             if (kmRef) fKm.value = kmRef;
             
-            const unidade = limparNomeLocal(unidadeEl.value.trim()) || 'HCI';
+            const unidade = limparNomeLocal(unidadeEl.value.trim()) || 'BASE';
             const ultimoLocal = getUltimoLocal();
             
             if (!ultimoLocal) {
@@ -348,8 +338,16 @@
 
             if (tipo === 'saida') {
                 registros.unshift({
-                    id: Date.now().toString(), data: data, shift: plantaoAtual, tipo: 'saida',
-                    horaSaida: hora, kmSaida: km.toString(), local: local, horaChegada: '', kmChegada: '', veiculo: veiculoAtual
+                    id: Date.now().toString(),
+                    data: data,
+                    shift: plantaoAtual,
+                    tipo: 'saida',
+                    horaSaida: hora,
+                    kmSaida: km.toString(),
+                    local: local,
+                    horaChegada: '',
+                    kmChegada: '',
+                    veiculo: veiculoAtual
                 });
                 showToast('🚑 Saída registrada!');
             } 
@@ -362,7 +360,7 @@
                     
                     if (tipo === 'base') {
                         registros[index].tipo = 'base';
-                        const unidade = limparNomeLocal(unidadeEl.value.trim()) || 'HCI';
+                        const unidade = limparNomeLocal(unidadeEl.value.trim()) || 'BASE';
                         const origem = limparNomeLocal(registros[index].local.split('→')[0]);
                         registros[index].local = `🏥 ${origem} → 🏥 ${unidade}`;
                     } else if (tipo === 'retorno') {
@@ -370,11 +368,20 @@
                     } else {
                         registros[index].tipo = 'chegada';
                     }
+                    
                     showToast(tipo === 'base' ? '🏥 Retorno à Base!' : '📍 Chegada registrada!');
                 } else {
                     registros.unshift({
-                        id: Date.now().toString(), data: data, shift: plantaoAtual, tipo: tipo,
-                        horaSaida: '', kmSaida: '', local: local, horaChegada: hora, kmChegada: km.toString(), veiculo: veiculoAtual
+                        id: Date.now().toString(),
+                        data: data,
+                        shift: plantaoAtual,
+                        tipo: tipo,
+                        horaSaida: '',
+                        kmSaida: '',
+                        local: local,
+                        horaChegada: hora,
+                        kmChegada: km.toString(),
+                        veiculo: veiculoAtual
                     });
                     showToast('📍 Chegada avulsa registrada!');
                 }
@@ -385,22 +392,21 @@
             if (window.innerWidth <= 768) mainHeader.classList.add('header-collapsed');
         }
 
-        function deletarRegistro(id) {
-            const record = registros.find(r => r.id === id);
-            if (!record) return;
-
-            if (!isRecordDeletable(record)) {
+        function deletarFicha(dataStr, shiftStr) {
+            if (!isRecordDeletable(dataStr, shiftStr)) {
                 return showToast('🔒 Plantão encerrado. Não é possível excluir.');
             }
 
-            if (!confirm('Excluir este lançamento do histórico?')) return;
-            registros = registros.filter(r => r.id !== id);
+            if (!confirm(`Deseja excluir TODOS os registros do dia ${formatDateBR(dataStr)} (${shiftStr})?`)) return;
+            
+            registros = registros.filter(r => !(r.data === dataStr && r.shift === shiftStr));
+            
             salvarERenderizar();
-            showToast('🗑️ Lançamento excluído');
+            showToast('🗑️ Ficha excluída com sucesso');
         }
-        window.deletarRegistro = deletarRegistro;
+        window.deletarFicha = deletarFicha;
 
-        // ======================= RENDERIZAÇÃO (NOVO VISUAL) =======================
+        // ======================= RENDERIZAÇÃO =======================
         function salvarERenderizar() {
             const frotaKms = JSON.parse(localStorage.getItem('frotaKms_hci') || '{}');
             registros.forEach(r => {
@@ -418,67 +424,126 @@
                 nomeLegivel: nomeLegivelEl.value, mes: parseInt(mesSelect.value), ano: parseInt(anoSelect.value), assinaturaImg: assinatura 
             }));
 
-            renderizarTabela();
+            renderizarFichas();
         }
 
-        function renderizarTabela() {
-            historyContainer.innerHTML = '';
-            let totalGeral = 0;
+        function renderizarFichas() {
+            historicoContainer.innerHTML = '';
+            if(registros.length === 0) {
+                historicoContainer.innerHTML = '<p style="font-size:0.8rem; color:#94a3b8; text-align:center;">Nenhum lançamento registrado.</p>';
+                return;
+            }
 
+            // Agrupar por Data e Shift
+            const grupos = {};
             registros.forEach(r => {
-                let kmRod = 0;
-                let kmText = '0.0';
-                if (r.kmSaida && r.kmChegada) {
-                    let s = parseFloat(r.kmSaida); let c = parseFloat(r.kmChegada);
-                    if (c >= s) { kmRod = c - s; kmText = kmRod.toFixed(1); totalGeral += kmRod; } 
-                    else { kmText = 'Inválido'; }
-                }
-
-                const canDelete = isRecordDeletable(r);
-                const btnHtml = canDelete 
-                    ? `<button class="btn-del-row" onclick="deletarRegistro('${r.id}')" title="Excluir"><i class="fas fa-trash-alt"></i></button>`
-                    : `<button class="btn-del-row locked" title="Plantão encerrado" onclick="deletarRegistro('${r.id}')"><i class="fas fa-lock"></i></button>`;
-
-                // Separar Origem e Destino do texto "Origem → Destino"
-                let partes = r.local.split('→');
-                let origem = partes.length > 0 ? partes[0].trim() : 'Origem';
-                let destino = partes.length > 1 ? partes[1].trim() : 'Destino';
-
-                let html = `<div class="log-card">`;
-                html += btnHtml; 
-                html += `<div class="log-content">`;
-
-                // Se tem chegada registrada
-                if (r.horaChegada) {
-                    let prefixoFim = (r.tipo === 'base' || r.tipo === 'retorno') ? 'FIM' : 'LOCAL';
-                    html += `<div class="log-line"><strong>${prefixoFim}:</strong> ${destino} <span>H: ${r.horaChegada}</span> <span>KM: ${r.kmChegada}</span></div>`;
-                }
-
-                // Se tem saída registrada
-                if (r.horaSaida) {
-                    // Se for a primeira viagem do dia (não tem registro anterior na lista)
-                    let prefixoSaida = 'INICIO';
-                    if (registros.indexOf(r) > 0 && r.tipo !== 'saida') prefixoSaida = 'LOCAL'; 
-                    
-                    html += `<div class="log-line"><strong>${prefixoSaida}:</strong> ${origem} <span>H: ${r.horaSaida}</span> <span>KM: ${r.kmSaida}</span></div>`;
-                }
-
-                html += `<div class="log-footer">DATA: ${formatDateBR(r.data)} &nbsp;|&nbsp; KM ROD: ${kmText}</div>`;
-                html += `</div></div>`;
-
-                historyContainer.innerHTML += html;
+                const key = `${r.data}_${r.shift || 'SD 12hs'}`;
+                if (!grupos[key]) grupos[key] = { data: r.data, shift: r.shift || 'SD 12hs', items: [] };
+                grupos[key].items.push(r);
             });
 
-            totalSpan.innerText = totalGeral.toFixed(1);
+            // Ordenar as chaves de data da mais recente para a mais antiga
+            const chavesOrdenadas = Object.keys(grupos).sort((a, b) => {
+                return new Date(b.split('_')[0]) - new Date(a.split('_')[0]);
+            });
+
+            chavesOrdenadas.forEach(key => {
+                const grupo = grupos[key];
+                
+                // Como `registros` está salvo do mais novo pro mais antigo, 
+                // vamos inverter para ler em ordem cronológica (Início -> Fim)
+                const itemsCronologicos = [...grupo.items].reverse();
+
+                let kmInicialFicha = 0;
+                let kmFinalFicha = 0;
+                let timelineHTML = '';
+
+                itemsCronologicos.forEach((r, index) => {
+                    const isFirst = index === 0;
+                    const isLast = index === itemsCronologicos.length - 1;
+
+                    // Extrai Origem e Destino
+                    let origem = r.local.split('→')[0]?.trim() || '';
+                    let destino = r.local.split('→')[1]?.trim() || '';
+
+                    if(isFirst) {
+                        kmInicialFicha = parseFloat(r.kmSaida) || 0;
+                        timelineHTML += `
+                            <div class="timeline-row inicio">
+                                <div class="timeline-tag inicio-tag">INICIO:</div>
+                                <div class="timeline-content">${origem} H: ${r.horaSaida} KM: ${r.kmSaida}</div>
+                            </div>
+                        `;
+                    }
+
+                    if (r.horaChegada && r.kmChegada) {
+                        if(isLast) {
+                            kmFinalFicha = parseFloat(r.kmChegada) || 0;
+                            timelineHTML += `
+                                <div class="timeline-row fim">
+                                    <div class="timeline-tag fim-tag">FIM:</div>
+                                    <div class="timeline-content">${destino} H: ${r.horaChegada} KM: ${r.kmChegada}</div>
+                                </div>
+                            `;
+                        } else {
+                            timelineHTML += `
+                                <div class="timeline-row local">
+                                    <div class="timeline-tag local-tag">LOCAL:</div>
+                                    <div class="timeline-content">${destino} H: ${r.horaChegada} KM: ${r.kmChegada}</div>
+                                </div>
+                            `;
+                        }
+                    }
+
+                    // Se não for o último, imprime a saída do local
+                    if (!isLast && r.horaSaida) {
+                        timelineHTML += `
+                            <div class="timeline-row local">
+                                <div class="timeline-tag local-tag">LOCAL:</div>
+                                <div class="timeline-content">${origem} H: ${r.horaSaida} KM: ${r.kmSaida}</div>
+                            </div>
+                        `;
+                    }
+                });
+
+                const kmRodado = kmFinalFicha > 0 ? (kmFinalFicha - kmInicialFicha) : 0;
+                const canDelete = isRecordDeletable(grupo.data, grupo.shift);
+                const btnDel = canDelete 
+                    ? `<button class="btn-del-ficha" onclick="deletarFicha('${grupo.data}', '${grupo.shift}')" title="Excluir Ficha"><i class="fas fa-trash-alt"></i></button>`
+                    : `<button class="btn-del-ficha locked" onclick="deletarFicha('${grupo.data}', '${grupo.shift}')" title="Plantão Encerrado"><i class="fas fa-lock"></i></button>`;
+
+                const cardHTML = `
+                    <div class="ficha-card">
+                        <div class="ficha-header">
+                            <div class="ficha-header-info">
+                                <span><i class="far fa-calendar-alt"></i> DATA: ${formatDateBR(grupo.data)} | ${grupo.shift}</span>
+                                <span>${ambulanciaEl.value} - ${placaEl.value}</span>
+                            </div>
+                            ${btnDel}
+                        </div>
+                        <div class="ficha-body">
+                            ${timelineHTML}
+                        </div>
+                        <div class="ficha-footer">
+                            <span>DATA: ${formatDateBR(grupo.data)}</span>
+                            <span>KM ROD: <span style="color:var(--success);">${kmRodado.toFixed(1)}</span></span>
+                        </div>
+                    </div>
+                `;
+                historicoContainer.innerHTML += cardHTML;
+            });
         }
 
         // ======================= PERSISTÊNCIA =======================
         function carregarLocalStorage() {
             let raw = localStorage.getItem('sistemaDeslocamentoHCI_v17'); 
-            if(!raw) { prepararFormulario(); return false; }
+            if(!raw) {
+                prepararFormulario();
+                return false;
+            }
             try {
                 let d = JSON.parse(raw); 
-                condutorEl.value = d.condutor || 'Anderson Martins'; unidadeEl.value = d.unidade || 'HCI'; ambulanciaEl.value = d.ambulancia || 'Ducato'; placaEl.value = d.placa || 'RKD-5A25'; plantaoEl.value = d.plantao || 'SD 12hs'; kmInicialEl.value = d.kmInicial || ''; nomeLegivelEl.value = d.nomeLegivel || 'Anderson Martins'; observacaoEl.value = d.observacao || '';
+                condutorEl.value = d.condutor || 'Anderson Martins'; unidadeEl.value = d.unidade || 'SÓ SAÚDE'; ambulanciaEl.value = d.ambulancia || 'Master'; placaEl.value = d.placa || 'RKD-5A25'; plantaoEl.value = d.plantao || 'SD 12hs'; kmInicialEl.value = d.kmInicial || ''; nomeLegivelEl.value = d.nomeLegivel || 'Anderson Martins'; observacaoEl.value = d.observacao || '';
                 if(d.mes) mesSelect.value = d.mes; if(d.ano) anoSelect.value = d.ano;
                 
                 registros = d.rows || [];
@@ -487,10 +552,15 @@
                     let img = new Image(); img.onload = () => ctx.drawImage(img, 0, 0, canvas.width, canvas.height); img.src = d.assinaturaImg; 
                 }
                 
-                renderizarTabela(); prepararFormulario();
+                renderizarFichas(); 
+                prepararFormulario();
+                
                 if (window.innerWidth <= 768 && registros.length > 0) mainHeader.classList.add('header-collapsed');
                 return true;
-            } catch(e) { prepararFormulario(); return false; }
+            } catch(e) { 
+                prepararFormulario();
+                return false; 
+            }
         }
 
         // ======================= RELATÓRIO PDF =======================
@@ -498,43 +568,55 @@
             const btn = document.getElementById('pdfBtn'); btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Gerando...';
             try {
                 const dataHora = new Date().toLocaleString('pt-BR'); const assinaturaImg = canvas.toDataURL('image/png'); const mesNome2 = nomeMes(parseInt(mesSelect.value)); const ano = anoSelect.value;
-                let linhasHTML = '';
                 
-                // Para o PDF, mantemos o formato de Tabela que é mais legível em papel
-                registros.forEach((l, idx) => {
-                    let kmR = '0.0'; let kmRodStyle = 'color:#0b8043; font-weight:bold;';
-                    if(l.kmSaida && l.kmChegada) {
-                        let s = parseFloat(l.kmSaida); let c = parseFloat(l.kmChegada);
-                        if(c >= s) kmR = (c-s).toFixed(1); else { kmR = 'Inválido'; kmRodStyle = 'color:#cc0000; font-weight:bold;'; }
-                    } else { kmR = '-'; kmRodStyle = 'color:#666;'; }
-                    
-                    let tipoLabel = '';
-                    if (l.tipo === 'saida') tipoLabel = '🚑 SAÍDA';
-                    else if (l.tipo === 'base') tipoLabel = '🏥 BASE';
-                    else if (l.tipo === 'retorno') tipoLabel = '🔄 RETORNO';
-                    else tipoLabel = '📍 CHEGADA';
-
-                    const bg = idx % 2 === 0 ? '#fff' : '#f8f9fa'; 
-                    
-                    linhasHTML += `<tr style="background:${bg}">
-                        <td style="padding:6px; border:1px solid #ddd; text-align:center;">${idx+1}</td>
-                        <td style="padding:6px; border:1px solid #ddd; text-align:center;">${formatDateBR(l.data)}</td>
-                        <td style="padding:6px; border:1px solid #ddd; text-align:center;">${tipoLabel}</td>
-                        <td style="padding:6px; border:1px solid #ddd; text-align:center;">${l.horaSaida || '-'}</td>
-                        <td style="padding:6px; border:1px solid #ddd; text-align:right;">${l.kmSaida || '-'}</td>
-                        <td style="padding:6px; border:1px solid #ddd; text-align:left;">${l.local}</td>
-                        <td style="padding:6px; border:1px solid #ddd; text-align:center;">${l.horaChegada || '-'}</td>
-                        <td style="padding:6px; border:1px solid #ddd; text-align:right;">${l.kmChegada || '-'}</td>
-                        <td style="padding:6px; border:1px solid #ddd; text-align:right; ${kmRodStyle}">${kmR}</td>
-                    </tr>`;
+                // Reutiliza a lógica de agrupamento para o PDF
+                const grupos = {};
+                registros.forEach(r => {
+                    const key = `${r.data}_${r.shift || 'SD 12hs'}`;
+                    if (!grupos[key]) grupos[key] = { data: r.data, shift: r.shift || 'SD 12hs', items: [] };
+                    grupos[key].items.push(r);
                 });
                 
-                const obsHTML = observacaoEl.value ? `<tr><td colspan="9" style="padding:8px; border:1px solid #ddd; background:#f9f9f9;"><strong>📋 Obs:</strong> ${observacaoEl.value.replace(/\n/g, '<br>')}</td></tr>` : '';
-                const totalKm = totalSpan.innerText;
+                const chavesOrdenadas = Object.keys(grupos).sort((a, b) => new Date(b.split('_')[0]) - new Date(a.split('_')[0]));
+                let fichasHTML = '';
+
+                chavesOrdenadas.forEach(key => {
+                    const grupo = grupos[key];
+                    const items = [...grupo.items].reverse();
+                    let timelineStr = '';
+                    let kmIni = 0; let kmFim = 0;
+
+                    items.forEach((r, index) => {
+                        const isFirst = index === 0; const isLast = index === items.length - 1;
+                        let origem = r.local.split('→')[0]?.trim() || ''; let destino = r.local.split('→')[1]?.trim() || '';
+
+                        if(isFirst) { kmIni = parseFloat(r.kmSaida) || 0; timelineStr += `<div style="font-weight:bold; color:#0e5a77;">INICIO: ${origem} H: ${r.horaSaida} KM: ${r.kmSaida}</div>`; }
+                        if(r.horaChegada && r.kmChegada) {
+                            if(isLast) { kmFim = parseFloat(r.kmChegada) || 0; timelineStr += `<div style="font-weight:bold; color:#dc2626;">FIM: ${destino} H: ${r.horaChegada} KM: ${r.kmChegada}</div>`; } 
+                            else { timelineStr += `<div style="color:#475569;">LOCAL: ${destino} H: ${r.horaChegada} KM: ${r.kmChegada}</div>`; }
+                        }
+                        if(!isLast && r.horaSaida) { timelineStr += `<div style="color:#475569;">LOCAL: ${origem} H: ${r.horaSaida} KM: ${r.kmSaida}</div>`; }
+                    });
+
+                    const kmRod = kmFim > 0 ? (kmFim - kmIni).toFixed(1) : '0.0';
+                    
+                    fichasHTML += `
+                        <div style="border:1px solid #ccc; padding:10px; margin-bottom:15px; border-radius:8px;">
+                            <div style="background:#f1f5f9; padding:5px; font-weight:bold; font-size:10pt; margin-bottom:10px;">DATA: ${formatDateBR(grupo.data)} | ${grupo.shift}</div>
+                            <div style="font-size:9pt; line-height:1.6; font-family:monospace;">${timelineStr}</div>
+                            <div style="border-top:1px dashed #ccc; margin-top:10px; padding-top:5px; display:flex; justify-content:space-between; font-weight:bold; font-size:10pt;">
+                                <span>DATA: ${formatDateBR(grupo.data)}</span>
+                                <span>KM ROD: ${kmRod}</span>
+                            </div>
+                        </div>
+                    `;
+                });
+
+                const obsHTML = observacaoEl.value ? `<div style="padding:10px; border:1px solid #ddd; background:#f9f9f9; margin-top:20px;"><strong>📋 Observações:</strong> ${observacaoEl.value.replace(/\n/g, '<br>')}</div>` : '';
 
                 const relatorioHTML = `
                     <!DOCTYPE html><html><head><meta charset="UTF-8"><title>Relatório 🚑</title>
-                    <style>* { margin:0; padding:0; box-sizing:border-box; } body { font-family: Arial, sans-serif; background:#fff; padding:20px; color:#202124; } .container { max-width:1280px; margin:0 auto; } h1 { font-size:18pt; color:#0e5a77; margin-bottom:5px; } .sub { font-size:10pt; color:#5f6368; margin-bottom:20px; border-bottom:1px solid #dadce0; padding-bottom:10px; } .info-table { width:100%; border-collapse:collapse; margin-bottom:20px; font-size:9pt; } .info-table td { padding:6px 10px; border:1px solid #dadce0; } .info-table td:first-child { background:#f1f3f4; font-weight:600; width:15%; } .data-table { width:100%; border-collapse:collapse; margin-bottom:20px; font-size:8.5pt; } .data-table th { background:#f1f3f4; padding:8px 6px; border:1px solid #dadce0; text-align:center; font-weight:700; } .footer { margin-top:30px; display:flex; justify-content:space-between; align-items:center; border-top:1px solid #dadce0; padding-top:20px; } .signature { display:flex; gap:30px; align-items:center; } .signature img { max-height:60px; border:1px solid #ccc; background:#fff; } @media print { body { padding:0; margin:0; } .no-print { display:none; } }</style>
+                    <style>* { margin:0; padding:0; box-sizing:border-box; } body { font-family: Arial, sans-serif; background:#fff; padding:20px; color:#202124; } .container { max-width:800px; margin:0 auto; } h1 { font-size:18pt; color:#0e5a77; margin-bottom:5px; } .sub { font-size:10pt; color:#5f6368; margin-bottom:20px; border-bottom:1px solid #dadce0; padding-bottom:10px; } .info-table { width:100%; border-collapse:collapse; margin-bottom:20px; font-size:9pt; } .info-table td { padding:6px 10px; border:1px solid #dadce0; } .info-table td:first-child { background:#f1f3f4; font-weight:600; width:15%; } .footer { margin-top:30px; display:flex; justify-content:space-between; align-items:center; border-top:1px solid #dadce0; padding-top:20px; } .signature { display:flex; gap:30px; align-items:center; } .signature img { max-height:60px; border:1px solid #ccc; background:#fff; } @media print { body { padding:0; margin:0; } .no-print { display:none; } }</style>
                     </head><body><div class="container">
                         <h1>📄 Relatório de Deslocamento</h1><div class="sub">Controle de Frota · ${mesNome2} / ${ano}</div>
                         <table class="info-table">
@@ -542,9 +624,10 @@
                             <tr><td>Ambulância</td><td>${ambulanciaEl.value}</td><td>Placa</td><td>${placaEl.value}</td></tr>
                             <tr><td>Km Inicial</td><td>${kmInicialEl.value || '-'}</td><td>Gerado em</td><td>${dataHora}</td></tr>
                         </table>
-                        <table class="data-table"><thead><tr><th>#</th><th>Data</th><th>Tipo</th><th>H Saída</th><th>Km Saída</th><th>Local / Destino</th><th>H Chegada</th><th>Km Chegada</th><th>Km Rod.</th></tr></thead>
-                            <tbody>${linhasHTML}<tr style="background:#f1f3f4; font-weight:bold;"><td colspan="8" style="text-align:right;">TOTAL</td><td style="text-align:right;">${totalKm}</td></tr>${obsHTML}</tbody>
-                        </table>
+                        
+                        ${fichasHTML}
+                        ${obsHTML}
+
                         <div class="footer"><div class="signature"><div>Assinatura:</div><img src="${assinaturaImg}" alt="Assinatura"></div><div><strong>Condutor:</strong> ${nomeLegivelEl.value}</div></div>
                     </div><div class="no-print" style="text-align:center; margin-top:20px;"><button onclick="window.print()" style="padding:10px 20px; font-size:14px;">🖨️ Imprimir PDF</button> <button onclick="window.close()" style="padding:10px 20px; font-size:14px;">❌ Fechar</button></div></body></html>`;
                 const win = window.open('', '_blank'); win.document.write(relatorioHTML); win.document.close(); win.focus();
