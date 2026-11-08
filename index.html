@@ -55,23 +55,34 @@
         .btn-form-retorno { background: #f59e0b; }
         .btn-form-base { background: var(--base); }
 
-        /* TABELA */
-        .table-wrapper { overflow-x: auto; margin: 0 -0.5rem; padding: 0 0.5rem; -webkit-overflow-scrolling: touch; }
-        .log-table { width: 100%; border-collapse: collapse; font-size: 0.8rem; min-width: 800px; }
-        .log-table th { background: #f8fafc; padding: 8px 4px; border-bottom: 2px solid var(--border); color: #64748b; font-weight: 700; font-size: 0.65rem; text-transform: uppercase; text-align: center; }
-        .log-table td { padding: 6px 4px; border-bottom: 1px solid #f1f5f9; vertical-align: middle; text-align: center; font-weight: 500; }
+        /* NOVO HISTÓRICO - LIVRO DE REGISTRO */
+        .history-log { display: flex; flex-direction: column; gap: 10px; }
         
-        .km-rodado { font-weight: 800; padding: 3px 6px; border-radius: 12px; display: inline-block; font-size: 0.7rem; min-width: 50px; text-align: center; }
-        .km-ok { background: #dcfce7; color: #166534; }
-        .km-erro { background: #fee2e2; color: #991b1b; }
+        .log-card {
+            background: #fff;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 10px;
+            position: relative;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+        }
+
+        .log-content { font-family: monospace; font-size: 0.85rem; color: #334155; line-height: 1.5; padding-right: 35px; }
         
-        /* CÉLULA DE AÇÕES */
-        .action-cell { width: 50px; text-align: center; }
+        .log-line { margin-bottom: 2px; }
+        .log-line strong { color: var(--primary-dark); }
+        .log-line span { margin-left: 10px; color: #64748b; font-weight: 600; }
         
-        .btn-del-row { background: #fee2e2; color: #b91c1c; border: none; cursor: pointer; padding: 6px 10px; border-radius: 6px; font-size: 0.9rem; transition: 0.2s; display: inline-flex; justify-content: center; align-items: center; }
+        .log-footer { margin-top: 8px; padding-top: 8px; border-top: 1px dashed #e2e8f0; font-size: 0.75rem; color: #94a3b8; font-family: 'Inter', sans-serif; font-weight: 600; }
+
+        /* Botões de Ação no Card */
+        .btn-del-row { 
+            position: absolute; top: 8px; right: 8px;
+            background: #fee2e2; color: #b91c1c; border: none; cursor: pointer; 
+            padding: 6px 10px; border-radius: 6px; font-size: 0.85rem; transition: 0.2s; 
+        }
         .btn-del-row:hover { background: #fecaca; }
         
-        /* Botão Bloqueado (Cadeado) */
         .btn-del-row.locked { background: #e2e8f0; color: #475569; cursor: not-allowed; }
 
         .total-bar { display: flex; justify-content: space-between; align-items: center; margin-top: 0.8rem; background: #eff6ff; padding: 10px; border-radius: 8px; font-weight: 700; font-size: 0.9rem; color: var(--primary-dark); }
@@ -108,39 +119,7 @@
             .form-item input { font-size: 16px !important; padding: 6px; }
             .form-actions button { font-size: 0.8rem; padding: 10px 2px; }
 
-            .log-table, .log-table tbody, .log-table tr, .log-table td { display: block; width: 100% !important; min-width: 0 !important; }
-            .log-table thead { display: none; }
-            
-            /* Card da lista */
-            .log-table tr { 
-                margin-bottom: 0.5rem; 
-                border: 1px solid var(--border); 
-                border-radius: 10px; 
-                padding: 6px; 
-                padding-top: 36px; /* Espaço pro botão no topo */
-                background: #f8fafc; 
-                position: relative; 
-            }
-            
-            .log-table td { display: flex; justify-content: space-between; align-items: center; padding: 3px 0; border-bottom: 1px dashed #e2e8f0; text-align: right; }
-            .log-table td:last-child { border-bottom: none; }
-            .log-table td::before { content: attr(data-label); font-weight: 700; color: var(--primary-dark); font-size: 0.65rem; text-transform: uppercase; margin-right: 8px; text-align: left; flex-shrink: 0; }
-            
-            /* A MÁGICA ACONTECE AQUI: Célula de ações no topo direito */
-            .log-table td.action-cell {
-                position: absolute;
-                top: 6px;
-                right: 6px;
-                display: block;
-                width: auto !important;
-                border: none;
-                padding: 0;
-            }
-            .log-table td.action-cell::before { display: none; } /* Esconde o texto "Ações" */
-            
-            /* Botões no mobile */
-            .btn-del-row { padding: 6px 10px; font-size: 0.85rem; }
-
+            .log-content { font-size: 0.75rem; }
             .btn-pdf { padding: 10px; font-size: 0.85rem; }
         }
         
@@ -206,15 +185,11 @@
             </div>
         </div>
 
-        <!-- TABELA (HISTÓRICO) -->
+        <!-- TABELA (HISTÓRICO) - AGORA COMO LIVRO DE REGISTRO -->
         <div class="card">
             <div class="card-title"><i class="fas fa-list-ol"></i> Histórico de Lançamentos</div>
-            <div class="table-wrapper">
-                <table class="log-table" id="logTable">
-                    <thead><tr><th>Data</th><th>Tipo</th><th>H Saída</th><th>Km Saída</th><th>Local / Destino</th><th>H Chegada</th><th>Km Chegada</th><th>Km Rod.</th><th style="width:60px">Ações</th></tr></thead>
-                    <tbody id="tableBody"></tbody>
-                </table>
-            </div>
+            <div class="history-log" id="historyContainer"></div>
+            
             <div class="total-bar">
                 <span><i class="fas fa-tachometer-alt"></i> Total Rodado</span>
                 <span><strong id="totalKmValue">0</strong> km</span>
@@ -243,7 +218,7 @@
         const showToast = (msg) => { const t = document.getElementById('toast'); t.textContent = msg; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 3000); };
 
         // Elementos DOM
-        const tbody = document.getElementById('tableBody');
+        const historyContainer = document.getElementById('historyContainer');
         const totalSpan = document.getElementById('totalKmValue');
         const observacaoEl = document.getElementById('observacao');
         const condutorEl = document.getElementById('condutorHeader');
@@ -276,27 +251,16 @@
         // ======================= REGRA DE BLOQUEIO DE EXCLUSÃO =======================
         function isRecordDeletable(record) {
             if (!record.data) return true; 
-            
             const [year, month, day] = record.data.split('-');
-            let endHour = 19; 
-            let endDayOffset = 0;
-            
+            let endHour = 19; let endDayOffset = 0;
             const shift = record.shift || 'SD 12hs'; 
             
-            if (shift === 'SD 12hs') {
-                endHour = 19; 
-                endDayOffset = 0;
-            } else if (shift === 'SN 12hs') {
-                endHour = 7; 
-                endDayOffset = 1;
-            } else if (shift === 'DN 24hs') {
-                endHour = 7; 
-                endDayOffset = 1;
-            }
+            if (shift === 'SD 12hs') { endHour = 19; endDayOffset = 0; } 
+            else if (shift === 'SN 12hs') { endHour = 7; endDayOffset = 1; } 
+            else if (shift === 'DN 24hs') { endHour = 7; endDayOffset = 1; }
             
             const endTime = new Date(year, parseInt(month) - 1, parseInt(day) + endDayOffset, endHour, 0, 0);
-            endTime.setHours(endTime.getHours() + 1);
-            
+            endTime.setHours(endTime.getHours() + 1); // 1h de tolerância
             return new Date() < endTime;
         }
 
@@ -384,16 +348,8 @@
 
             if (tipo === 'saida') {
                 registros.unshift({
-                    id: Date.now().toString(),
-                    data: data,
-                    shift: plantaoAtual,
-                    tipo: 'saida',
-                    horaSaida: hora,
-                    kmSaida: km.toString(),
-                    local: local,
-                    horaChegada: '',
-                    kmChegada: '',
-                    veiculo: veiculoAtual
+                    id: Date.now().toString(), data: data, shift: plantaoAtual, tipo: 'saida',
+                    horaSaida: hora, kmSaida: km.toString(), local: local, horaChegada: '', kmChegada: '', veiculo: veiculoAtual
                 });
                 showToast('🚑 Saída registrada!');
             } 
@@ -414,20 +370,11 @@
                     } else {
                         registros[index].tipo = 'chegada';
                     }
-                    
                     showToast(tipo === 'base' ? '🏥 Retorno à Base!' : '📍 Chegada registrada!');
                 } else {
                     registros.unshift({
-                        id: Date.now().toString(),
-                        data: data,
-                        shift: plantaoAtual,
-                        tipo: tipo,
-                        horaSaida: '',
-                        kmSaida: '',
-                        local: local,
-                        horaChegada: hora,
-                        kmChegada: km.toString(),
-                        veiculo: veiculoAtual
+                        id: Date.now().toString(), data: data, shift: plantaoAtual, tipo: tipo,
+                        horaSaida: '', kmSaida: '', local: local, horaChegada: hora, kmChegada: km.toString(), veiculo: veiculoAtual
                     });
                     showToast('📍 Chegada avulsa registrada!');
                 }
@@ -453,7 +400,7 @@
         }
         window.deletarRegistro = deletarRegistro;
 
-        // ======================= RENDERIZAÇÃO =======================
+        // ======================= RENDERIZAÇÃO (NOVO VISUAL) =======================
         function salvarERenderizar() {
             const frotaKms = JSON.parse(localStorage.getItem('frotaKms_hci') || '{}');
             registros.forEach(r => {
@@ -465,7 +412,7 @@
             localStorage.setItem('frotaKms_hci', JSON.stringify(frotaKms));
             
             let assinatura = ''; try { assinatura = canvas.toDataURL(); } catch(e) {}
-            localStorage.setItem('sistemaDeslocamentoHCI_v16', JSON.stringify({ 
+            localStorage.setItem('sistemaDeslocamentoHCI_v17', JSON.stringify({ 
                 rows: registros, observacao: observacaoEl.value, condutor: condutorEl.value, unidade: unidadeEl.value, 
                 ambulancia: ambulanciaEl.value, placa: placaEl.value, plantao: plantaoEl.value, kmInicial: kmInicialEl.value, 
                 nomeLegivel: nomeLegivelEl.value, mes: parseInt(mesSelect.value), ano: parseInt(anoSelect.value), assinaturaImg: assinatura 
@@ -475,44 +422,51 @@
         }
 
         function renderizarTabela() {
-            tbody.innerHTML = '';
+            historyContainer.innerHTML = '';
             let totalGeral = 0;
 
             registros.forEach(r => {
-                const tr = document.createElement('tr');
-                
                 let kmRod = 0;
-                let kmClass = 'km-ok';
                 let kmText = '0.0';
                 if (r.kmSaida && r.kmChegada) {
                     let s = parseFloat(r.kmSaida); let c = parseFloat(r.kmChegada);
                     if (c >= s) { kmRod = c - s; kmText = kmRod.toFixed(1); totalGeral += kmRod; } 
-                    else { kmText = 'Inválido'; kmClass = 'km-erro'; }
+                    else { kmText = 'Inválido'; }
                 }
-
-                let labelTipo = '';
-                if (r.tipo === 'saida') labelTipo = '🚑 Saída';
-                else if (r.tipo === 'base') labelTipo = '🏥 Base';
-                else if (r.tipo === 'retorno') labelTipo = '🔄 Retorno';
-                else labelTipo = '📍 Chegada';
 
                 const canDelete = isRecordDeletable(r);
                 const btnHtml = canDelete 
                     ? `<button class="btn-del-row" onclick="deletarRegistro('${r.id}')" title="Excluir"><i class="fas fa-trash-alt"></i></button>`
                     : `<button class="btn-del-row locked" title="Plantão encerrado" onclick="deletarRegistro('${r.id}')"><i class="fas fa-lock"></i></button>`;
 
-                tr.innerHTML = `
-                    <td data-label="Data">${formatDateBR(r.data)}</td>
-                    <td data-label="Tipo">${labelTipo}</td>
-                    <td data-label="H Saída">${r.horaSaida || '-'}</td>
-                    <td data-label="Km Saída">${r.kmSaida || '-'}</td>
-                    <td data-label="Local" style="text-align:left; font-size:0.75rem;">${r.local}</td>
-                    <td data-label="H Chegada">${r.horaChegada || '-'}</td>
-                    <td data-label="Km Chegada">${r.kmChegada || '-'}</td>
-                    <td data-label="Km Rod."><span class="km-rodado ${kmClass}">${kmText}</span></td>
-                    <td data-label="Ações" class="action-cell">${btnHtml}</td>
-                `;
-                tbody.appendChild(tr);
+                // Separar Origem e Destino do texto "Origem → Destino"
+                let partes = r.local.split('→');
+                let origem = partes.length > 0 ? partes[0].trim() : 'Origem';
+                let destino = partes.length > 1 ? partes[1].trim() : 'Destino';
+
+                let html = `<div class="log-card">`;
+                html += btnHtml; 
+                html += `<div class="log-content">`;
+
+                // Se tem chegada registrada
+                if (r.horaChegada) {
+                    let prefixoFim = (r.tipo === 'base' || r.tipo === 'retorno') ? 'FIM' : 'LOCAL';
+                    html += `<div class="log-line"><strong>${prefixoFim}:</strong> ${destino} <span>H: ${r.horaChegada}</span> <span>KM: ${r.kmChegada}</span></div>`;
+                }
+
+                // Se tem saída registrada
+                if (r.horaSaida) {
+                    // Se for a primeira viagem do dia (não tem registro anterior na lista)
+                    let prefixoSaida = 'INICIO';
+                    if (registros.indexOf(r) > 0 && r.tipo !== 'saida') prefixoSaida = 'LOCAL'; 
+                    
+                    html += `<div class="log-line"><strong>${prefixoSaida}:</strong> ${origem} <span>H: ${r.horaSaida}</span> <span>KM: ${r.kmSaida}</span></div>`;
+                }
+
+                html += `<div class="log-footer">DATA: ${formatDateBR(r.data)} &nbsp;|&nbsp; KM ROD: ${kmText}</div>`;
+                html += `</div></div>`;
+
+                historyContainer.innerHTML += html;
             });
 
             totalSpan.innerText = totalGeral.toFixed(1);
@@ -520,11 +474,8 @@
 
         // ======================= PERSISTÊNCIA =======================
         function carregarLocalStorage() {
-            let raw = localStorage.getItem('sistemaDeslocamentoHCI_v16'); 
-            if(!raw) {
-                prepararFormulario();
-                return false;
-            }
+            let raw = localStorage.getItem('sistemaDeslocamentoHCI_v17'); 
+            if(!raw) { prepararFormulario(); return false; }
             try {
                 let d = JSON.parse(raw); 
                 condutorEl.value = d.condutor || 'Anderson Martins'; unidadeEl.value = d.unidade || 'HCI'; ambulanciaEl.value = d.ambulancia || 'Ducato'; placaEl.value = d.placa || 'RKD-5A25'; plantaoEl.value = d.plantao || 'SD 12hs'; kmInicialEl.value = d.kmInicial || ''; nomeLegivelEl.value = d.nomeLegivel || 'Anderson Martins'; observacaoEl.value = d.observacao || '';
@@ -536,15 +487,10 @@
                     let img = new Image(); img.onload = () => ctx.drawImage(img, 0, 0, canvas.width, canvas.height); img.src = d.assinaturaImg; 
                 }
                 
-                renderizarTabela(); 
-                prepararFormulario();
-                
+                renderizarTabela(); prepararFormulario();
                 if (window.innerWidth <= 768 && registros.length > 0) mainHeader.classList.add('header-collapsed');
                 return true;
-            } catch(e) { 
-                prepararFormulario();
-                return false; 
-            }
+            } catch(e) { prepararFormulario(); return false; }
         }
 
         // ======================= RELATÓRIO PDF =======================
@@ -554,6 +500,7 @@
                 const dataHora = new Date().toLocaleString('pt-BR'); const assinaturaImg = canvas.toDataURL('image/png'); const mesNome2 = nomeMes(parseInt(mesSelect.value)); const ano = anoSelect.value;
                 let linhasHTML = '';
                 
+                // Para o PDF, mantemos o formato de Tabela que é mais legível em papel
                 registros.forEach((l, idx) => {
                     let kmR = '0.0'; let kmRodStyle = 'color:#0b8043; font-weight:bold;';
                     if(l.kmSaida && l.kmChegada) {
