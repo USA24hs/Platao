@@ -50,7 +50,7 @@
         .form-item.full { grid-column: 1 / -1; }
         .form-item label { font-size: 0.65rem; font-weight: 700; color: #166534; text-transform: uppercase; margin-bottom: 2px; }
         
-        .form-item input { width: 100%; min-width: 0; padding: 8px; border-radius: 8px; border: 1px solid #86efac; font-family: 'Inter'; font-size: 0.95rem; font-weight: 600; color: #064e3b; background: #fff; box-sizing: border-box; }
+        .form-item input { width: 100%; min-width: 0; padding: 8px; border-radius: 8px; border: 1px solid #86efac; font-family: 'Inter'; font-size: 0.95rem; font-weight: 600; color: #064e3b; background: #fff; box-sizing: border-box; text-transform: uppercase; }
         .form-item input:focus { outline: 2px solid #15803d; border-color: transparent; }
         
         .form-actions { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; width: 100%; }
@@ -76,16 +76,15 @@
         .ficha-body { padding: 10px 12px; display: flex; flex-direction: column; gap: 6px; font-family: 'Inter', monospace; font-size: 0.8rem; }
         
         .timeline-row { display: flex; align-items: flex-start; gap: 6px; line-height: 1.3; }
-        .timeline-row.inicio { color: var(--primary); font-weight: 700; }
-        .timeline-row.fim { color: var(--danger); font-weight: 700; }
-        .timeline-row.local { color: #475569; font-weight: 500; }
+        .timeline-tag { width: 70px; flex-shrink: 0; font-size: 0.7rem; font-weight: 800; letter-spacing: 0.5px; text-transform: uppercase; }
         
-        .timeline-tag { width: 55px; flex-shrink: 0; font-size: 0.7rem; font-weight: 800; letter-spacing: 0.5px; text-transform: uppercase; }
-        .timeline-tag.inicio-tag { color: var(--primary); }
-        .timeline-tag.local-tag { color: #94a3b8; }
-        .timeline-tag.fim-tag { color: var(--danger); }
+        /* Cores das Tags */
+        .timeline-tag.inicio { color: var(--primary); }
+        .timeline-tag.chegada { color: var(--success); }
+        .timeline-tag.saida { color: #f59e0b; } /* Laranja para diferenciar da saída inicial */
+        .timeline-tag.fim { color: var(--danger); }
         
-        .timeline-content { flex-grow: 1; text-transform: uppercase; }
+        .timeline-content { flex-grow: 1; text-transform: uppercase; color: #1e293b; font-weight: 500; }
         .ficha-footer { background: #f8fafc; padding: 8px 12px; border-top: 1px dashed #cbd5e1; display: flex; justify-content: space-between; font-size: 0.8rem; font-weight: 700; color: #1e293b; }
 
         /* Outros componentes */
@@ -244,15 +243,7 @@
 
         let registros = []; 
         let currentOcorrenciaId = Date.now().toString(); 
-        let editingRecordId = null; // Guarda o ID do registro sendo editado
-
-        // Força Caixa Alta no input de Local
-        fLocal.addEventListener('input', function(e) {
-            const start = this.selectionStart;
-            const end = this.selectionEnd;
-            this.value = this.value.toUpperCase();
-            this.setSelectionRange(start, end);
-        });
+        let editingRecordId = null;
 
         // Inicialização do seletor de meses
         for(let m = 1; m <= 12; m++) { let opt = document.createElement('option'); opt.value = m; opt.textContent = nomeMes(m).substring(0,3); mesSelect.appendChild(opt); }
@@ -299,6 +290,8 @@
         redimencionarCanvas();
 
         // ======================= LÓGICA DE NEGÓCIO =======================
+        
+        // Função para limpar e padronizar os nomes (Caixa Alta, sem emojis)
         function limparNomeLocal(str) { 
             if (!str) return ''; 
             return str.replace(/🏥/g, '').trim().toUpperCase(); 
@@ -314,14 +307,21 @@
             return kmInicialEl.value || ''; 
         }
 
-        function getUltimoLocal() {
+        // A MÁGICA DO DESTINO AUTOMÁTICO ACONTECE AQUI
+        function getLocalAtual() {
             const veiculoAtual = `${ambulanciaEl.value.trim()} - ${placaEl.value.trim()}`;
+            // Busca o registro mais recente desse veículo (independente da ocorrência)
             for (let i = 0; i < registros.length; i++) {
                 if (registros[i].veiculo !== veiculoAtual) continue;
                 const local = registros[i].local || '';
                 if (!local) continue;
+                
                 const partes = local.split('→');
-                return partes.length >= 2 ? limparNomeLocal(partes[1]) : limparNomeLocal(local);
+                // Se tem duas partes (Origem → Destino), o local atual é o Destino
+                if (partes.length >= 2) {
+                    return limparNomeLocal(partes[1]);
+                }
+                return limparNomeLocal(partes[0]);
             }
             return null;
         }
@@ -334,12 +334,13 @@
             if (kmRef) fKm.value = kmRef;
             
             const unidade = limparNomeLocal(unidadeEl.value.trim()) || 'BASE';
-            const ultimoLocal = getUltimoLocal();
+            const localAtual = getLocalAtual();
             
-            if (!ultimoLocal) {
+            // Preenche automaticamente com o local onde a ambulância parou por último
+            if (!localAtual) {
                 fLocal.value = `${unidade} → `;
             } else {
-                fLocal.value = `${ultimoLocal} → `;
+                fLocal.value = `${localAtual} → `;
             }
 
             fPlantaoInfo.value = `${plantaoEl.value} | ${unidade}`;
@@ -355,7 +356,6 @@
 
         // ======================= EDITAR =======================
         function editarOcorrencia(ocorrenciaId) {
-            // Como `registros` está em ordem decrescente, o primeiro com esse ID é a última ação
             const lastRecord = registros.find(r => r.ocorrenciaId === ocorrenciaId);
             if (!lastRecord) return;
 
@@ -365,17 +365,15 @@
 
             editingRecordId = lastRecord.id;
 
-            // Popula o formulário com os dados do último registro
             fData.value = lastRecord.data;
             fHora.value = lastRecord.horaChegada || lastRecord.horaSaida;
             fKm.value = lastRecord.kmChegada || lastRecord.kmSaida;
-            fLocal.value = lastRecord.local; // Já vai estar em caixa alta pelas regras de salvamento
+            fLocal.value = lastRecord.local;
 
-            // Altera a UI para indicar Edição
             titleLancamento.innerHTML = '<i class="fas fa-pen"></i> Editando Registro';
-            titleLancamento.style.color = '#b45309'; // Laranja
+            titleLancamento.style.color = '#b45309';
 
-            showToast('✏️ Editando o último registro. Altere e clique em Chegada/Saída para salvar.');
+            showToast('✏️ Editando o último registro. Altere e salve.');
             document.querySelector('.form-card').scrollIntoView({ behavior: 'smooth' });
         }
         window.editarOcorrencia = editarOcorrencia;
@@ -385,55 +383,40 @@
             const data = fData.value;
             const hora = fHora.value;
             const km = parseFloat(fKm.value);
-            let local = fLocal.value.replace(/🏥/g, '').trim().toUpperCase();
+            // Força caixa alta e remove ícone
+            let local = limparNomeLocal(fLocal.value);
 
             if (!hora || isNaN(km)) return showToast('⚠️ Preencha Hora e KM corretamente.');
             
             const veiculoAtual = `${ambulanciaEl.value.trim()} - ${placaEl.value.trim()}`;
             const plantaoAtual = plantaoEl.value;
 
-            // Se estiver editando, atualiza o registro em vez de criar um novo
+            // Lógica para forçar a Base quando clica em Base (Fim)
+            if (tipo === 'base') {
+                const unidade = limparNomeLocal(unidadeEl.value.trim()) || 'BASE';
+                const origem = local.split('→')[0] ? limparNomeLocal(local.split('→')[0]) : getLocalAtual();
+                local = `${origem || 'LOCAL'} → ${unidade}`;
+            }
+
             if (editingRecordId) {
-                if (tipo === 'chegada' || tipo === 'base') {
-                    const index = registros.findIndex(r => r.id === editingRecordId);
-                    if (index !== -1) {
+                const index = registros.findIndex(r => r.id === editingRecordId);
+                if (index !== -1) {
+                    if (tipo === 'chegada' || tipo === 'base') {
                         registros[index].horaChegada = hora;
                         registros[index].kmChegada = km.toString();
-                        
-                        if (tipo === 'base') {
-                            const unidade = limparNomeLocal(unidadeEl.value.trim()) || 'BASE';
-                            const origem = limparNomeLocal(registros[index].local.split('→')[0]);
-                            registros[index].local = `${origem} → ${unidade}`;
-                        } else {
-                            registros[index].local = local;
-                        }
-
-                        showToast('✅ Registro atualizado com sucesso!');
+                        registros[index].local = local;
+                        showToast('✅ Registro atualizado!');
+                    } else if (tipo === 'saida') {
+                        registros[index].horaSaida = hora;
+                        registros[index].kmSaida = km.toString();
+                        registros[index].local = local;
+                        showToast('✅ Saída atualizada!');
                     }
-                    resetFormUI();
-                    salvarERenderizar();
-                    if (window.innerWidth <= 768) mainHeader.classList.add('header-collapsed');
-                    return;
-                } else if (tipo === 'saida') {
-                    // Se estava editando e clicou em saída, ele quer corrigir o estado e adicionar nova saída
-                    // Atualizamos o registro anterior com os dados do form
-                    const index = registros.findIndex(r => r.id === editingRecordId);
-                    if (index !== -1) {
-                        if (registros[index].horaChegada) {
-                             registros[index].horaChegada = hora;
-                             registros[index].kmChegada = km.toString();
-                             registros[index].local = local;
-                        } else {
-                             registros[index].horaSaida = hora;
-                             registros[index].kmSaida = km.toString();
-                             registros[index].local = local;
-                        }
-                    }
-                    // Reseta o edit mode para continuar como uma nova Saída
-                    editingRecordId = null;
-                    resetFormUI(); // Importante para limpar a UI, mas prepararFormulario será chamado
-                    // O código abaixo vai criar a nova saída normalmente
                 }
+                resetFormUI();
+                salvarERenderizar();
+                if (window.innerWidth <= 768) mainHeader.classList.add('header-collapsed');
+                return;
             }
 
             // --- CRIAÇÃO NORMAL ---
@@ -460,16 +443,12 @@
                 if (index !== -1) {
                     registros[index].horaChegada = hora;
                     registros[index].kmChegada = km.toString();
-                    
-                    if (tipo === 'base') {
-                        const unidade = limparNomeLocal(unidadeEl.value.trim()) || 'BASE';
-                        const origem = limparNomeLocal(registros[index].local.split('→')[0]);
-                        registros[index].local = `${origem} → ${unidade}`;
-                    }
+                    registros[index].tipo = tipo; // Troca 'saida' por 'chegada' ou 'base'
+                    if (tipo === 'base') registros[index].local = local; // Atualiza com o texto da base
                     
                     showToast(tipo === 'base' ? '🏥 Fim de Plantão na Base!' : '📍 Chegada registrada!');
                 } else {
-                    showToast('⚠️ Não há saída em aberto nesta ocorrência. Clique em SAÍDA primeiro.');
+                    showToast('⚠️ Não há saída em aberto. Clique em SAÍDA primeiro.');
                     return;
                 }
             }
@@ -506,7 +485,7 @@
             localStorage.setItem('frotaKms_hci', JSON.stringify(frotaKms));
             
             let assinatura = ''; try { assinatura = canvas.toDataURL(); } catch(e) {}
-            localStorage.setItem('sistemaDeslocamentoHCI_v20', JSON.stringify({ 
+            localStorage.setItem('sistemaDeslocamentoHCI_v21', JSON.stringify({ 
                 rows: registros, observacao: observacaoEl.value, condutor: condutorEl.value, unidade: unidadeEl.value, 
                 ambulancia: ambulanciaEl.value, placa: placaEl.value, plantao: plantaoEl.value, kmInicial: kmInicialEl.value, 
                 nomeLegivel: nomeLegivelEl.value, mes: parseInt(mesSelect.value), ano: parseInt(anoSelect.value), assinaturaImg: assinatura,
@@ -541,43 +520,46 @@
 
                 items.forEach((r, index) => {
                     const isFirst = index === 0;
-                    const isLast = index === items.length - 1;
-
+                    
                     let origem = limparNomeLocal(r.local.split('→')[0] || '');
                     let destino = limparNomeLocal(r.local.split('→')[1] || '');
 
-                    if(isFirst) {
-                        kmInicialFicha = parseFloat(r.kmSaida) || 0;
-                        timelineHTML += `
-                            <div class="timeline-row inicio">
-                                <div class="timeline-tag inicio-tag">INICIO:</div>
-                                <div class="timeline-content">${origem} H: ${r.horaSaida} KM: ${r.kmSaida}</div>
-                            </div>
-                        `;
-                    } else {
-                        if (r.horaSaida) {
+                    // 1. Lógica para imprimir o INICIO ou SAÍDA
+                    if (r.horaSaida) {
+                        kmInicialFicha = isFirst ? (parseFloat(r.kmSaida) || 0) : kmInicialFicha;
+                        
+                        if (isFirst) {
                             timelineHTML += `
-                                <div class="timeline-row local">
-                                    <div class="timeline-tag local-tag">LOCAL:</div>
+                                <div class="timeline-row">
+                                    <div class="timeline-tag inicio">INICIO:</div>
+                                    <div class="timeline-content">${origem} H: ${r.horaSaida} KM: ${r.kmSaida}</div>
+                                </div>
+                            `;
+                        } else {
+                            timelineHTML += `
+                                <div class="timeline-row">
+                                    <div class="timeline-tag saida">SAÍDA:</div>
                                     <div class="timeline-content">${origem} H: ${r.horaSaida} KM: ${r.kmSaida}</div>
                                 </div>
                             `;
                         }
                     }
 
-                    if (r.horaChegada && r.kmChegada) {
-                        if(isLast) {
-                            kmFinalFicha = parseFloat(r.kmChegada) || 0;
+                    // 2. Lógica para imprimir a CHEGADA ou FIM
+                    if (r.horaChegada) {
+                        kmFinalFicha = parseFloat(r.kmChegada) || 0;
+                        
+                        if (r.tipo === 'base') {
                             timelineHTML += `
-                                <div class="timeline-row fim">
-                                    <div class="timeline-tag fim-tag">FIM:</div>
+                                <div class="timeline-row">
+                                    <div class="timeline-tag fim">FIM:</div>
                                     <div class="timeline-content">${destino} H: ${r.horaChegada} KM: ${r.kmChegada}</div>
                                 </div>
                             `;
                         } else {
                             timelineHTML += `
-                                <div class="timeline-row local">
-                                    <div class="timeline-tag local-tag">LOCAL:</div>
+                                <div class="timeline-row">
+                                    <div class="timeline-tag chegada">CHEGADA:</div>
                                     <div class="timeline-content">${destino} H: ${r.horaChegada} KM: ${r.kmChegada}</div>
                                 </div>
                             `;
@@ -620,7 +602,7 @@
 
         // ======================= PERSISTÊNCIA =======================
         function carregarLocalStorage() {
-            let raw = localStorage.getItem('sistemaDeslocamentoHCI_v20'); 
+            let raw = localStorage.getItem('sistemaDeslocamentoHCI_v21'); 
             if(!raw) { prepararFormulario(); return false; }
             try {
                 let d = JSON.parse(raw); 
@@ -658,16 +640,20 @@
                     let kmIni = 0; let kmFim = 0;
 
                     items.forEach((r, index) => {
-                        const isFirst = index === 0; const isLast = index === items.length - 1;
+                        const isFirst = index === 0; 
                         let origem = limparNomeLocal(r.local.split('→')[0] || ''); 
                         let destino = limparNomeLocal(r.local.split('→')[1] || '');
 
-                        if(isFirst) { kmIni = parseFloat(r.kmSaida) || 0; timelineStr += `<div style="font-weight:bold; color:#0e5a77;">INICIO: ${origem} H: ${r.horaSaida} KM: ${r.kmSaida}</div>`; } 
-                        else if (r.horaSaida) { timelineStr += `<div style="color:#475569;">LOCAL: ${origem} H: ${r.horaSaida} KM: ${r.kmSaida}</div>`; }
+                        if (r.horaSaida) {
+                            kmIni = isFirst ? (parseFloat(r.kmSaida) || 0) : kmIni;
+                            if (isFirst) timelineStr += `<div style="font-weight:bold; color:#0e5a77;">INICIO: ${origem} H: ${r.horaSaida} KM: ${r.kmSaida}</div>`;
+                            else timelineStr += `<div style="color:#f59e0b; font-weight:bold;">SAÍDA: ${origem} H: ${r.horaSaida} KM: ${r.kmSaida}</div>`;
+                        }
                         
-                        if(r.horaChegada && r.kmChegada) {
-                            if(isLast) { kmFim = parseFloat(r.kmChegada) || 0; timelineStr += `<div style="font-weight:bold; color:#dc2626;">FIM: ${destino} H: ${r.horaChegada} KM: ${r.kmChegada}</div>`; } 
-                            else { timelineStr += `<div style="color:#475569;">LOCAL: ${destino} H: ${r.horaChegada} KM: ${r.kmChegada}</div>`; }
+                        if (r.horaChegada) {
+                            kmFim = parseFloat(r.kmChegada) || 0;
+                            if (r.tipo === 'base') timelineStr += `<div style="font-weight:bold; color:#dc2626;">FIM: ${destino} H: ${r.horaChegada} KM: ${r.kmChegada}</div>`;
+                            else timelineStr += `<div style="color:#15803d; font-weight:bold;">CHEGADA: ${destino} H: ${r.horaChegada} KM: ${r.kmChegada}</div>`;
                         }
                     });
 
