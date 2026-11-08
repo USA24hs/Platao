@@ -153,8 +153,9 @@
                 <button id="toggleHeaderBtn" class="toggle-header-btn"><i class="fas fa-chevron-up"></i></button>
             </div>
         </div>
+        <!-- ATUALIZADO CONFORME SOLICITADO -->
         <div class="info-grid">
-            <div class="info-item"><label>🏥 Unidade</label><input type="text" id="unidadeHeader" value="SÓ SAÚDE"></div>
+            <div class="info-item"><label>🏥 Base</label><input type="text" id="BaseHeader" value="SÓ SAÚDE"></div>
             <div class="info-item"><label>👨‍⚕️ Condutor</label><input type="text" id="condutorHeader" value="Anderson Martins"></div>
             <div class="info-item"><label>⏱️ Plantão</label><select id="plantaoHeader"><option value="SD 12hs">SD 12hs (07h-19h)</option><option value="SN 12hs">SN 12hs (19h-07h)</option><option value="DN 24hs">DN 24hs</option></select></div>
             <div class="info-item"><label>🚑 Ambulância</label><input type="text" id="ambulanciaHeader" value="Master"></div>
@@ -244,12 +245,12 @@
         const diasNoMes = (m,a) => new Date(a, m, 0).getDate();
         const showToast = (msg) => { const t = document.getElementById('toast'); t.textContent = msg; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 3000); };
 
-        // Elementos DOM
+        // Elementos DOM (ATUALIZADO unidadeEl para baseEl)
         const historicoContainer = document.getElementById('historicoContainer');
         const resumoContainer = document.getElementById('resumoContainer');
         const observacaoEl = document.getElementById('observacao');
         const condutorEl = document.getElementById('condutorHeader');
-        const unidadeEl = document.getElementById('unidadeHeader');
+        const baseEl = document.getElementById('BaseHeader'); // Novo ID
         const ambulanciaEl = document.getElementById('ambulanciaHeader');
         const placaEl = document.getElementById('placaHeader');
         const plantaoEl = document.getElementById('plantaoHeader');
@@ -293,11 +294,12 @@
         // ======================= AUTO-OCULTAR =======================
         function checkAndCollapseHeader() {
             if (window.innerWidth > 768) return;
-            if (unidadeEl.value.trim() && condutorEl.value.trim() && ambulanciaEl.value.trim() && placaEl.value.trim() && kmInicialEl.value.trim()) {
+            if (baseEl.value.trim() && condutorEl.value.trim() && ambulanciaEl.value.trim() && placaEl.value.trim() && kmInicialEl.value.trim()) {
                 mainHeader.classList.add('header-collapsed');
             }
         }
-        [unidadeEl, condutorEl, ambulanciaEl, placaEl, kmInicialEl, plantaoEl].forEach(el => {
+        // Atualizado array para incluir baseEl
+        [baseEl, condutorEl, ambulanciaEl, placaEl, kmInicialEl, plantaoEl].forEach(el => {
             el.addEventListener('blur', checkAndCollapseHeader);
             el.addEventListener('change', checkAndCollapseHeader);
         });
@@ -351,16 +353,16 @@
             let kmRef = getUltimoKmChegada();
             if (kmRef) fKm.value = kmRef;
             
-            const unidade = limparNomeLocal(unidadeEl.value.trim()) || 'BASE';
+            const base = limparNomeLocal(baseEl.value.trim()) || 'BASE'; // Atualizado
             const localAtual = getLocalAtual();
             
             if (!localAtual) {
-                fLocal.value = `${unidade} → `;
+                fLocal.value = `${base} → `;
             } else {
                 fLocal.value = `${localAtual} → `;
             }
 
-            fPlantaoInfo.value = `${plantaoEl.value} | ${unidade}`;
+            fPlantaoInfo.value = `${plantaoEl.value} | ${base}`; // Atualizado
             atualizarLimitesDatas();
         }
 
@@ -408,9 +410,9 @@
             const plantaoAtual = plantaoEl.value;
 
             if (tipo === 'base') {
-                const unidade = limparNomeLocal(unidadeEl.value.trim()) || 'BASE';
+                const base = limparNomeLocal(baseEl.value.trim()) || 'BASE'; // Atualizado
                 const origem = local.split('→')[0] ? limparNomeLocal(local.split('→')[0]) : getLocalAtual();
-                local = `${origem || 'LOCAL'} → ${unidade}`;
+                local = `${origem || 'LOCAL'} → ${base}`;
             }
 
             if (editingRecordId) {
@@ -500,8 +502,9 @@
             localStorage.setItem('frotaKms_hci', JSON.stringify(frotaKms));
             
             let assinatura = ''; try { assinatura = canvas.toDataURL(); } catch(e) {}
-            localStorage.setItem('sistemaDeslocamentoHCI_v24', JSON.stringify({ 
-                rows: registros, observacao: observacaoEl.value, condutor: condutorEl.value, unidade: unidadeEl.value, 
+            // Mudei a chave para "unidade" no localStorage para manter compatibilidade, mas salva o valor do baseEl
+            localStorage.setItem('sistemaDeslocamentoHCI_v25', JSON.stringify({ 
+                rows: registros, observacao: observacaoEl.value, condutor: condutorEl.value, unidade: baseEl.value, 
                 ambulancia: ambulanciaEl.value, placa: placaEl.value, plantao: plantaoEl.value, kmInicial: kmInicialEl.value, 
                 nomeLegivel: nomeLegivelEl.value, mes: parseInt(mesSelect.value), ano: parseInt(anoSelect.value), assinaturaImg: assinatura,
                 currentOcorrenciaId: currentOcorrenciaId
@@ -701,7 +704,7 @@
 
             let texto = `*🚑 RELATÓRIO DE DESLOCAMENTO*\n`;
             texto += `📅 Data: ${formatDateBR(hoje())} | Plantão: ${plantaoEl.value}\n`;
-            texto += `🏥 Base: ${unidadeEl.value}\n`;
+            texto += `🏥 Base: ${baseEl.value}\n`; // Atualizado
             texto += `🚑 Veículo: ${ambulanciaEl.value} (${placaEl.value})\n`;
             texto += `👨‍⚕️ Condutor: ${condutorEl.value}\n`;
             texto += `-----------------------------------\n\n`;
@@ -766,11 +769,19 @@
 
         // ======================= PERSISTÊNCIA =======================
         function carregarLocalStorage() {
-            let raw = localStorage.getItem('sistemaDeslocamentoHCI_v24'); 
+            let raw = localStorage.getItem('sistemaDeslocamentoHCI_v25'); 
             if(!raw) { prepararFormulario(); return false; }
             try {
                 let d = JSON.parse(raw); 
-                condutorEl.value = d.condutor || 'Anderson Martins'; unidadeEl.value = d.unidade || 'SÓ SAÚDE'; ambulanciaEl.value = d.ambulancia || 'Master'; placaEl.value = d.placa || 'RKD-5A25'; plantaoEl.value = d.plantao || 'SD 12hs'; kmInicialEl.value = d.kmInicial || ''; nomeLegivelEl.value = d.nomeLegivel || 'Anderson Martins'; observacaoEl.value = d.observacao || '';
+                condutorEl.value = d.condutor || 'Anderson Martins'; 
+                baseEl.value = d.unidade || 'SÓ SAÚDE'; // Atualizado para ler a chave "unidade" antiga e colocar no baseEl
+                ambulanciaEl.value = d.ambulancia || 'Master'; 
+                placaEl.value = d.placa || 'RKD-5A25'; 
+                plantaoEl.value = d.plantao || 'SD 12hs'; 
+                kmInicialEl.value = d.kmInicial || ''; 
+                nomeLegivelEl.value = d.nomeLegivel || 'Anderson Martins'; 
+                observacaoEl.value = d.observacao || '';
+                
                 if(d.mes) mesSelect.value = d.mes; if(d.ano) anoSelect.value = d.ano;
                 registros = d.rows || [];
                 currentOcorrenciaId = d.currentOcorrenciaId || Date.now().toString(); 
@@ -885,7 +896,7 @@
                         <table class="info-table">
                             <tr><td>Condutor</td><td>${condutorEl.value}</td><td>Plantão</td><td>${plantaoEl.value}</td></tr>
                             <tr><td>Ambulância</td><td>${ambulanciaEl.value}</td><td>Placa</td><td>${placaEl.value}</td></tr>
-                            <tr><td>Km Inicial</td><td>${kmInicialEl.value || '-'}</td><td>Gerado em</td><td>${dataHora}</td></tr>
+                            <tr><td>Km Inicial</td><td>${kmInicialEl.value || '-'}</td><td>Base</td><td>${baseEl.value}</td></tr>
                         </table>
                         
                         ${resumoPdfHTML}
@@ -918,7 +929,11 @@
             fHora.focus();
         });
 
-        [condutorEl, unidadeEl, ambulanciaEl, placaEl, kmInicialEl, nomeLegivelEl, observacaoEl].forEach(el => { el.addEventListener('input', () => salvarERenderizar()); });
+        // Atualizado array para incluir baseEl
+        [condutorEl, baseEl, ambulanciaEl, placaEl, kmInicialEl, nomeLegivelEl, observacaoEl].forEach(el => { 
+            el.addEventListener('input', () => salvarERenderizar()); 
+        });
+        
         [plantaoEl, mesSelect, anoSelect].forEach(el => { el.addEventListener('change', () => { atualizarLimitesDatas(); salvarERenderizar(); }); });
         
         ambulanciaEl.addEventListener('change', () => {
