@@ -47,12 +47,12 @@
         .form-item input { width: 100%; min-width: 0; padding: 8px; border-radius: 8px; border: 1px solid #86efac; font-family: 'Inter'; font-size: 0.95rem; font-weight: 600; color: #064e3b; background: #fff; box-sizing: border-box; }
         .form-item input:focus { outline: 2px solid #15803d; border-color: transparent; }
         
-        .form-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; width: 100%; }
-        .form-actions button { border: none; color: #fff; padding: 12px 4px; border-radius: 8px; font-weight: 800; cursor: pointer; font-size: 0.85rem; display: flex; align-items: center; justify-content: center; gap: 6px; transition: 0.2s; font-family: 'Inter'; width: 100%; }
+        /* Botões coloridos e organizados */
+        .form-actions { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; width: 100%; }
+        .form-actions button { border: none; color: #fff; padding: 12px 2px; border-radius: 8px; font-weight: 800; cursor: pointer; font-size: 0.8rem; display: flex; align-items: center; justify-content: center; gap: 4px; transition: 0.2s; font-family: 'Inter'; width: 100%; }
         
         .btn-form-saida { background: var(--primary); }
         .btn-form-chegada { background: var(--success); }
-        .btn-form-retorno { background: #f59e0b; }
         .btn-form-base { background: var(--base); }
 
         /* NOVO VISUAL DO HISTÓRICO (FICHAS) */
@@ -61,7 +61,6 @@
         .ficha-header { background: #f8fafc; padding: 8px 12px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; }
         .ficha-header-info { font-size: 0.75rem; color: #475569; font-weight: 600; display: flex; flex-direction: column; gap: 2px; }
         
-        /* Botão de Excluir no topo */
         .btn-del-ficha { background: #fee2e2; color: #b91c1c; border: none; cursor: pointer; padding: 6px 10px; border-radius: 6px; font-size: 0.9rem; transition: 0.2s; display: flex; align-items: center; justify-content: center; }
         .btn-del-ficha.locked { background: #e2e8f0; color: #64748b; cursor: not-allowed; }
         
@@ -113,7 +112,8 @@
             .form-grid { gap: 6px; }
             .form-item label { font-size: 0.6rem; }
             .form-item input { font-size: 16px !important; padding: 6px; }
-            .form-actions button { font-size: 0.8rem; padding: 10px 2px; }
+            .form-actions button { font-size: 0.75rem; padding: 10px 2px; }
+            .form-actions button i { font-size: 0.85rem; }
 
             .btn-pdf { padding: 10px; font-size: 0.85rem; }
         }
@@ -172,17 +172,17 @@
                 </div>
             </div>
             
+            <!-- 3 Botões para evitar confusão -->
             <div class="form-actions">
                 <button class="btn-form-saida" id="btnRegSaida"><i class="fas fa-sign-out-alt"></i> Saída</button>
                 <button class="btn-form-chegada" id="btnRegChegada"><i class="fas fa-map-marker-alt"></i> Chegada</button>
-                <button class="btn-form-retorno" id="btnRegRetorno"><i class="fas fa-undo-alt"></i> Retorno</button>
-                <button class="btn-form-base" id="btnRegBase"><i class="fas fa-home"></i> Base</button>
+                <button class="btn-form-base" id="btnRegBase"><i class="fas fa-home"></i> Base (Fim)</button>
             </div>
         </div>
 
-        <!-- HISTÓRICO DE LANÇAMENTOS (NOVO MODELO) -->
+        <!-- HISTÓRICO DE LANÇAMENTOS (FICHAS) -->
         <div class="card">
-            <div class="card-title"><i class="fas fa-list-ol"></i> Histórico de Lançamentos</div>
+            <div class="card-title"><i class="fas fa-list-ol"></i> Histórico de Ocorrências</div>
             <div id="historicoContainer">
                 <!-- Preenchido via JS -->
             </div>
@@ -239,22 +239,19 @@
         function getPeriodo() { let m = parseInt(mesSelect.value); let a = parseInt(anoSelect.value); return { mes: m, ano: a, min: `${a}-${String(m).padStart(2,'0')}-01`, max: `${a}-${String(m).padStart(2,'0')}-${diasNoMes(m,a)}` }; }
         function atualizarLimitesDatas() { const p = getPeriodo(); fData.min = p.min; fData.max = p.max; }
 
-        // ======================= REGRA DE BLOQUEIO DE EXCLUSÃO =======================
+        // ======================= REGRA DE BLOQUEIO =======================
         function isRecordDeletable(dataStr, shiftStr) {
             if (!dataStr) return true; 
             const [year, month, day] = dataStr.split('-');
             let endHour = 19; let endDayOffset = 0;
-            
             if (shiftStr === 'SN 12hs') { endHour = 7; endDayOffset = 1; } 
             else if (shiftStr === 'DN 24hs') { endHour = 7; endDayOffset = 1; }
-            
             const endTime = new Date(year, parseInt(month) - 1, parseInt(day) + endDayOffset, endHour, 0, 0);
-            endTime.setHours(endTime.getHours() + 1); // Tolerância de 1h
-            
+            endTime.setHours(endTime.getHours() + 1);
             return new Date() < endTime;
         }
 
-        // ======================= AUTO-OCULTAR CABEÇALHO =======================
+        // ======================= AUTO-OCULTAR =======================
         function checkAndCollapseHeader() {
             if (window.innerWidth > 768) return;
             if (unidadeEl.value.trim() && condutorEl.value.trim() && ambulanciaEl.value.trim() && placaEl.value.trim() && kmInicialEl.value.trim()) {
@@ -331,12 +328,12 @@
             let local = fLocal.value.trim();
 
             if (!hora || isNaN(km)) return showToast('⚠️ Preencha Hora e KM corretamente.');
-            if (!local) local = tipo === 'saida' ? `🏥 ${unidadeEl.value} → ` : `→ 🏥 ${unidadeEl.value}`;
-
+            
             const veiculoAtual = `${ambulanciaEl.value.trim()} - ${placaEl.value.trim()}`;
             const plantaoAtual = plantaoEl.value;
 
             if (tipo === 'saida') {
+                if (!local.includes('→')) local += ' → '; // Garante o formato
                 registros.unshift({
                     id: Date.now().toString(),
                     data: data,
@@ -351,7 +348,8 @@
                 });
                 showToast('🚑 Saída registrada!');
             } 
-            else if (tipo === 'chegada' || tipo === 'retorno' || tipo === 'base') {
+            else if (tipo === 'chegada' || tipo === 'base') {
+                // Encontra a última viagem em aberto
                 const index = registros.findIndex(r => r.veiculo === veiculoAtual && !r.horaChegada);
 
                 if (index !== -1) {
@@ -359,31 +357,15 @@
                     registros[index].kmChegada = km.toString();
                     
                     if (tipo === 'base') {
-                        registros[index].tipo = 'base';
                         const unidade = limparNomeLocal(unidadeEl.value.trim()) || 'BASE';
                         const origem = limparNomeLocal(registros[index].local.split('→')[0]);
                         registros[index].local = `🏥 ${origem} → 🏥 ${unidade}`;
-                    } else if (tipo === 'retorno') {
-                        registros[index].tipo = 'retorno';
-                    } else {
-                        registros[index].tipo = 'chegada';
                     }
                     
-                    showToast(tipo === 'base' ? '🏥 Retorno à Base!' : '📍 Chegada registrada!');
+                    showToast(tipo === 'base' ? '🏥 Fim de Plantão na Base!' : '📍 Chegada registrada no Local!');
                 } else {
-                    registros.unshift({
-                        id: Date.now().toString(),
-                        data: data,
-                        shift: plantaoAtual,
-                        tipo: tipo,
-                        horaSaida: '',
-                        kmSaida: '',
-                        local: local,
-                        horaChegada: hora,
-                        kmChegada: km.toString(),
-                        veiculo: veiculoAtual
-                    });
-                    showToast('📍 Chegada avulsa registrada!');
+                    showToast('⚠️ Não há saída em aberto para dar chegada. Clique em SAÍDA primeiro.');
+                    return;
                 }
             }
 
@@ -396,11 +378,8 @@
             if (!isRecordDeletable(dataStr, shiftStr)) {
                 return showToast('🔒 Plantão encerrado. Não é possível excluir.');
             }
-
             if (!confirm(`Deseja excluir TODOS os registros do dia ${formatDateBR(dataStr)} (${shiftStr})?`)) return;
-            
             registros = registros.filter(r => !(r.data === dataStr && r.shift === shiftStr));
-            
             salvarERenderizar();
             showToast('🗑️ Ficha excluída com sucesso');
         }
@@ -418,7 +397,7 @@
             localStorage.setItem('frotaKms_hci', JSON.stringify(frotaKms));
             
             let assinatura = ''; try { assinatura = canvas.toDataURL(); } catch(e) {}
-            localStorage.setItem('sistemaDeslocamentoHCI_v17', JSON.stringify({ 
+            localStorage.setItem('sistemaDeslocamentoHCI_v18', JSON.stringify({ 
                 rows: registros, observacao: observacaoEl.value, condutor: condutorEl.value, unidade: unidadeEl.value, 
                 ambulancia: ambulanciaEl.value, placa: placaEl.value, plantao: plantaoEl.value, kmInicial: kmInicialEl.value, 
                 nomeLegivel: nomeLegivelEl.value, mes: parseInt(mesSelect.value), ano: parseInt(anoSelect.value), assinaturaImg: assinatura 
@@ -434,7 +413,6 @@
                 return;
             }
 
-            // Agrupar por Data e Shift
             const grupos = {};
             registros.forEach(r => {
                 const key = `${r.data}_${r.shift || 'SD 12hs'}`;
@@ -442,30 +420,24 @@
                 grupos[key].items.push(r);
             });
 
-            // Ordenar as chaves de data da mais recente para a mais antiga
-            const chavesOrdenadas = Object.keys(grupos).sort((a, b) => {
-                return new Date(b.split('_')[0]) - new Date(a.split('_')[0]);
-            });
+            const chavesOrdenadas = Object.keys(grupos).sort((a, b) => new Date(b.split('_')[0]) - new Date(a.split('_')[0]));
 
             chavesOrdenadas.forEach(key => {
                 const grupo = grupos[key];
-                
-                // Como `registros` está salvo do mais novo pro mais antigo, 
-                // vamos inverter para ler em ordem cronológica (Início -> Fim)
-                const itemsCronologicos = [...grupo.items].reverse();
+                const items = [...grupo.items].reverse(); // Ordem cronológica para a timeline
 
                 let kmInicialFicha = 0;
                 let kmFinalFicha = 0;
                 let timelineHTML = '';
 
-                itemsCronologicos.forEach((r, index) => {
+                items.forEach((r, index) => {
                     const isFirst = index === 0;
-                    const isLast = index === itemsCronologicos.length - 1;
+                    const isLast = index === items.length - 1;
 
-                    // Extrai Origem e Destino
                     let origem = r.local.split('→')[0]?.trim() || '';
                     let destino = r.local.split('→')[1]?.trim() || '';
 
+                    // SE FOR O PRIMEIRO (INÍCIO)
                     if(isFirst) {
                         kmInicialFicha = parseFloat(r.kmSaida) || 0;
                         timelineHTML += `
@@ -474,8 +446,19 @@
                                 <div class="timeline-content">${origem} H: ${r.horaSaida} KM: ${r.kmSaida}</div>
                             </div>
                         `;
+                    } else {
+                        // SE NÃO FOR O PRIMEIRO, É UMA SAÍDA DE UM LOCAL
+                        if (r.horaSaida) {
+                            timelineHTML += `
+                                <div class="timeline-row local">
+                                    <div class="timeline-tag local-tag">LOCAL:</div>
+                                    <div class="timeline-content">${origem} H: ${r.horaSaida} KM: ${r.kmSaida}</div>
+                                </div>
+                            `;
+                        }
                     }
 
+                    // MOSTRAR A CHEGADA
                     if (r.horaChegada && r.kmChegada) {
                         if(isLast) {
                             kmFinalFicha = parseFloat(r.kmChegada) || 0;
@@ -493,16 +476,6 @@
                                 </div>
                             `;
                         }
-                    }
-
-                    // Se não for o último, imprime a saída do local
-                    if (!isLast && r.horaSaida) {
-                        timelineHTML += `
-                            <div class="timeline-row local">
-                                <div class="timeline-tag local-tag">LOCAL:</div>
-                                <div class="timeline-content">${origem} H: ${r.horaSaida} KM: ${r.kmSaida}</div>
-                            </div>
-                        `;
                     }
                 });
 
@@ -536,31 +509,19 @@
 
         // ======================= PERSISTÊNCIA =======================
         function carregarLocalStorage() {
-            let raw = localStorage.getItem('sistemaDeslocamentoHCI_v17'); 
-            if(!raw) {
-                prepararFormulario();
-                return false;
-            }
+            let raw = localStorage.getItem('sistemaDeslocamentoHCI_v18'); 
+            if(!raw) { prepararFormulario(); return false; }
             try {
                 let d = JSON.parse(raw); 
                 condutorEl.value = d.condutor || 'Anderson Martins'; unidadeEl.value = d.unidade || 'SÓ SAÚDE'; ambulanciaEl.value = d.ambulancia || 'Master'; placaEl.value = d.placa || 'RKD-5A25'; plantaoEl.value = d.plantao || 'SD 12hs'; kmInicialEl.value = d.kmInicial || ''; nomeLegivelEl.value = d.nomeLegivel || 'Anderson Martins'; observacaoEl.value = d.observacao || '';
                 if(d.mes) mesSelect.value = d.mes; if(d.ano) anoSelect.value = d.ano;
-                
                 registros = d.rows || [];
-                
-                if(d.assinaturaImg && d.assinaturaImg !== 'data:,') { 
-                    let img = new Image(); img.onload = () => ctx.drawImage(img, 0, 0, canvas.width, canvas.height); img.src = d.assinaturaImg; 
-                }
-                
+                if(d.assinaturaImg && d.assinaturaImg !== 'data:,') { let img = new Image(); img.onload = () => ctx.drawImage(img, 0, 0, canvas.width, canvas.height); img.src = d.assinaturaImg; }
                 renderizarFichas(); 
                 prepararFormulario();
-                
                 if (window.innerWidth <= 768 && registros.length > 0) mainHeader.classList.add('header-collapsed');
                 return true;
-            } catch(e) { 
-                prepararFormulario();
-                return false; 
-            }
+            } catch(e) { prepararFormulario(); return false; }
         }
 
         // ======================= RELATÓRIO PDF =======================
@@ -568,8 +529,6 @@
             const btn = document.getElementById('pdfBtn'); btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Gerando...';
             try {
                 const dataHora = new Date().toLocaleString('pt-BR'); const assinaturaImg = canvas.toDataURL('image/png'); const mesNome2 = nomeMes(parseInt(mesSelect.value)); const ano = anoSelect.value;
-                
-                // Reutiliza a lógica de agrupamento para o PDF
                 const grupos = {};
                 registros.forEach(r => {
                     const key = `${r.data}_${r.shift || 'SD 12hs'}`;
@@ -590,12 +549,13 @@
                         const isFirst = index === 0; const isLast = index === items.length - 1;
                         let origem = r.local.split('→')[0]?.trim() || ''; let destino = r.local.split('→')[1]?.trim() || '';
 
-                        if(isFirst) { kmIni = parseFloat(r.kmSaida) || 0; timelineStr += `<div style="font-weight:bold; color:#0e5a77;">INICIO: ${origem} H: ${r.horaSaida} KM: ${r.kmSaida}</div>`; }
+                        if(isFirst) { kmIni = parseFloat(r.kmSaida) || 0; timelineStr += `<div style="font-weight:bold; color:#0e5a77;">INICIO: ${origem} H: ${r.horaSaida} KM: ${r.kmSaida}</div>`; } 
+                        else if (r.horaSaida) { timelineStr += `<div style="color:#475569;">LOCAL: ${origem} H: ${r.horaSaida} KM: ${r.kmSaida}</div>`; }
+                        
                         if(r.horaChegada && r.kmChegada) {
                             if(isLast) { kmFim = parseFloat(r.kmChegada) || 0; timelineStr += `<div style="font-weight:bold; color:#dc2626;">FIM: ${destino} H: ${r.horaChegada} KM: ${r.kmChegada}</div>`; } 
                             else { timelineStr += `<div style="color:#475569;">LOCAL: ${destino} H: ${r.horaChegada} KM: ${r.kmChegada}</div>`; }
                         }
-                        if(!isLast && r.horaSaida) { timelineStr += `<div style="color:#475569;">LOCAL: ${origem} H: ${r.horaSaida} KM: ${r.kmSaida}</div>`; }
                     });
 
                     const kmRod = kmFim > 0 ? (kmFim - kmIni).toFixed(1) : '0.0';
@@ -638,7 +598,6 @@
         // ======================= EVENTOS =======================
         document.getElementById('btnRegSaida').addEventListener('click', () => adicionarRegistro('saida'));
         document.getElementById('btnRegChegada').addEventListener('click', () => adicionarRegistro('chegada'));
-        document.getElementById('btnRegRetorno').addEventListener('click', () => adicionarRegistro('retorno'));
         document.getElementById('btnRegBase').addEventListener('click', () => adicionarRegistro('base'));
         document.getElementById('pdfBtn').addEventListener('click', gerarRelatorio);
 
@@ -648,22 +607,19 @@
         ambulanciaEl.addEventListener('change', () => {
             const veiculoKey = `${ambulanciaEl.value.trim()} - ${placaEl.value.trim()}`;
             const frotaKms = JSON.parse(localStorage.getItem('frotaKms_hci') || '{}');
-            if (frotaKms[veiculoKey]) kmInicialEl.value = frotaKms[veiculoKey];
-            else kmInicialEl.value = '';
+            if (frotaKms[veiculoKey]) kmInicialEl.value = frotaKms[veiculoKey]; else kmInicialEl.value = '';
             prepararFormulario();
         });
 
         placaEl.addEventListener('change', () => {
             const veiculoKey = `${ambulanciaEl.value.trim()} - ${placaEl.value.trim()}`;
             const frotaKms = JSON.parse(localStorage.getItem('frotaKms_hci') || '{}');
-            if (frotaKms[veiculoKey]) kmInicialEl.value = frotaKms[veiculoKey];
-            else kmInicialEl.value = '';
+            if (frotaKms[veiculoKey]) kmInicialEl.value = frotaKms[veiculoKey]; else kmInicialEl.value = '';
             prepararFormulario();
         });
 
         window.addEventListener('beforeunload', () => salvarERenderizar());
 
-        // Inicialização
         carregarLocalStorage();
         atualizarLimitesDatas();
     })();
