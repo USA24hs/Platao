@@ -416,9 +416,9 @@
                 let dest = getLocalDisplay(lastRecordOc.local, true);
                 fLocal.value = `${dest} → ${dest}`; 
             } else if (lastRecordOc.tipo === 'chegada') {
-                // 3. SAÍDA (Sai do destino para um novo local)
+                // 3. SAÍDA (Se o usuário quer dar saída e base, o campo deve estar preenchido)
                 let dest = getLocalDisplay(lastRecordOc.local, true);
-                fLocal.value = `${dest} → `;
+                fLocal.value = `${dest} → ${dest}`; // Alterado para HTO -> HTO conforme solicitado
             } else if (lastRecordOc.tipo === 'base') {
                 // 4. FIM (Volta para a base e reinicia)
                 fLocal.value = `${base} → `;
@@ -487,6 +487,11 @@
                 return "A última ação foi SAÍDA. Você deve registrar uma CHEGADA primeiro.";
             }
             if ((tipo === 'chegada' || tipo === 'base') && lastType !== 'saida') {
+                if (tipo === 'base' && lastType === 'chegada') {
+                     // Permite caso o condutor queira encerrar direto da chegada, 
+                     // embora a recomendação seja dar saída antes.
+                     return null; 
+                }
                 return "A última ação foi CHEGADA. Você deve registrar uma SAÍDA primeiro.";
             }
             if (lastType === 'base') {
@@ -713,7 +718,7 @@
                 const validShifts = ['SD 12hs', 'SN 12hs', 'DN 24hs'];
                 const plantaoToSave = validShifts.includes(plantaoEl.value) ? plantaoEl.value : 'SD 12hs';
 
-                localStorage.setItem('sistemaDeslocamentoHCI_v54', JSON.stringify({ 
+                localStorage.setItem('sistemaDeslocamentoHCI_v55', JSON.stringify({ 
                     rows: registros, observacao: observacaoEl.value.toUpperCase(), condutor: condutorEl.value.toUpperCase(), 
                     unidade: baseEl.value.toUpperCase(), ambulancia: ambulanciaEl.value.toUpperCase(), placa: placaEl.value.toUpperCase(), 
                     plantao: plantaoToSave, kmInicial: kmInicialEl.value, nomeLegivel: nomeLegivelEl.value.toUpperCase(), 
@@ -1049,7 +1054,7 @@
         }
 
         function carregarLocalStorage() {
-            let raw = localStorage.getItem('sistemaDeslocamentoHCI_v54'); 
+            let raw = localStorage.getItem('sistemaDeslocamentoHCI_v55'); 
             if(!raw) { prepararFormulario(); return false; }
             try {
                 let d = JSON.parse(raw); 
@@ -1082,7 +1087,7 @@
                 return true;
             } catch(e) { 
                 console.error("Dados corrompidos no localStorage. Limpando...", e);
-                localStorage.removeItem('sistemaDeslocamentoHCI_v54');
+                localStorage.removeItem('sistemaDeslocamentoHCI_v55');
                 prepararFormulario(); 
                 return false; 
             }
