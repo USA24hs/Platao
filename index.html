@@ -30,7 +30,7 @@
         .month-selector { background: rgba(255,255,255,0.1); backdrop-filter: blur(4px); border-radius: 8px; padding: 4px 8px; display: flex; align-items: center; gap: 6px; font-size: 0.8rem; font-weight: 600; }
         .month-selector select, .month-selector input { background: #fff; border: none; padding: 2px 6px; border-radius: 6px; font-weight: 700; color: var(--primary-dark); font-family: 'Inter', sans-serif; font-size: 0.8rem; }
         
-        .info-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 0.5rem; margin-top: 0.5rem; transition: 0.3s; }
+        .info-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 0.5rem; margin-top: 0.5rem; transition: 0.3s; }
         .info-item { background: rgba(255,255,255,0.08); border-radius: 8px; padding: 6px 10px; }
         .info-item label { font-size: 0.6rem; text-transform: uppercase; opacity: 0.8; display: block; margin-bottom: 2px; letter-spacing: 0.5px; }
         .info-item input, .info-item select { background: rgba(255,255,255,0.95); border: none; padding: 6px 8px; border-radius: 6px; font-weight: 700; color: var(--primary-dark); width: 100%; font-family: 'Inter', sans-serif; font-size: 0.85rem; }
@@ -193,6 +193,9 @@
             <div class="info-item"><label>🚑 Ambulância</label><input type="text" id="ambulanciaHeader" value="Master"></div>
             <div class="info-item"><label>🔖 Placa</label><input type="text" id="placaHeader" value="RKD-5A25"></div>
             <div class="info-item"><label>🔢 Km Inicial</label><input type="number" id="kmInicialHeader" value="34585" step="0.1"></div>
+            <div class="info-item"><label>⛑️ O² Portátil</label><input type="text" id="o2PortatilHeader" placeholder="%"></div>
+            <div class="info-item"><label>🫁 O² Fixo</label><input type="text" id="o2FixoHeader" placeholder="%"></div>
+            <div class="info-item"><label>⛽ Abastecimento</label><input type="text" id="abastecimentoHeader" placeholder="%"></div>
         </div>
     </div>
     
@@ -305,6 +308,9 @@
         const placaEl = document.getElementById('placaHeader');
         const plantaoEl = document.getElementById('plantaoHeader');
         const kmInicialEl = document.getElementById('kmInicialHeader');
+        const o2PortatilEl = document.getElementById('o2PortatilHeader');
+        const o2FixoEl = document.getElementById('o2FixoHeader');
+        const abastecimentoEl = document.getElementById('abastecimentoHeader');
         const nomeLegivelEl = document.getElementById('nomeLegivel');
         const mesSelect = document.getElementById('mesSelect');
         const anoSelect = document.getElementById('anoSelect');
@@ -358,7 +364,7 @@
                 mainHeader.classList.add('header-collapsed');
             }
         }
-        [baseEl, condutorEl, ambulanciaEl, placaEl, kmInicialEl, plantaoEl].forEach(el => {
+        [baseEl, condutorEl, ambulanciaEl, placaEl, kmInicialEl, plantaoEl, o2PortatilEl, o2FixoEl, abastecimentoEl].forEach(el => {
             el.addEventListener('blur', checkAndCollapseHeader);
             el.addEventListener('change', checkAndCollapseHeader);
         });
@@ -592,10 +598,12 @@
             localStorage.setItem('frotaKms_hci', JSON.stringify(frotaKms));
             
             let assinatura = ''; try { assinatura = canvas.toDataURL(); } catch(e) {}
-            localStorage.setItem('sistemaDeslocamentoHCI_v28', JSON.stringify({ 
-                rows: registros, observacao: observacaoEl.value.toUpperCase(), condutor: condutorEl.value.toUpperCase(), unidade: baseEl.value.toUpperCase(), 
-                ambulancia: ambulanciaEl.value.toUpperCase(), placa: placaEl.value.toUpperCase(), plantao: plantaoEl.value, kmInicial: kmInicialEl.value, 
-                nomeLegivel: nomeLegivelEl.value.toUpperCase(), mes: parseInt(mesSelect.value), ano: parseInt(anoSelect.value), assinaturaImg: assinatura,
+            localStorage.setItem('sistemaDeslocamentoHCI_v29', JSON.stringify({ 
+                rows: registros, observacao: observacaoEl.value.toUpperCase(), condutor: condutorEl.value.toUpperCase(), 
+                unidade: baseEl.value.toUpperCase(), ambulancia: ambulanciaEl.value.toUpperCase(), placa: placaEl.value.toUpperCase(), 
+                plantao: plantaoEl.value, kmInicial: kmInicialEl.value, nomeLegivel: nomeLegivelEl.value.toUpperCase(), 
+                o2Portatil: o2PortatilEl.value, o2Fixo: o2FixoEl.value, abastecimento: abastecimentoEl.value,
+                mes: parseInt(mesSelect.value), ano: parseInt(anoSelect.value), assinaturaImg: assinatura,
                 currentOcorrenciaId: currentOcorrenciaId
             }));
 
@@ -603,7 +611,6 @@
             renderizarFichas();
         }
 
-        // CÁLCULO CORRIGIDO DO RESUMO
         function renderizarResumo() {
             if(registros.length === 0) {
                 resumoContainer.innerHTML = '<p style="font-size:0.8rem; color:#94a3b8; text-align:center;">Aguardando lançamentos...</p>';
@@ -623,15 +630,12 @@
             let solicitantes = {};
 
             gruposMap.forEach(items => {
-                // Ordem cronológica para achar o início e fim
                 const orderedItems = [...items].reverse(); 
                 
-                // Pega o primeiro KM de saída
                 let kmIni = 0;
                 const first = orderedItems[0];
                 if (first && first.kmSaida) kmIni = parseFloat(first.kmSaida);
 
-                // Pega o último KM (seja de chegada ou de saída se a viagem estiver em aberto)
                 let kmFim = kmIni;
                 for(let i = orderedItems.length - 1; i >= 0; i--) {
                     if(orderedItems[i].kmChegada) { kmFim = parseFloat(orderedItems[i].kmChegada); break; }
@@ -642,7 +646,6 @@
                     totalKm += (kmFim - kmIni);
                 }
 
-                // Contar solicitantes
                 if (first && first.local) {
                     const partes = first.local.split('→');
                     if (partes.length >= 2) {
@@ -807,12 +810,45 @@
             });
         }
 
-        // ======================= COMPARTILHAR WHATSAPP =======================
+        // ======================= COMPARTILHAR WHATSAPP (NOVO MODELO) =======================
         function compartilharWhatsApp() {
             if(registros.length === 0) {
                 return showToast('⚠️ Não há registros para compartilhar.');
             }
 
+            // 1. Lógica da Saudação
+            const isNoite = plantaoEl.value.includes('SN');
+            const saudacao = isNoite ? '*Boa noite!*' : '*Bom dia!*';
+
+            // 2. Data e Hora atual
+            const agora = new Date();
+            const dataStr = `${String(agora.getDate()).padStart(2,'0')}/${String(agora.getMonth()+1).padStart(2,'0')}/${agora.getFullYear()}`;
+            const horaStr = `${String(agora.getHours()).padStart(2,'0')}:${String(agora.getMinutes()).padStart(2,'0')}`;
+
+            // 3. Formatar O2 e Abastecimento (garantir %)
+            const formatPct = (val) => {
+                if(!val) return '';
+                const v = val.toString().replace('%','');
+                return `${v}%`;
+            };
+
+            // 4. Montar cabeçalho da mensagem
+            let texto = `${saudacao}\n\n`;
+            texto += `🙋🏻‍♂️ Condutor: ${condutorEl.value.toUpperCase()}\n`;
+            texto += `🚑 VTR: ${ambulanciaEl.value.toUpperCase()} Placa: ${placaEl.value.toUpperCase()}\n`;
+            if(o2PortatilEl.value || o2FixoEl.value) {
+                texto += `⛑️ O² Portátil: ${formatPct(o2PortatilEl.value) || '-'} Fixo: ${formatPct(o2FixoEl.value) || '-'}\n`;
+            }
+            if(abastecimentoEl.value) {
+                texto += `⛽ Abastecimento: ${formatPct(abastecimentoEl.value)}\n`;
+            }
+            texto += `📅 ${dataStr} 🕖 ${horaStr}\n`;
+            texto += `📝 Obs: ${observacaoEl.value ? observacaoEl.value.toUpperCase() : 'Sem avarias'}\n\n`;
+            texto += `🙏🏻Bom plantão a todos!\n`;
+            texto += `-----------------------------------\n`;
+            texto += `*🚑 RELATÓRIO DE DESLOCAMENTO*\n\n`;
+
+            // 5. Agrupar e montar a Timeline
             const gruposMap = new Map();
             registros.forEach(r => {
                 const key = r.ocorrenciaId || `${r.data}_${r.shift}_${r.id}`; 
@@ -820,24 +856,16 @@
                 gruposMap.get(key).items.push(r);
             });
 
-            let texto = `*🚑 RELATÓRIO DE DESLOCAMENTO*\n`;
-            texto += `📅 Data: ${formatDateBR(hoje())} | Plantão: ${plantaoEl.value}\n`;
-            texto += `🏥 Base: ${baseEl.value.toUpperCase()}\n`; 
-            texto += `🚑 Veículo: ${ambulanciaEl.value.toUpperCase()} (${placaEl.value.toUpperCase()})\n`;
-            texto += `👨‍⚕️ Condutor: ${condutorEl.value.toUpperCase()}\n`;
-            texto += `-----------------------------------\n\n`;
-
             let totalKmGeral = 0;
             let solicitantes = {};
 
             gruposMap.forEach(grupo => {
                 const items = [...grupo.items].reverse();
-                
-                let kmIni = 0;
+                let kmIni = 0; let kmFim = 0;
+
                 const first = items[0];
                 if (first && first.kmSaida) kmIni = parseFloat(first.kmSaida);
 
-                let kmFim = kmIni;
                 for(let i = items.length - 1; i >= 0; i--) {
                     if(items[i].kmChegada) { kmFim = parseFloat(items[i].kmChegada); break; }
                     if(items[i].kmSaida) { kmFim = parseFloat(items[i].kmSaida); break; }
@@ -873,6 +901,7 @@
                 texto += `-----------------------------------\n\n`;
             });
 
+            // 6. Resumo final
             texto += `*📊 RESUMO DO PLANTÃO*\n`;
             texto += `Total de Deslocamentos: ${gruposMap.size}\n`;
             texto += `Total KM Rodado: ${totalKmGeral.toFixed(1)} km\n\n`;
@@ -883,17 +912,13 @@
                 texto += `• ${local}: ${solicitantes[local]}\n`;
             });
 
-            if (observacaoEl.value.trim()) {
-                texto += `\n*📋 OBSERVAÇÕES:*\n${observacaoEl.value.toUpperCase().trim()}`;
-            }
-
             const url = `https://api.whatsapp.com/send?text=${encodeURIComponent(texto)}`;
             window.open(url, '_blank');
         }
 
         // ======================= PERSISTÊNCIA =======================
         function carregarLocalStorage() {
-            let raw = localStorage.getItem('sistemaDeslocamentoHCI_v28'); 
+            let raw = localStorage.getItem('sistemaDeslocamentoHCI_v29'); 
             if(!raw) { prepararFormulario(); return false; }
             try {
                 let d = JSON.parse(raw); 
@@ -903,6 +928,9 @@
                 placaEl.value = d.placa || 'RKD-5A25'; 
                 plantaoEl.value = d.plantao || 'SD 12hs'; 
                 kmInicialEl.value = d.kmInicial || ''; 
+                o2PortatilEl.value = d.o2Portatil || ''; 
+                o2FixoEl.value = d.o2Fixo || ''; 
+                abastecimentoEl.value = d.abastecimento || '';
                 nomeLegivelEl.value = d.nomeLegivel || 'ANDERSON MARTINS'; 
                 observacaoEl.value = d.observacao || '';
                 
@@ -1024,6 +1052,8 @@
                             <tr><td>Condutor</td><td>${condutorEl.value.toUpperCase()}</td><td>Plantão</td><td>${plantaoEl.value}</td></tr>
                             <tr><td>Ambulância</td><td>${ambulanciaEl.value.toUpperCase()}</td><td>Placa</td><td>${placaEl.value.toUpperCase()}</td></tr>
                             <tr><td>Km Inicial</td><td>${kmInicialEl.value || '-'}</td><td>Base</td><td>${baseEl.value.toUpperCase()}</td></tr>
+                            <tr><td>O² Portátil</td><td>${o2PortatilEl.value || '-'}</td><td>O² Fixo</td><td>${o2FixoEl.value || '-'}</td></tr>
+                            <tr><td>Abastecimento</td><td>${abastecimentoEl.value || '-'}</td><td>Gerado em</td><td>${dataHora}</td></tr>
                         </table>
                         
                         ${resumoPdfHTML}
@@ -1056,7 +1086,7 @@
             fHora.focus();
         });
 
-        [condutorEl, baseEl, ambulanciaEl, placaEl, kmInicialEl, nomeLegivelEl, observacaoEl].forEach(el => { 
+        [condutorEl, baseEl, ambulanciaEl, placaEl, kmInicialEl, nomeLegivelEl, observacaoEl, o2PortatilEl, o2FixoEl, abastecimentoEl].forEach(el => { 
             el.addEventListener('input', () => salvarERenderizar()); 
         });
         
