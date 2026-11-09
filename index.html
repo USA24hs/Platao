@@ -190,12 +190,12 @@
             <div class="info-item"><label>🏥 Base</label><input type="text" id="BaseHeader" value="SÓ SAÚDE"></div>
             <div class="info-item"><label>👨‍⚕️ Condutor</label><input type="text" id="condutorHeader" value="Anderson Martins"></div>
             <div class="info-item"><label>⏱️ Plantão</label><select id="plantaoHeader"><option value="SD 12hs">SD 12hs (07h-19h)</option><option value="SN 12hs">SN 12hs (19h-07h)</option><option value="DN 24hs">DN 24hs</option></select></div>
-            <div class="info-item"><label>🚑 Ambulância</label><input type="text" id="ambulanciaHeader" value="Master"></div>
-            <div class="info-item"><label>🔖 Placa</label><input type="text" id="placaHeader" value="RKD-5A25"></div>
+            <div class="info-item"><label>🚑 Ambulância</label><input type="text" id="ambulanciaHeader" value="MASTER"></div>
+            <div class="info-item"><label>🔖 Placa</label><input type="text" id="placaHeader" value="TGP5G55"></div>
             <div class="info-item"><label>🔢 Km Inicial</label><input type="number" id="kmInicialHeader" value="34585" step="0.1"></div>
-            <div class="info-item"><label>⛑️ O² Portátil</label><input type="text" id="o2PortatilHeader" placeholder="%"></div>
-            <div class="info-item"><label>🫁 O² Fixo</label><input type="text" id="o2FixoHeader" placeholder="%"></div>
-            <div class="info-item"><label>⛽ Abastecimento</label><input type="text" id="abastecimentoHeader" placeholder="%"></div>
+            <div class="info-item"><label>⛑️ O² Portátil</label><input type="text" id="o2PortatilHeader" value="125%"></div>
+            <div class="info-item"><label>🫁 O² Fixo</label><input type="text" id="o2FixoHeader" value="150%"></div>
+            <div class="info-item"><label>⛽ Abastecimento</label><input type="text" id="abastecimentoHeader" value="75%"></div>
         </div>
     </div>
     
@@ -598,7 +598,7 @@
             localStorage.setItem('frotaKms_hci', JSON.stringify(frotaKms));
             
             let assinatura = ''; try { assinatura = canvas.toDataURL(); } catch(e) {}
-            localStorage.setItem('sistemaDeslocamentoHCI_v31', JSON.stringify({ 
+            localStorage.setItem('sistemaDeslocamentoHCI_v32', JSON.stringify({ 
                 rows: registros, observacao: observacaoEl.value.toUpperCase(), condutor: condutorEl.value.toUpperCase(), 
                 unidade: baseEl.value.toUpperCase(), ambulancia: ambulanciaEl.value.toUpperCase(), placa: placaEl.value.toUpperCase(), 
                 plantao: plantaoEl.value, kmInicial: kmInicialEl.value, nomeLegivel: nomeLegivelEl.value.toUpperCase(), 
@@ -613,11 +613,10 @@
 
         function renderizarResumo() {
             if(registros.length === 0) {
-                // Em vez de "Aguardando...", mostra o resumo zerado para manter a estrutura e atender ao pedido
                 resumoContainer.innerHTML = `
                     <div class="summary-grid">
                         <div class="summary-box">
-                            <span>Deslocamentos</span>
+                            <span>Total de Ocorrências</span>
                             <strong>0</strong>
                         </div>
                         <div class="summary-box">
@@ -692,7 +691,7 @@
             resumoContainer.innerHTML = `
                 <div class="summary-grid">
                     <div class="summary-box">
-                        <span>Deslocamentos</span>
+                        <span>Total de Ocorrências</span>
                         <strong>${totalOcorrencias}</strong>
                     </div>
                     <div class="summary-box">
@@ -938,19 +937,19 @@
 
         // ======================= PERSISTÊNCIA =======================
         function carregarLocalStorage() {
-            let raw = localStorage.getItem('sistemaDeslocamentoHCI_v31'); 
+            let raw = localStorage.getItem('sistemaDeslocamentoHCI_v32'); 
             if(!raw) { prepararFormulario(); return false; }
             try {
                 let d = JSON.parse(raw); 
                 condutorEl.value = d.condutor || 'ANDERSON MARTINS'; 
                 baseEl.value = d.unidade || 'SÓ SAÚDE'; 
                 ambulanciaEl.value = d.ambulancia || 'MASTER'; 
-                placaEl.value = d.placa || 'RKD-5A25'; 
+                placaEl.value = d.placa || 'TGP5G55'; 
                 plantaoEl.value = d.plantao || 'SD 12hs'; 
                 kmInicialEl.value = d.kmInicial || ''; 
-                o2PortatilEl.value = d.o2Portatil || ''; 
-                o2FixoEl.value = d.o2Fixo || ''; 
-                abastecimentoEl.value = d.abastecimento || '';
+                o2PortatilEl.value = d.o2Portatil || '125%'; 
+                o2FixoEl.value = d.o2Fixo || '150%'; 
+                abastecimentoEl.value = d.abastecimento || '75%';
                 nomeLegivelEl.value = d.nomeLegivel || 'ANDERSON MARTINS'; 
                 observacaoEl.value = d.observacao || '';
                 
@@ -1050,7 +1049,7 @@
                     <div style="border:1px solid #bae6fd; background:#f0f9ff; padding:15px; border-radius:8px; margin-bottom:20px;">
                         <h3 style="color:#0369a1; font-size:12pt; margin-bottom:10px;">RESUMO DO PLANTÃO</h3>
                         <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
-                            <div><strong>Deslocamentos:</strong> ${gruposMap.size}</div>
+                            <div><strong>Total de Ocorrências:</strong> ${gruposMap.size}</div>
                             <div><strong>KM Total Rodado:</strong> ${totalKmPdf.toFixed(1)} km</div>
                         </div>
                         <div style="border-top:1px dashed #bae6fd; padding-top:10px;">
