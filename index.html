@@ -304,7 +304,6 @@
         fKm.addEventListener('input', () => { fKm.classList.remove('km-alert-input'); });
         fHora.addEventListener('input', () => { fHora.classList.remove('time-alert-input'); });
         
-        // UX: Joga o cursor para o final ao focar no campo de local
         fLocal.addEventListener('focus', () => {
             setTimeout(() => {
                 fLocal.setSelectionRange(fLocal.value.length, fLocal.value.length);
@@ -390,7 +389,7 @@
             return null;
         }
 
-        // ======================= LÓGICA DE PREENCHIMENTO AUTOMÁTICO (CONFORME SEQUÊNCIA) =======================
+        // ======================= LÓGICA DE PREENCHIMENTO AUTOMÁTICO =======================
         function prepararFormulario() {
             const validShifts = ['SD 12hs', 'SN 12hs', 'DN 24hs'];
             if (!validShifts.includes(plantaoEl.value)) {
@@ -416,9 +415,9 @@
                 let dest = getLocalDisplay(lastRecordOc.local, true);
                 fLocal.value = `${dest} → ${dest}`; 
             } else if (lastRecordOc.tipo === 'chegada') {
-                // 3. SAÍDA (Se o usuário quer dar saída e base, o campo deve estar preenchido)
+                // 3. SAÍDA (Prepara com HTO -> HTO para o usuário clicar em Saída e depois Base)
                 let dest = getLocalDisplay(lastRecordOc.local, true);
-                fLocal.value = `${dest} → ${dest}`; // Alterado para HTO -> HTO conforme solicitado
+                fLocal.value = `${dest} → ${dest}`; 
             } else if (lastRecordOc.tipo === 'base') {
                 // 4. FIM (Volta para a base e reinicia)
                 fLocal.value = `${base} → `;
@@ -483,20 +482,17 @@
 
             const lastType = lastRecordOc.tipo;
 
+            // Impede duas saídas seguidas
             if (tipo === 'saida' && lastType !== 'chegada') {
                 return "A última ação foi SAÍDA. Você deve registrar uma CHEGADA primeiro.";
             }
-            if ((tipo === 'chegada' || tipo === 'base') && lastType !== 'saida') {
-                if (tipo === 'base' && lastType === 'chegada') {
-                     // Permite caso o condutor queira encerrar direto da chegada, 
-                     // embora a recomendação seja dar saída antes.
-                     return null; 
-                }
+            
+            // Impede duas chegadas seguidas (mas permite Base direto para evitar notificação)
+            if (tipo === 'chegada' && lastType !== 'saida') {
                 return "A última ação foi CHEGADA. Você deve registrar uma SAÍDA primeiro.";
             }
-            if (lastType === 'base') {
-                return "Esta ocorrência já foi finalizada na BASE. Inicie um novo deslocamento clicando no '+'.";
-            }
+            
+            // Base (Fim) é SEMPRE permitida e não gera notificação
             return null;
         }
 
@@ -620,7 +616,7 @@
                 const base = limparNomeLocal(baseEl.value.trim()) || 'BASE'; 
                 origem = origem || getLocalAtual() || base;
                 local = `${origem} → ${base}`;
-                fLocal.value = local; // Feedback visual instantâneo no campo antes de salvar
+                fLocal.value = local; // Força o campo a mostrar HTO -> BASE antes de salvar
             }
 
             if (editingRecordId) {
@@ -671,7 +667,7 @@
                     if (tipo === 'base') registros[index].local = local; 
                     
                     if (tipo === 'base') {
-                        showToast('🏥 Fim de Plantão na Base! Nova ocorrência iniciada.');
+                        showToast('🏥 Fim de Plantão na Base!');
                         currentOcorrenciaId = Date.now().toString(); 
                     } else {
                         showToast('📍 Chegada registrada!');
@@ -718,7 +714,7 @@
                 const validShifts = ['SD 12hs', 'SN 12hs', 'DN 24hs'];
                 const plantaoToSave = validShifts.includes(plantaoEl.value) ? plantaoEl.value : 'SD 12hs';
 
-                localStorage.setItem('sistemaDeslocamentoHCI_v55', JSON.stringify({ 
+                localStorage.setItem('sistemaDeslocamentoHCI_v56', JSON.stringify({ 
                     rows: registros, observacao: observacaoEl.value.toUpperCase(), condutor: condutorEl.value.toUpperCase(), 
                     unidade: baseEl.value.toUpperCase(), ambulancia: ambulanciaEl.value.toUpperCase(), placa: placaEl.value.toUpperCase(), 
                     plantao: plantaoToSave, kmInicial: kmInicialEl.value, nomeLegivel: nomeLegivelEl.value.toUpperCase(), 
@@ -1054,7 +1050,7 @@
         }
 
         function carregarLocalStorage() {
-            let raw = localStorage.getItem('sistemaDeslocamentoHCI_v55'); 
+            let raw = localStorage.getItem('sistemaDeslocamentoHCI_v56'); 
             if(!raw) { prepararFormulario(); return false; }
             try {
                 let d = JSON.parse(raw); 
@@ -1087,7 +1083,7 @@
                 return true;
             } catch(e) { 
                 console.error("Dados corrompidos no localStorage. Limpando...", e);
-                localStorage.removeItem('sistemaDeslocamentoHCI_v55');
+                localStorage.removeItem('sistemaDeslocamentoHCI_v56');
                 prepararFormulario(); 
                 return false; 
             }
