@@ -12,11 +12,8 @@
         
         body { background: var(--bg-body); font-family: 'Inter', sans-serif; padding: 0.5rem; padding-bottom: calc(70px + env(safe-area-inset-bottom)); overflow-x: hidden; }
         .report-container { max-width: 800px; margin: 0 auto; background: var(--card-bg); border-radius: 16px; box-shadow: 0 4px 15px -5px rgba(0,0,0,0.08); overflow: hidden; border: 1px solid var(--border); }
-        
-        /* FORÇAR CAIXA ALTA EM TODOS OS INPUTS DE TEXTO */
         input[type="text"], textarea { text-transform: uppercase; }
         
-        /* HEADER */
         .header { background: linear-gradient(135deg, var(--primary-dark), var(--primary)); padding: 0.8rem 1rem; color: #fff; transition: all 0.3s ease; }
         .header-top { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 0.75rem; padding-bottom: 0.75rem; border-bottom: 1px solid rgba(255,255,255,0.15); transition: all 0.3s ease; }
         .header-top h1 { font-size: 1.15rem; font-weight: 800; display: flex; align-items: center; gap: 6px; }
@@ -35,11 +32,9 @@
         .info-item label { font-size: 0.6rem; text-transform: uppercase; opacity: 0.8; display: block; margin-bottom: 2px; letter-spacing: 0.5px; }
         .info-item input, .info-item select { background: rgba(255,255,255,0.95); border: none; padding: 6px 8px; border-radius: 6px; font-weight: 700; color: var(--primary-dark); width: 100%; font-family: 'Inter', sans-serif; font-size: 0.85rem; }
         
-        /* CONTEÚDO */
         .content { padding: 0.8rem; overflow-x: hidden; }
         .card { background: var(--card-bg); border-radius: 12px; padding: 0.8rem; margin-bottom: 0.8rem; border: 1px solid var(--border); width: 100%; overflow: hidden; }
         
-        /* TÍTULO DO CARD */
         .card-title { font-size: 0.95rem; font-weight: 700; margin-bottom: 0.75rem; color: var(--primary-dark); display: flex; align-items: center; justify-content: space-between; gap: 6px; }
         .title-text { display: flex; align-items: center; gap: 6px; }
         
@@ -49,7 +44,6 @@
         .btn-whatsapp { background: var(--whatsapp); color: white; border: none; border-radius: 20px; padding: 4px 10px; display: flex; align-items: center; justify-content: center; gap: 4px; cursor: pointer; font-size: 0.75rem; font-weight: 700; transition: 0.2s; box-shadow: 0 2px 4px rgba(37,211,102,0.3); }
         .btn-whatsapp:hover { background: #128C7E; transform: scale(1.02); }
         
-        /* CAIXA DE LANÇAMENTO */
         .form-card { background: #f0fdf4; border: 1px solid #bbf7d0; }
         .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 10px; width: 100%; }
         .form-item { display: flex; flex-direction: column; min-width: 0; }
@@ -59,7 +53,6 @@
         .form-item input { width: 100%; min-width: 0; padding: 8px; border-radius: 8px; border: 1px solid #86efac; font-family: 'Inter'; font-size: 0.95rem; font-weight: 600; color: #064e3b; background: #fff; box-sizing: border-box; transition: 0.3s; }
         .form-item input:focus { outline: 2px solid #15803d; border-color: transparent; }
         
-        /* CLASSES PARA DESTACAR ERROS */
         .km-alert-input, .time-alert-input, .local-alert-input { border-color: var(--danger) !important; background: #fef2f2 !important; color: var(--danger) !important; outline: 2px solid var(--danger) !important; animation: pulse-red 1s infinite; }
         @keyframes pulse-red { 0% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.4); } 70% { box-shadow: 0 0 0 6px rgba(220, 38, 38, 0); } 100% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0); } }
 
@@ -70,21 +63,16 @@
         .btn-form-chegada { background: var(--success); }
         .btn-form-base { background: var(--base); }
 
-        /* HISTÓRICO (FICHAS) */
         .ficha-card { background: #fff; border: 1px solid #cbd5e1; border-radius: 10px; margin-bottom: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.02); overflow: hidden; }
         .ficha-header { background: #f8fafc; padding: 8px 12px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; }
         .ficha-header-info { font-size: 0.75rem; color: #475569; font-weight: 600; display: flex; flex-direction: column; gap: 2px; }
-        
         .ficha-actions { display: flex; gap: 6px; }
         
         .btn-edit-ficha { background: #e0f2fe; color: #0284c7; border: none; cursor: pointer; padding: 6px 10px; border-radius: 6px; font-size: 0.9rem; transition: 0.2s; display: flex; align-items: center; justify-content: center; }
-        .btn-edit-ficha:hover { background: #bae6fd; }
-        
         .btn-del-ficha { background: #fee2e2; color: #b91c1c; border: none; cursor: pointer; padding: 6px 10px; border-radius: 6px; font-size: 0.9rem; transition: 0.2s; display: flex; align-items: center; justify-content: center; }
         .btn-del-ficha.locked { background: #e2e8f0; color: #64748b; cursor: not-allowed; }
         
         .ficha-body { padding: 10px 12px; display: flex; flex-direction: column; gap: 8px; font-family: 'Inter', sans-serif; font-size: 0.8rem; }
-        
         .timeline-row { display: flex; align-items: center; gap: 6px; line-height: 1.3; }
         .timeline-tag { width: 70px; flex-shrink: 0; font-size: 0.7rem; font-weight: 800; letter-spacing: 0.5px; text-transform: uppercase; }
         
@@ -100,7 +88,6 @@
 
         .ficha-footer { background: #f8fafc; padding: 8px 12px; border-top: 1px dashed #cbd5e1; display: flex; justify-content: space-between; font-size: 0.8rem; font-weight: 700; color: #1e293b; }
 
-        /* RESUMO DO PLANTÃO */
         .summary-card { background: #f0f9ff; border-color: #bae6fd; }
         .summary-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
         .summary-box { background: #fff; border: 1px solid #cbd5e1; border-radius: 8px; padding: 10px; text-align: center; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
@@ -112,7 +99,6 @@
         .req-item:last-child { border-bottom: none; }
         .req-item span:last-child { color: var(--primary); font-weight: 800; }
 
-        /* Outros componentes */
         .two-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 0.8rem; }
         .obs-box textarea { width: 100%; padding: 8px; border-radius: 8px; border: 1px solid var(--border); font-family: 'Inter'; font-size: 0.8rem; resize: vertical; background: #f8fafc; }
         .sign-box { background: #f8fafc; border-radius: 12px; padding: 0.8rem; border: 1px solid var(--border); }
@@ -123,7 +109,6 @@
         
         .btn-pdf { background: linear-gradient(135deg, #dc2626, #b91c1c); color: #fff; border: none; padding: 12px 20px; border-radius: 10px; font-weight: 800; cursor: pointer; font-size: 0.95rem; display: flex; align-items: center; gap: 8px; justify-content: center; width: 100%; font-family: 'Inter'; transition: 0.2s; margin-top: 0.5rem; }
 
-        /* ======================= MODAL DE ALERTA ======================= */
         .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 12000; display: none; align-items: center; justify-content: center; padding: 20px; backdrop-filter: blur(2px); }
         .modal-overlay.active { display: flex; }
         .modal-box { background: #fff; border-radius: 16px; width: 100%; max-width: 400px; overflow: hidden; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.3); animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
@@ -136,11 +121,8 @@
         .modal-actions { padding: 0 15px 15px 15px; display: flex; flex-direction: column; gap: 8px; }
         .btn-modal { border: none; padding: 12px; border-radius: 8px; font-weight: 700; font-size: 0.85rem; cursor: pointer; transition: 0.2s; width: 100%; font-family: 'Inter'; }
         .btn-modal-cancel { background: #f1f5f9; color: #475569; }
-        .btn-modal-cancel:hover { background: #e2e8f0; }
         .btn-modal-confirm { background: var(--danger); color: #fff; box-shadow: 0 4px 6px rgba(220,38,38,0.2); }
-        .btn-modal-confirm:hover { background: #b91c1c; }
 
-        /* MOBILE */
         @media (max-width: 768px) {
             body { padding: 0; background: #fff; }
             .report-container { border-radius: 0; border: none; box-shadow: none; }
@@ -154,9 +136,7 @@
 
             .content { padding: 0.5rem; }
             .card { padding: 0.6rem; margin-bottom: 0.5rem; border-radius: 10px; }
-            
             .two-cols { grid-template-columns: 1fr; gap: 0.5rem; }
-            
             .form-grid { gap: 6px; }
             .form-item label { font-size: 0.6rem; }
             .form-item input { font-size: 16px !important; padding: 6px; }
@@ -177,7 +157,6 @@
 </head>
 <body>
 <div class="report-container">
-    <!-- HEADER -->
     <div class="header" id="mainHeader">
         <div class="header-top">
             <h1><i class="fas fa-ambulance"></i> Deslocamento</h1>
@@ -199,10 +178,7 @@
         </div>
     </div>
     
-    <!-- CONTEÚDO -->
     <div class="content">
-        
-        <!-- CAIXA DE LANÇAMENTO -->
         <div class="card form-card">
             <div class="card-title">
                 <div class="title-text" id="titleLancamento" style="color: #166534;"><i class="fas fa-edit"></i> Novo Deslocamento</div>
@@ -238,25 +214,19 @@
             </div>
         </div>
 
-        <!-- RESUMO DO PLANTÃO -->
         <div class="card summary-card">
             <div class="card-title">
                 <div class="title-text" style="color: #0369a1;"><i class="fas fa-chart-pie"></i> Resumo do Plantão</div>
             </div>
-            <div id="resumoContainer">
-                <!-- Preenchido via JS -->
-            </div>
+            <div id="resumoContainer"></div>
         </div>
 
-        <!-- HISTÓRICO DE LANÇAMENTOS -->
         <div class="card">
             <div class="card-title">
                 <div class="title-text"><i class="fas fa-list-ol"></i> Histórico de Ocorrências</div>
                 <button id="btnShareWhats" class="btn-whatsapp" title="Compartilhar no WhatsApp"><i class="fab fa-whatsapp"></i> Enviar</button>
             </div>
-            <div id="historicoContainer">
-                <!-- Preenchido via JS -->
-            </div>
+            <div id="historicoContainer"></div>
         </div>
         
         <div class="two-cols">
@@ -268,7 +238,6 @@
     </div>
 </div>
 
-<!-- MODAL DE ALERTA -->
 <div class="modal-overlay" id="modalKmAlert">
     <div class="modal-box">
         <div class="modal-header">
@@ -290,9 +259,7 @@
 <div class="toast" id="toast"></div>
 
 <script>
-    // Aguarda o DOM carregar completamente antes de rodar o script
     document.addEventListener('DOMContentLoaded', () => {
-        
         // ======================= FUNÇÕES AUXILIARES =======================
         const hoje = () => new Date().toISOString().slice(0,10);
         const getHoraAtual = () => { const now = new Date(); return `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`; };
@@ -319,7 +286,6 @@
         const anoSelect = document.getElementById('anoSelect');
         const mainHeader = document.getElementById('mainHeader');
         
-        // Elementos do Form
         const fData = document.getElementById('fData');
         const fHora = document.getElementById('fHora');
         const fKm = document.getElementById('fKm');
@@ -327,7 +293,6 @@
         const fPlantaoInfo = document.getElementById('fPlantaoInfo');
         const titleLancamento = document.getElementById('titleLancamento');
 
-        // Elementos do Modal
         const modalKmAlert = document.getElementById('modalKmAlert');
         const modalAlertDetails = document.getElementById('modalAlertDetails');
         const btnModalCorrigir = document.getElementById('btnModalCorrigir');
@@ -338,19 +303,16 @@
         let currentOcorrenciaId = Date.now().toString(); 
         let editingRecordId = null;
 
-        // Remove a borda vermelha se o usuário começar a digitar
         fKm.addEventListener('input', () => { fKm.classList.remove('km-alert-input'); });
         fHora.addEventListener('input', () => { fHora.classList.remove('time-alert-input'); });
         fLocal.addEventListener('input', () => { fLocal.classList.remove('local-alert-input'); });
 
-        // Inicialização do seletor de meses
         for(let m = 1; m <= 12; m++) { let opt = document.createElement('option'); opt.value = m; opt.textContent = nomeMes(m).substring(0,3); mesSelect.appendChild(opt); }
         const hojeData = new Date(); mesSelect.value = hojeData.getMonth() + 1; anoSelect.value = hojeData.getFullYear();
 
         function getPeriodo() { let m = parseInt(mesSelect.value); let a = parseInt(anoSelect.value); return { mes: m, ano: a, min: `${a}-${String(m).padStart(2,'0')}-01`, max: `${a}-${String(m).padStart(2,'0')}-${diasNoMes(m,a)}` }; }
         function atualizarLimitesDatas() { const p = getPeriodo(); fData.min = p.min; fData.max = p.max; }
 
-        // ======================= REGRA DE BLOQUEIO =======================
         function isRecordDeletable(dataStr, shiftStr) {
             if (!dataStr) return true; 
             try {
@@ -364,7 +326,6 @@
             } catch(e) { return true; }
         }
 
-        // ======================= AUTO-OCULTAR =======================
         function checkAndCollapseHeader() {
             if (window.innerWidth > 768) return;
             if (baseEl.value.trim() && condutorEl.value.trim() && ambulanciaEl.value.trim() && placaEl.value.trim() && kmInicialEl.value.trim()) {
@@ -377,7 +338,6 @@
         });
         document.getElementById('toggleHeaderBtn').addEventListener('click', () => { mainHeader.classList.toggle('header-collapsed'); });
 
-        // ======================= ASSINATURA DIGITAL =======================
         const canvas = document.getElementById('signCanvas'); const ctx = canvas.getContext('2d'); let desenhando = false;
         function redimencionarCanvas() { const w = canvas.clientWidth; const h = 90; canvas.width = w; canvas.height = h; ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, w, h); ctx.strokeStyle = '#1e293b'; ctx.lineWidth = 2; ctx.lineCap = 'round'; }
         window.addEventListener('resize', () => redimencionarCanvas());
@@ -389,24 +349,16 @@
         document.getElementById('clearCanvasBtn').addEventListener('click', () => { ctx.clearRect(0, 0, canvas.width, canvas.height); ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, canvas.width, canvas.height); saveToLocal(); });
         redimencionarCanvas();
 
-        // ======================= LÓGICA DE NEGÓCIO =======================
-        
-        function limparNomeLocal(str) { 
-            if (!str) return ''; 
-            return str.replace(/🏥/g, '').trim().toUpperCase(); 
-        }
+        function limparNomeLocal(str) { return str ? str.replace(/🏥/g, '').trim().toUpperCase() : ''; }
 
         function getLocalDisplay(localStr, isArrival) {
             if (!localStr) return '';
-            const partes = localStr.split('→');
-            let origem = partes[0] ? partes[0].trim().toUpperCase() : '';
-            let destino = partes[1] ? partes[1].trim().toUpperCase() : '';
-
-            if (isArrival) {
-                return destino || origem; 
-            } else {
-                return origem || destino; 
-            }
+            try {
+                const partes = localStr.split('→');
+                let origem = partes[0] ? partes[0].trim().toUpperCase() : '';
+                let destino = partes[1] ? partes[1].trim().toUpperCase() : '';
+                return isArrival ? (destino || origem) : (origem || destino);
+            } catch(e) { return limparNomeLocal(localStr); }
         }
 
         function getLastRecord() {
@@ -435,7 +387,6 @@
             return null;
         }
 
-        // FUNÇÃO QUE PREENCHE AUTOMÁTICO (Blindada)
         function prepararFormulario() {
             try {
                 const validShifts = ['SD 12hs', 'SN 12hs', 'DN 24hs'];
@@ -465,7 +416,6 @@
             } catch(e) {
                 console.error("Erro no prepararFormulario", e);
             } finally {
-                // GARANTIA ABSOLUTA DE PREENCHIMENTO DO PLANTÃO
                 const baseFallback = limparNomeLocal(baseEl.value.trim()) || 'BASE';
                 fPlantaoInfo.value = `${plantaoEl.value || 'SD 12hs'} | ${baseFallback}`;
             }
@@ -478,7 +428,6 @@
             prepararFormulario();
         }
 
-        // Evento para atualizar a info do plantão e base no form
         [plantaoEl, baseEl].forEach(el => {
             el.addEventListener('change', () => {
                 const base = limparNomeLocal(baseEl.value.trim()) || 'BASE';
@@ -490,7 +439,6 @@
             });
         });
 
-        // ======================= EDITAR =======================
         function editarOcorrencia(ocorrenciaId) {
             const lastRecord = registros.find(r => r.ocorrenciaId === ocorrenciaId);
             if (!lastRecord) return;
@@ -514,7 +462,6 @@
         }
         window.editarOcorrencia = editarOcorrencia;
 
-        // ======================= VALIDAÇÃO DE SEQUÊNCIA =======================
         function validarSequencia(tipo) {
             const itemsAtuais = registros.filter(r => r.ocorrenciaId === currentOcorrenciaId);
             const lastRecord = itemsAtuais.length > 0 ? itemsAtuais[0] : null;
@@ -535,25 +482,20 @@
             if (lastType === 'base') {
                 return "Esta ocorrência já foi finalizada na BASE. Inicie um novo deslocamento clicando no '+'.";
             }
-
             return null;
         }
 
-        // ======================= INTERCEPTADOR DE ALERTA =======================
         function tentarAdicionarRegistro(tipo) {
             try {
-                // 1. Validar sequência lógica
                 const erroSeq = validarSequencia(tipo);
                 if (erroSeq) return showToast(`⚠️ ${erroSeq}`);
 
-                // 2. VALIDAÇÃO SUAVE DE LOCAL
                 const localInput = limparNomeLocal(fLocal.value);
                 if (tipo !== 'base' && !localInput) {
                     fLocal.classList.add('local-alert-input');
                     return showToast("⚠️ Erro: Preencha o Local / Destino.");
                 }
 
-                // 3. Verificar KM e Hora
                 const lastRecord = getLastRecord();
                 let kmIgual = false;
                 let horaIgual = false;
@@ -565,22 +507,15 @@
                     ultimaHoraVal = lastRecord.horaChegada || lastRecord.horaSaida || '';
 
                     const kmAtual = parseFloat(fKm.value);
-                    if (!isNaN(kmAtual) && !isNaN(ultimoKmVal) && kmAtual === ultimoKmVal) {
-                        kmIgual = true;
-                    }
-
-                    if (fHora.value && ultimaHoraVal && fHora.value === ultimaHoraVal) {
-                        horaIgual = true;
-                    }
+                    if (!isNaN(kmAtual) && !isNaN(ultimoKmVal) && kmAtual === ultimoKmVal) kmIgual = true;
+                    if (fHora.value && ultimaHoraVal && fHora.value === ultimaHoraVal) horaIgual = true;
                 }
 
                 if (kmIgual && horaIgual && !editingRecordId) {
                     pendingActionType = tipo;
-                    
                     let details = [];
                     details.push(`⏱️ Hora: ${ultimaHoraVal}`);
                     details.push(`🛞 KM: ${ultimoKmVal}`);
-                    
                     modalAlertDetails.innerHTML = details.join('<br>');
                     modalKmAlert.classList.add('active');
                     fKm.classList.add('km-alert-input');
@@ -588,18 +523,16 @@
                     return; 
                 }
 
-                // Se passou, limpa alertas e executa
                 fKm.classList.remove('km-alert-input');
                 fHora.classList.remove('time-alert-input');
                 fLocal.classList.remove('local-alert-input');
                 executarAdicionarRegistro(tipo);
             } catch (error) {
-                console.error("Erro no tentarAdicionarRegistro", error);
+                console.error("Erro em tentarAdicionarRegistro", error);
                 showToast("⚠️ Erro inesperado. Tente novamente.");
             }
         }
 
-        // BOTÕES DO MODAL
         btnModalCorrigir.addEventListener('click', () => {
             modalKmAlert.classList.remove('active');
             fHora.focus();
@@ -613,7 +546,6 @@
             try { executarAdicionarRegistro(pendingActionType); } catch(e) { console.error(e); }
         });
 
-        // ======================= SALVAR =======================
         function executarAdicionarRegistro(tipo) {
             const data = fData.value;
             const hora = fHora.value;
@@ -625,7 +557,6 @@
             const veiculoAtual = `${ambulanciaEl.value.trim().toUpperCase()} - ${placaEl.value.trim().toUpperCase()}`;
             const plantaoAtual = plantaoEl.value || 'SD 12hs';
 
-            // Conserta a seta (→) se o usuário digitou sem ela
             if (tipo === 'base') {
                 const base = limparNomeLocal(baseEl.value.trim()) || 'BASE'; 
                 const origem = getLocalDisplay(local, false) || getLocalAtual() || 'LOCAL';
@@ -654,4 +585,624 @@
                 }
                 resetFormUI();
                 salvarERenderizar();
-                if (window
+                if (window.innerWidth <= 768) mainHeader.classList.add('header-collapsed');
+                return;
+            }
+
+            if (tipo === 'saida') {
+                registros.unshift({
+                    id: Date.now().toString(),
+                    ocorrenciaId: currentOcorrenciaId, 
+                    data: data,
+                    shift: plantaoAtual,
+                    tipo: 'saida',
+                    horaSaida: hora,
+                    kmSaida: km.toString(),
+                    local: local,
+                    horaChegada: '',
+                    kmChegada: '',
+                    veiculo: veiculoAtual
+                });
+                showToast('🚑 Saída registrada!');
+            } 
+            else if (tipo === 'chegada' || tipo === 'base') {
+                const index = registros.findIndex(r => r.veiculo === veiculoAtual && r.ocorrenciaId === currentOcorrenciaId && !r.horaChegada);
+
+                if (index !== -1) {
+                    registros[index].horaChegada = hora;
+                    registros[index].kmChegada = km.toString();
+                    registros[index].tipo = tipo; 
+                    if (tipo === 'base') registros[index].local = local; 
+                    showToast(tipo === 'base' ? '🏥 Fim de Plantão na Base!' : '📍 Chegada registrada!');
+                } else {
+                    showToast('⚠️ Erro interno: Não há saída em aberto.');
+                    return;
+                }
+            }
+
+            salvarERenderizar();
+            prepararFormulario();
+            if (window.innerWidth <= 768) mainHeader.classList.add('header-collapsed');
+        }
+
+        function deletarFicha(ocorrenciaId) {
+            const grupo = registros.find(r => r.ocorrenciaId === ocorrenciaId);
+            if (!grupo) return;
+
+            if (!isRecordDeletable(grupo.data, grupo.shift)) {
+                return showToast('🔒 Plantão encerrado. Não é possível excluir.');
+            }
+            if (!confirm(`Deseja excluir ESTE deslocamento inteiro?`)) return;
+            
+            registros = registros.filter(r => r.ocorrenciaId !== ocorrenciaId);
+            salvarERenderizar();
+            showToast('🗑️ Deslocamento excluído com sucesso');
+        }
+        window.deletarFicha = deletarFicha;
+
+        function salvarERenderizar() {
+            try {
+                const frotaKms = JSON.parse(localStorage.getItem('frotaKms_hci') || '{}');
+                registros.forEach(r => {
+                    if (r.veiculo) {
+                        if (r.kmChegada) frotaKms[r.veiculo] = r.kmChegada;
+                        else if (r.kmSaida && !frotaKms[r.veiculo]) frotaKms[r.veiculo] = r.kmSaida;
+                    }
+                });
+                localStorage.setItem('frotaKms_hci', JSON.stringify(frotaKms));
+                
+                let assinatura = ''; try { assinatura = canvas.toDataURL(); } catch(e) {}
+                
+                const validShifts = ['SD 12hs', 'SN 12hs', 'DN 24hs'];
+                const plantaoToSave = validShifts.includes(plantaoEl.value) ? plantaoEl.value : 'SD 12hs';
+
+                localStorage.setItem('sistemaDeslocamentoHCI_v40', JSON.stringify({ 
+                    rows: registros, observacao: observacaoEl.value.toUpperCase(), condutor: condutorEl.value.toUpperCase(), 
+                    unidade: baseEl.value.toUpperCase(), ambulancia: ambulanciaEl.value.toUpperCase(), placa: placaEl.value.toUpperCase(), 
+                    plantao: plantaoToSave, kmInicial: kmInicialEl.value, nomeLegivel: nomeLegivelEl.value.toUpperCase(), 
+                    o2Portatil: o2PortatilEl.value, o2Fixo: o2FixoEl.value, abastecimento: abastecimentoEl.value,
+                    mes: parseInt(mesSelect.value), ano: parseInt(anoSelect.value), assinaturaImg: assinatura,
+                    currentOcorrenciaId: currentOcorrenciaId
+                }));
+            } catch(e) { console.error("Erro ao salvar no localStorage", e); }
+
+            try { renderizarResumo(); } catch(e) { console.error("Erro no resumo", e); }
+            try { renderizarFichas(); } catch(e) { console.error("Erro nas fichas", e); }
+        }
+
+        function renderizarResumo() {
+            if(registros.length === 0) {
+                resumoContainer.innerHTML = `
+                    <div class="summary-grid">
+                        <div class="summary-box">
+                            <span>Total de Ocorrências</span>
+                            <strong>0</strong>
+                        </div>
+                        <div class="summary-box">
+                            <span>KM Rodados</span>
+                            <strong style="color: var(--success)">0.0</strong>
+                        </div>
+                    </div>
+                    <div class="req-list">
+                        <div class="req-title">Unidades Solicitantes</div>
+                        <div style="text-align:center; font-size:0.75rem; color:#94a3b8; padding:5px;">PLANTÃO SEM OCORRÊNCIAS</div>
+                    </div>
+                `;
+                return;
+            }
+
+            let totalKm = 0;
+            const gruposMap = new Map();
+            
+            registros.forEach(r => {
+                const key = r.ocorrenciaId || `${r.data}_${r.shift}_${r.id}`; 
+                if (!gruposMap.has(key)) gruposMap.set(key, []);
+                gruposMap.get(key).push(r);
+            });
+
+            let totalOcorrencias = gruposMap.size;
+            let solicitantes = {};
+
+            gruposMap.forEach(items => {
+                const orderedItems = [...items].reverse(); 
+                
+                let kmIni = 0;
+                const first = orderedItems[0];
+                if (first && first.kmSaida) kmIni = parseFloat(first.kmSaida);
+
+                let kmFim = kmIni;
+                for(let i = orderedItems.length - 1; i >= 0; i--) {
+                    if(orderedItems[i].kmChegada) { kmFim = parseFloat(orderedItems[i].kmChegada); break; }
+                    if(orderedItems[i].kmSaida) { kmFim = parseFloat(orderedItems[i].kmSaida); break; }
+                }
+
+                if (kmIni > 0 && kmFim >= kmIni) {
+                    totalKm += (kmFim - kmIni);
+                }
+
+                if (first && first.local) {
+                    const partes = first.local.split('→');
+                    if (partes.length >= 2) {
+                        let destino = partes[1].trim().toUpperCase();
+                        if (destino) {
+                            solicitantes[destino] = (solicitantes[destino] || 0) + 1;
+                        }
+                    }
+                }
+            });
+
+            let solicitantesHTML = '';
+            const sortedSolicitantes = Object.keys(solicitantes).sort((a,b) => solicitantes[b] - solicitantes[a]);
+            
+            sortedSolicitantes.forEach(local => {
+                solicitantesHTML += `
+                    <div class="req-item">
+                        <span>${local}</span>
+                        <span>${solicitantes[local]}</span>
+                    </div>
+                `;
+            });
+
+            if (sortedSolicitantes.length === 0) {
+                solicitantesHTML = '<div style="text-align:center; font-size:0.75rem; color:#94a3b8; padding:5px;">Nenhum destino registrado.</div>';
+            }
+
+            resumoContainer.innerHTML = `
+                <div class="summary-grid">
+                    <div class="summary-box">
+                        <span>Total de Ocorrências</span>
+                        <strong>${totalOcorrencias}</strong>
+                    </div>
+                    <div class="summary-box">
+                        <span>KM Rodados</span>
+                        <strong style="color: var(--success)">${totalKm.toFixed(1)}</strong>
+                    </div>
+                </div>
+                <div class="req-list">
+                    <div class="req-title">Unidades Solicitantes</div>
+                    ${solicitantesHTML}
+                </div>
+            `;
+        }
+
+        function renderizarFichas() {
+            historicoContainer.innerHTML = '';
+            if(registros.length === 0) {
+                historicoContainer.innerHTML = '<p style="font-size:0.8rem; color:#475569; text-align:center; font-weight:bold; padding:10px;">PLANTÃO SEM OCORRÊNCIAS</p>';
+                return;
+            }
+
+            const gruposMap = new Map();
+            registros.forEach(r => {
+                const key = r.ocorrenciaId || `${r.data}_${r.shift}_${r.id}`; 
+                if (!gruposMap.has(key)) {
+                    gruposMap.set(key, { id: key, ocorrenciaId: r.ocorrenciaId || key, data: r.data, shift: r.shift || 'SD 12hs', items: [] });
+                }
+                gruposMap.get(key).items.push(r);
+            });
+
+            gruposMap.forEach(grupo => {
+                const items = [...grupo.items].reverse(); 
+
+                let kmInicialFicha = 0;
+                let kmFinalFicha = 0;
+                let timelineHTML = '';
+
+                items.forEach((r, index) => {
+                    const isFirst = index === 0;
+                    
+                    let nomeLocal = getLocalDisplay(r.local, r.tipo === 'chegada' || r.tipo === 'base');
+
+                    if (r.horaSaida) {
+                        kmInicialFicha = isFirst ? (parseFloat(r.kmSaida) || 0) : kmInicialFicha;
+                        
+                        if (isFirst) {
+                            timelineHTML += `
+                                <div class="timeline-row">
+                                    <div class="timeline-tag inicio">INICIO:</div>
+                                    <div class="timeline-content">
+                                        <span class="local">${nomeLocal}</span>
+                                        <span class="hora">H: ${r.horaSaida}</span>
+                                        <span class="km">KM: ${r.kmSaida}</span>
+                                    </div>
+                                </div>
+                            `;
+                        } else {
+                            timelineHTML += `
+                                <div class="timeline-row">
+                                    <div class="timeline-tag saida">SAÍDA:</div>
+                                    <div class="timeline-content">
+                                        <span class="local">${nomeLocal}</span>
+                                        <span class="hora">H: ${r.horaSaida}</span>
+                                        <span class="km">KM: ${r.kmSaida}</span>
+                                    </div>
+                                </div>
+                            `;
+                        }
+                    }
+
+                    if (r.horaChegada) {
+                        kmFinalFicha = parseFloat(r.kmChegada) || 0;
+                        
+                        if (r.tipo === 'base') {
+                            timelineHTML += `
+                                <div class="timeline-row">
+                                    <div class="timeline-tag fim">FIM:</div>
+                                    <div class="timeline-content">
+                                        <span class="local">${nomeLocal}</span>
+                                        <span class="hora">H: ${r.horaChegada}</span>
+                                        <span class="km">KM: ${r.kmChegada}</span>
+                                    </div>
+                                </div>
+                            `;
+                        } else {
+                            timelineHTML += `
+                                <div class="timeline-row">
+                                    <div class="timeline-tag chegada">CHEGADA:</div>
+                                    <div class="timeline-content">
+                                        <span class="local">${nomeLocal}</span>
+                                        <span class="hora">H: ${r.horaChegada}</span>
+                                        <span class="km">KM: ${r.kmChegada}</span>
+                                    </div>
+                                </div>
+                            `;
+                        }
+                    }
+                });
+
+                let dataInicio = formatDateBR(items[0].data);
+                let dataFim = dataInicio; 
+                for (let i = items.length - 1; i >= 0; i--) {
+                    if (items[i].horaChegada) { dataFim = formatDateBR(items[i].data); break; }
+                }
+                const tituloData = dataInicio === dataFim ? `DATA: ${dataInicio}` : `INÍCIO DATA: ${dataInicio} FIM DATA: ${dataFim}`;
+
+                const kmRodado = kmFinalFicha > 0 ? (kmFinalFicha - kmInicialFicha) : 0;
+                const canDelete = isRecordDeletable(grupo.data, grupo.shift);
+                
+                const btnEdit = `<button class="btn-edit-ficha" onclick="editarOcorrencia('${grupo.ocorrenciaId}')" title="Editar"><i class="fas fa-pen"></i></button>`;
+                const btnDel = canDelete 
+                    ? `<button class="btn-del-ficha" onclick="deletarFicha('${grupo.ocorrenciaId}')" title="Excluir Deslocamento"><i class="fas fa-trash-alt"></i></button>`
+                    : `<button class="btn-del-ficha locked" onclick="deletarFicha('${grupo.ocorrenciaId}')" title="Plantão Encerrado"><i class="fas fa-lock"></i></button>`;
+
+                const cardHTML = `
+                    <div class="ficha-card">
+                        <div class="ficha-header">
+                            <div class="ficha-header-info">
+                                <span><i class="far fa-calendar-alt"></i> ${tituloData} | ${grupo.shift}</span>
+                                <span>${ambulanciaEl.value.toUpperCase()} - ${placaEl.value.toUpperCase()}</span>
+                            </div>
+                            <div class="ficha-actions">
+                                ${btnEdit}
+                                ${btnDel}
+                            </div>
+                        </div>
+                        <div class="ficha-body">
+                            ${timelineHTML}
+                        </div>
+                        <div class="ficha-footer">
+                            <span>${tituloData}</span>
+                            <span>KM ROD: <span style="color:var(--success);">${kmRodado.toFixed(1)}</span></span>
+                        </div>
+                    </div>
+                `;
+                historicoContainer.innerHTML += cardHTML;
+            });
+        }
+
+        function compartilharWhatsApp() {
+            const isNoite = plantaoEl.value.includes('SN');
+            const saudacao = isNoite ? 'Boa noite!' : 'Bom dia!';
+            const agora = new Date();
+            const dataStr = `${String(agora.getDate()).padStart(2,'0')}/${String(agora.getMonth()+1).padStart(2,'0')}/${agora.getFullYear()}`;
+            const horaStr = `${String(agora.getHours()).padStart(2,'0')}:${String(agora.getMinutes()).padStart(2,'0')}`;
+            const formatPct = (val) => { if(!val) return '-'; const v = val.toString().replace('%','').trim(); return `${v}%`; };
+            const plantaoSigla = plantaoEl.value.split(' ')[0];
+
+            let texto = `*${saudacao}*\n\n`;
+            texto += `🙋🏻‍♂️ CONDUTOR: ${condutorEl.value.toUpperCase()}\n`;
+            texto += `🏥 PLANTÃO: ${plantaoSigla} | ${baseEl.value.toUpperCase()}\n`;
+            texto += `🚑 VTR: ${ambulanciaEl.value.toUpperCase()} PLACA: ${placaEl.value.toUpperCase()}\n`;
+            texto += `⛑️ O² PORTÁTIL: ${formatPct(o2PortatilEl.value)} FIXO: ${formatPct(o2FixoEl.value)}\n`;
+            texto += `⛽ ABASTECIMENTO: ${formatPct(abastecimentoEl.value)}\n`;
+            texto += `📅 ${dataStr} 🕖 ${horaStr}\n`;
+            texto += `📝 OBS: ${observacaoEl.value ? observacaoEl.value.toUpperCase() : 'SEM NOVAS AVARIAS'}\n\n`;
+            texto += `🙏🏻Bom plantão a todos!\n`;
+            texto += `-----------------------------------\n`;
+            texto += `*🚑 RELATÓRIO DE DESLOCAMENTO*\n\n`;
+
+            const gruposMap = new Map();
+            registros.forEach(r => {
+                const key = r.ocorrenciaId || `${r.data}_${r.shift}_${r.id}`; 
+                if (!gruposMap.has(key)) gruposMap.set(key, { id: key, data: r.data, shift: r.shift || 'SD 12hs', items: [] });
+                gruposMap.get(key).items.push(r);
+            });
+
+            let totalKmGeral = 0;
+            let solicitantes = {};
+
+            if (gruposMap.size === 0) {
+                texto += `*PLANTÃO SEM OCORRÊNCIAS*\n\n`;
+            } else {
+                gruposMap.forEach(grupo => {
+                    const items = [...grupo.items].reverse();
+                    let kmIni = 0; let kmFim = 0;
+
+                    const first = items[0];
+                    if (first && first.kmSaida) kmIni = parseFloat(first.kmSaida);
+
+                    for(let i = items.length - 1; i >= 0; i--) {
+                        if(items[i].kmChegada) { kmFim = parseFloat(items[i].kmChegada); break; }
+                        if(items[i].kmSaida) { kmFim = parseFloat(items[i].kmSaida); break; }
+                    }
+
+                    if (first && first.local) {
+                        const partes = first.local.split('→');
+                        if (partes.length >= 2) {
+                            let destino = partes[1].trim().toUpperCase();
+                            if (destino) solicitantes[destino] = (solicitantes[destino] || 0) + 1;
+                        }
+                    }
+
+                    items.forEach((r, index) => {
+                        const isFirst = index === 0; 
+                        let nomeLocal = getLocalDisplay(r.local, r.tipo === 'chegada' || r.tipo === 'base');
+
+                        if (r.horaSaida) {
+                            if (isFirst) texto += `*INICIO:* ${nomeLocal} H: ${r.horaSaida} KM: ${r.kmSaida}\n`;
+                            else texto += `*SAÍDA:* ${nomeLocal} H: ${r.horaSaida} KM: ${r.kmSaida}\n`;
+                        }
+                        
+                        if (r.horaChegada) {
+                            if (r.tipo === 'base') texto += `*FIM:* ${nomeLocal} H: ${r.horaChegada} KM: ${r.kmChegada}\n`;
+                            else texto += `*CHEGADA:* ${nomeLocal} H: ${r.horaChegada} KM: ${r.kmChegada}\n`;
+                        }
+                    });
+
+                    const kmRod = kmFim >= kmIni ? (kmFim - kmIni) : 0;
+                    totalKmGeral += kmRod;
+
+                    let dataInicioStr = formatDateBR(items[0].data);
+                    let dataFimStr = dataInicioStr; 
+                    for (let i = items.length - 1; i >= 0; i--) {
+                        if (items[i].horaChegada) { dataFimStr = formatDateBR(items[i].data); break; }
+                    }
+                    const stringData = dataInicioStr === dataFimStr ? `*DATA: ${dataInicioStr}` : `*INÍCIO DATA: ${dataInicioStr} FIM DATA: ${dataFimStr}`;
+                    
+                    texto += `\n${stringData}  KM ROD: ${kmRod.toFixed(1)}*\n`;
+                    texto += `-----------------------------------\n\n`;
+                });
+            }
+
+            texto += `*📊 RESUMO DO PLANTÃO*\n`;
+            texto += `Total de Deslocamentos: ${gruposMap.size}\n`;
+            texto += `Total KM Rodado: ${totalKmGeral.toFixed(1)} km\n\n`;
+            
+            texto += `*🏥 UNIDADES SOLICITANTES:*\n`;
+            const sortedSolicitantes = Object.keys(solicitantes).sort((a,b) => solicitantes[b] - solicitantes[a]);
+            if (sortedSolicitantes.length > 0) {
+                sortedSolicitantes.forEach(local => { texto += `• ${local}: ${solicitantes[local]}\n`; });
+            } else {
+                texto += `Nenhuma\n`;
+            }
+
+            const url = `https://api.whatsapp.com/send?text=${encodeURIComponent(texto)}`;
+            window.open(url, '_blank');
+        }
+
+        function carregarLocalStorage() {
+            let raw = localStorage.getItem('sistemaDeslocamentoHCI_v40'); 
+            if(!raw) { prepararFormulario(); return false; }
+            try {
+                let d = JSON.parse(raw); 
+                condutorEl.value = d.condutor || 'ANDERSON MARTINS'; 
+                baseEl.value = d.unidade || 'SÓ SAÚDE'; 
+                ambulanciaEl.value = d.ambulancia || 'MASTER'; 
+                placaEl.value = d.placa || 'TGP5G55'; 
+                
+                const validShifts = ['SD 12hs', 'SN 12hs', 'DN 24hs'];
+                plantaoEl.value = validShifts.includes(d.plantao) ? d.plantao : 'SD 12hs';
+
+                kmInicialEl.value = d.kmInicial || ''; 
+                o2PortatilEl.value = d.o2Portatil || '125%'; 
+                o2FixoEl.value = d.o2Fixo || '150%'; 
+                abastecimentoEl.value = d.abastecimento || '75%';
+                nomeLegivelEl.value = d.nomeLegivel || 'ANDERSON MARTINS'; 
+                observacaoEl.value = d.observacao || '';
+                
+                if(d.mes) mesSelect.value = d.mes; if(d.ano) anoSelect.value = d.ano;
+                registros = d.rows || [];
+                currentOcorrenciaId = d.currentOcorrenciaId || Date.now().toString(); 
+                
+                if(d.assinaturaImg && d.assinaturaImg !== 'data:,') { let img = new Image(); img.onload = () => ctx.drawImage(img, 0, 0, canvas.width, canvas.height); img.src = d.assinaturaImg; }
+                
+                prepararFormulario();
+                renderizarResumo();
+                renderizarFichas(); 
+                
+                if (window.innerWidth <= 768 && registros.length > 0) mainHeader.classList.add('header-collapsed');
+                return true;
+            } catch(e) { 
+                console.error("Dados corrompidos no localStorage. Limpando...", e);
+                localStorage.removeItem('sistemaDeslocamentoHCI_v40');
+                prepararFormulario(); 
+                return false; 
+            }
+        }
+
+        async function gerarRelatorio() {
+            const btn = document.getElementById('pdfBtn'); btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Gerando...';
+            try {
+                const dataHora = new Date().toLocaleString('pt-BR'); const assinaturaImg = canvas.toDataURL('image/png'); const mesNome2 = nomeMes(parseInt(mesSelect.value)); const ano = anoSelect.value;
+                
+                const gruposMap = new Map();
+                registros.forEach(r => {
+                    const key = r.ocorrenciaId || `${r.data}_${r.shift}_${r.id}`; 
+                    if (!gruposMap.has(key)) gruposMap.set(key, { id: key, data: r.data, shift: r.shift || 'SD 12hs', items: [] });
+                    gruposMap.get(key).items.push(r);
+                });
+
+                let fichasHTML = '';
+
+                if (gruposMap.size === 0) {
+                    fichasHTML = '<div style="text-align:center; font-weight:bold; padding:20px; color:#475569; font-size:12pt;">PLANTÃO SEM OCORRÊNCIAS</div>';
+                } else {
+                    gruposMap.forEach(grupo => {
+                        const items = [...grupo.items].reverse();
+                        let timelineStr = '';
+                        let kmIni = 0; let kmFim = 0;
+
+                        items.forEach((r, index) => {
+                            const isFirst = index === 0; 
+                            let nomeLocal = getLocalDisplay(r.local, r.tipo === 'chegada' || r.tipo === 'base');
+
+                            if (r.horaSaida) {
+                                kmIni = isFirst ? (parseFloat(r.kmSaida) || 0) : kmIni;
+                                if (isFirst) timelineStr += `<div style="display:flex; justify-content:space-between; font-weight:bold; color:#0e5a77; margin-bottom:4px;"><span>INICIO: ${nomeLocal}</span><span>H: ${r.horaSaida}</span><span>KM: ${r.kmSaida}</span></div>`;
+                                else timelineStr += `<div style="display:flex; justify-content:space-between; color:#f59e0b; font-weight:bold; margin-bottom:4px;"><span>SAÍDA: ${nomeLocal}</span><span>H: ${r.horaSaida}</span><span>KM: ${r.kmSaida}</span></div>`;
+                            }
+                            
+                            if (r.horaChegada) {
+                                kmFim = parseFloat(r.kmChegada) || 0;
+                                if (r.tipo === 'base') timelineStr += `<div style="display:flex; justify-content:space-between; font-weight:bold; color:#dc2626; margin-bottom:4px;"><span>FIM: ${nomeLocal}</span><span>H: ${r.horaChegada}</span><span>KM: ${r.kmChegada}</span></div>`;
+                                else timelineStr += `<div style="display:flex; justify-content:space-between; color:#15803d; font-weight:bold; margin-bottom:4px;"><span>CHEGADA: ${nomeLocal}</span><span>H: ${r.horaChegada}</span><span>KM: ${r.kmChegada}</span></div>`;
+                            }
+                        });
+
+                        const kmRod = kmFim > 0 ? (kmFim - kmIni).toFixed(1) : '0.0';
+
+                        let dataInicioStr = formatDateBR(items[0].data);
+                        let dataFimStr = dataInicioStr; 
+                        for (let i = items.length - 1; i >= 0; i--) {
+                            if (items[i].horaChegada) { dataFimStr = formatDateBR(items[i].data); break; }
+                        }
+                        const tituloData = dataInicioStr === dataFimStr ? `DATA: ${dataInicioStr}` : `INÍCIO DATA: ${dataInicioStr} FIM DATA: ${dataFimStr}`;
+                        
+                        fichasHTML += `
+                            <div style="border:1px solid #ccc; padding:10px; margin-bottom:15px; border-radius:8px;">
+                                <div style="background:#f1f5f9; padding:5px; font-weight:bold; font-size:10pt; margin-bottom:10px;">${tituloData} | ${grupo.shift}</div>
+                                <div style="font-size:9pt; line-height:1.8;">${timelineStr}</div>
+                                <div style="border-top:1px dashed #ccc; margin-top:10px; padding-top:5px; display:flex; justify-content:space-between; font-weight:bold; font-size:10pt;">
+                                    <span>${tituloData}</span>
+                                    <span>KM ROD: ${kmRod}</span>
+                                </div>
+                            </div>
+                        `;
+                    });
+                }
+
+                let totalKmPdf = 0;
+                let solicitantesPdf = {};
+                gruposMap.forEach(items => {
+                    const orderedItems = [...items.items].reverse(); 
+                    const first = orderedItems[0];
+                    if (first && first.kmSaida) kmIni = parseFloat(first.kmSaida);
+                    
+                    let kmFim = kmIni;
+                    for(let i = orderedItems.length - 1; i >= 0; i--) {
+                        if(orderedItems[i].kmChegada) { kmFim = parseFloat(orderedItems[i].kmChegada); break; }
+                        if(orderedItems[i].kmSaida) { kmFim = parseFloat(orderedItems[i].kmSaida); break; }
+                    }
+                    if (kmIni > 0 && kmFim >= kmIni) totalKmPdf += (kmFim - kmIni);
+
+                    if (first && first.local) {
+                        const partes = first.local.split('→');
+                        if (partes.length >= 2) {
+                            let destino = partes[1].trim().toUpperCase();
+                            if (destino) solicitantesPdf[destino] = (solicitantesPdf[destino] || 0) + 1;
+                        }
+                    }
+                });
+
+                let resumoPdfHTML = `
+                    <div style="border:1px solid #bae6fd; background:#f0f9ff; padding:15px; border-radius:8px; margin-bottom:20px;">
+                        <h3 style="color:#0369a1; font-size:12pt; margin-bottom:10px;">RESUMO DO PLANTÃO</h3>
+                        <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
+                            <div><strong>Total de Ocorrências:</strong> ${gruposMap.size}</div>
+                            <div><strong>KM Total Rodado:</strong> ${totalKmPdf.toFixed(1)} km</div>
+                        </div>
+                        <div style="border-top:1px dashed #bae6fd; padding-top:10px;">
+                            <strong style="font-size:10pt; color:#0369a1;">UNIDADES SOLICITANTES:</strong><br>
+                            <ul style="font-size:9pt; margin-left:20px; margin-top:5px; color:#334155;">
+                `;
+                
+                const sortedPdf = Object.keys(solicitantesPdf).sort((a,b) => solicitantesPdf[b] - solicitantesPdf[a]);
+                if (sortedPdf.length > 0) {
+                    sortedPdf.forEach(local => { resumoPdfHTML += `<li>${local}: <strong>${solicitantesPdf[local]}</strong></li>`; });
+                } else {
+                    resumoPdfHTML += `<li>Nenhuma</li>`;
+                }
+                
+                resumoPdfHTML += `</ul></div></div>`;
+
+                const obsHTML = observacaoEl.value ? `<div style="padding:10px; border:1px solid #ddd; background:#f9f9f9; margin-top:20px;"><strong>📋 OBSERVAÇÕES:</strong> ${observacaoEl.value.toUpperCase().replace(/\n/g, '<br>')}</div>` : '';
+
+                const relatorioHTML = `
+                    <!DOCTYPE html><html><head><meta charset="UTF-8"><title>Relatório 🚑</title>
+                    <style>* { margin:0; padding:0; box-sizing:border-box; } body { font-family: Arial, sans-serif; background:#fff; padding:20px; color:#202124; } .container { max-width:800px; margin:0 auto; } h1 { font-size:18pt; color:#0e5a77; margin-bottom:5px; } .sub { font-size:10pt; color:#5f6368; margin-bottom:20px; border-bottom:1px solid #dadce0; padding-bottom:10px; } .info-table { width:100%; border-collapse:collapse; margin-bottom:20px; font-size:9pt; } .info-table td { padding:6px 10px; border:1px solid #dadce0; } .info-table td:first-child { background:#f1f3f4; font-weight:600; width:15%; } .footer { margin-top:30px; display:flex; justify-content:space-between; align-items:center; border-top:1px solid #dadce0; padding-top:20px; } .signature { display:flex; gap:30px; align-items:center; } .signature img { max-height:60px; border:1px solid #ccc; background:#fff; } @media print { body { padding:0; margin:0; } .no-print { display:none; } }</style>
+                    </head><body><div class="container">
+                        <h1>📄 Relatório de Deslocamento</h1><div class="sub">Controle de Frota · ${mesNome2} / ${ano}</div>
+                        <table class="info-table">
+                            <tr><td>CONDUTOR</td><td>${condutorEl.value.toUpperCase()}</td><td>PLANTÃO</td><td>${plantaoEl.value.toUpperCase()}</td></tr>
+                            <tr><td>AMBULÂNCIA</td><td>${ambulanciaEl.value.toUpperCase()}</td><td>PLACA</td><td>${placaEl.value.toUpperCase()}</td></tr>
+                            <tr><td>KM INICIAL</td><td>${kmInicialEl.value || '-'}</td><td>BASE</td><td>${baseEl.value.toUpperCase()}</td></tr>
+                            <tr><td>O² PORTÁTIL</td><td>${o2PortatilEl.value || '-'}</td><td>O² FIXO</td><td>${o2FixoEl.value || '-'}</td></tr>
+                            <tr><td>ABASTECIMENTO</td><td>${abastecimentoEl.value || '-'}</td><td>GERADO EM</td><td>${dataHora}</td></tr>
+                        </table>
+                        
+                        ${resumoPdfHTML}
+
+                        ${fichasHTML}
+                        ${obsHTML}
+
+                        <div class="footer"><div class="signature"><div>Assinatura:</div><img src="${assinaturaImg}" alt="Assinatura"></div><div><strong>Condutor:</strong> ${nomeLegivelEl.value.toUpperCase()}</div></div>
+                    </div><div class="no-print" style="text-align:center; margin-top:20px;"><button onclick="window.print()" style="padding:10px 20px; font-size:14px;">🖨️ Imprimir PDF</button> <button onclick="window.close()" style="padding:10px 20px; font-size:14px;">❌ Fechar</button></div></body></html>`;
+                const win = window.open('', '_blank'); win.document.write(relatorioHTML); win.document.close(); win.focus();
+                showToast('✅ PDF Gerado!');
+            } catch(err) { showToast('❌ Erro'); } finally { btn.disabled = false; btn.innerHTML = '<i class="fas fa-file-pdf"></i> Gerar Relatório (PDF)'; }
+        }
+
+        document.getElementById('btnRegSaida').addEventListener('click', () => tentarAdicionarRegistro('saida'));
+        document.getElementById('btnRegChegada').addEventListener('click', () => tentarAdicionarRegistro('chegada'));
+        document.getElementById('btnRegBase').addEventListener('click', () => tentarAdicionarRegistro('base'));
+        document.getElementById('pdfBtn').addEventListener('click', gerarRelatorio);
+        document.getElementById('btnShareWhats').addEventListener('click', compartilharWhatsApp);
+
+        document.getElementById('btnNovaOcorrencia').addEventListener('click', () => {
+            if (editingRecordId) showToast('Edição cancelada. Novo deslocamento iniciado.');
+            else showToast('🆕 Novo deslocamento iniciado');
+            
+            currentOcorrenciaId = Date.now().toString(); 
+            resetFormUI(); 
+            fHora.focus();
+        });
+
+        [condutorEl, baseEl, ambulanciaEl, placaEl, kmInicialEl, nomeLegivelEl, observacaoEl, o2PortatilEl, o2FixoEl, abastecimentoEl].forEach(el => { 
+            el.addEventListener('input', () => salvarERenderizar()); 
+        });
+        
+        [mesSelect, anoSelect].forEach(el => { el.addEventListener('change', () => { atualizarLimitesDatas(); salvarERenderizar(); }); });
+        
+        ambulanciaEl.addEventListener('change', () => {
+            const veiculoKey = `${ambulanciaEl.value.trim().toUpperCase()} - ${placaEl.value.trim().toUpperCase()}`;
+            const frotaKms = JSON.parse(localStorage.getItem('frotaKms_hci') || '{}');
+            if (frotaKms[veiculoKey]) kmInicialEl.value = frotaKms[veiculoKey]; else kmInicialEl.value = '';
+            prepararFormulario();
+        });
+
+        placaEl.addEventListener('change', () => {
+            const veiculoKey = `${ambulanciaEl.value.trim().toUpperCase()} - ${placaEl.value.trim().toUpperCase()}`;
+            const frotaKms = JSON.parse(localStorage.getItem('frotaKms_hci') || '{}');
+            if (frotaKms[veiculoKey]) kmInicialEl.value = frotaKms[veiculoKey]; else kmInicialEl.value = '';
+            prepararFormulario();
+        });
+
+        window.addEventListener('beforeunload', () => salvarERenderizar());
+
+        // Inicialização rigorosa
+        carregarLocalStorage();
+        atualizarLimitesDatas();
+    });
+</script>
+</body>
+</html>
