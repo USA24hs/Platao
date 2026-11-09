@@ -598,7 +598,7 @@
             localStorage.setItem('frotaKms_hci', JSON.stringify(frotaKms));
             
             let assinatura = ''; try { assinatura = canvas.toDataURL(); } catch(e) {}
-            localStorage.setItem('sistemaDeslocamentoHCI_v29', JSON.stringify({ 
+            localStorage.setItem('sistemaDeslocamentoHCI_v30', JSON.stringify({ 
                 rows: registros, observacao: observacaoEl.value.toUpperCase(), condutor: condutorEl.value.toUpperCase(), 
                 unidade: baseEl.value.toUpperCase(), ambulancia: ambulanciaEl.value.toUpperCase(), placa: placaEl.value.toUpperCase(), 
                 plantao: plantaoEl.value, kmInicial: kmInicialEl.value, nomeLegivel: nomeLegivelEl.value.toUpperCase(), 
@@ -835,7 +835,7 @@
             // 4. Montar cabeçalho da mensagem
             let texto = `${saudacao}\n\n`;
             texto += `🙋🏻‍♂️ Condutor: ${condutorEl.value.toUpperCase()}\n`;
-            texto += `🚑 VTR: ${ambulanciaEl.value.toUpperCase()} Placa: ${placaEl.value.toUpperCase()}\n`;
+            texto += `🚑 VTR: ${ambulanciaEl.value.toUpperCase()} PLACA: ${placaEl.value.toUpperCase()}\n`;
             if(o2PortatilEl.value || o2FixoEl.value) {
                 texto += `⛑️ O² Portátil: ${formatPct(o2PortatilEl.value) || '-'} Fixo: ${formatPct(o2FixoEl.value) || '-'}\n`;
             }
@@ -918,7 +918,7 @@
 
         // ======================= PERSISTÊNCIA =======================
         function carregarLocalStorage() {
-            let raw = localStorage.getItem('sistemaDeslocamentoHCI_v29'); 
+            let raw = localStorage.getItem('sistemaDeslocamentoHCI_v30'); 
             if(!raw) { prepararFormulario(); return false; }
             try {
                 let d = JSON.parse(raw); 
