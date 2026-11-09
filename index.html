@@ -304,6 +304,7 @@
         fKm.addEventListener('input', () => { fKm.classList.remove('km-alert-input'); });
         fHora.addEventListener('input', () => { fHora.classList.remove('time-alert-input'); });
         
+        // UX: Joga o cursor para o final ao focar no campo de local
         fLocal.addEventListener('focus', () => {
             setTimeout(() => {
                 fLocal.setSelectionRange(fLocal.value.length, fLocal.value.length);
@@ -389,7 +390,7 @@
             return null;
         }
 
-        // ======================= LÓGICA DE PREENCHIMENTO AUTOMÁTICO =======================
+        // ======================= LÓGICA DE PREENCHIMENTO AUTOMÁTICO (CONFORME SEQUÊNCIA) =======================
         function prepararFormulario() {
             const validShifts = ['SD 12hs', 'SN 12hs', 'DN 24hs'];
             if (!validShifts.includes(plantaoEl.value)) {
@@ -614,7 +615,7 @@
                 const base = limparNomeLocal(baseEl.value.trim()) || 'BASE'; 
                 origem = origem || getLocalAtual() || base;
                 local = `${origem} → ${base}`;
-                fLocal.value = local; // Feedback visual instantâneo no campo
+                fLocal.value = local; // Feedback visual instantâneo no campo antes de salvar
             }
 
             if (editingRecordId) {
@@ -712,7 +713,7 @@
                 const validShifts = ['SD 12hs', 'SN 12hs', 'DN 24hs'];
                 const plantaoToSave = validShifts.includes(plantaoEl.value) ? plantaoEl.value : 'SD 12hs';
 
-                localStorage.setItem('sistemaDeslocamentoHCI_v53', JSON.stringify({ 
+                localStorage.setItem('sistemaDeslocamentoHCI_v54', JSON.stringify({ 
                     rows: registros, observacao: observacaoEl.value.toUpperCase(), condutor: condutorEl.value.toUpperCase(), 
                     unidade: baseEl.value.toUpperCase(), ambulancia: ambulanciaEl.value.toUpperCase(), placa: placaEl.value.toUpperCase(), 
                     plantao: plantaoToSave, kmInicial: kmInicialEl.value, nomeLegivel: nomeLegivelEl.value.toUpperCase(), 
@@ -1048,7 +1049,7 @@
         }
 
         function carregarLocalStorage() {
-            let raw = localStorage.getItem('sistemaDeslocamentoHCI_v53'); 
+            let raw = localStorage.getItem('sistemaDeslocamentoHCI_v54'); 
             if(!raw) { prepararFormulario(); return false; }
             try {
                 let d = JSON.parse(raw); 
@@ -1081,7 +1082,7 @@
                 return true;
             } catch(e) { 
                 console.error("Dados corrompidos no localStorage. Limpando...", e);
-                localStorage.removeItem('sistemaDeslocamentoHCI_v53');
+                localStorage.removeItem('sistemaDeslocamentoHCI_v54');
                 prepararFormulario(); 
                 return false; 
             }
