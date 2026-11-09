@@ -52,6 +52,7 @@
         
         .form-item input { width: 100%; min-width: 0; padding: 8px; border-radius: 8px; border: 1px solid #86efac; font-family: 'Inter'; font-size: 0.95rem; font-weight: 600; color: #064e3b; background: #fff; box-sizing: border-box; transition: 0.3s; }
         .form-item input:focus { outline: 2px solid #15803d; border-color: transparent; }
+        .form-item input::placeholder { color: #94a3b8; font-weight: 400; font-size: 0.85rem; }
         
         .km-alert-input, .time-alert-input, .local-alert-input { border-color: var(--danger) !important; background: #fef2f2 !important; color: var(--danger) !important; outline: 2px solid var(--danger) !important; animation: pulse-red 1s infinite; }
         @keyframes pulse-red { 0% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.4); } 70% { box-shadow: 0 0 0 6px rgba(220, 38, 38, 0); } 100% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0); } }
@@ -203,7 +204,7 @@
                 </div>
                 <div class="form-item full">
                     <label>Local / Destino (Origem → Destino)</label>
-                    <input type="text" id="fLocal" placeholder="EX: SÓ SAÚDE → MT INFANTIL">
+                    <input type="text" id="fLocal" placeholder="DIGITE O DESTINO OU LOCAL">
                 </div>
             </div>
             
@@ -383,7 +384,7 @@
             return null;
         }
 
-        // FUNÇÃO DE PREENCHIMENTO INTELIGENTE (CORRIGIDA E TESTADA)
+        // FUNÇÃO DE PREENCHIMENTO INTELIGENTE COM FOCO AUTOMÁTICO
         function prepararFormulario() {
             const validShifts = ['SD 12hs', 'SN 12hs', 'DN 24hs'];
             if (!validShifts.includes(plantaoEl.value)) {
@@ -402,19 +403,18 @@
             const lastRecordOc = itemsAtuais.length > 0 ? itemsAtuais[0] : null;
 
             if (!lastRecordOc) {
-                // Se é o primeiro registro da ocorrência (INÍCIO), ele sai da base
                 fLocal.value = `${base} → `;
             } else if (lastRecordOc.tipo === 'saida') {
-                // Se a última foi SAÍDA, ele está indo para o destino. Prepara a CHEGADA (Destino → Destino)
                 let dest = getLocalDisplay(lastRecordOc.local, true);
                 fLocal.value = `${dest} → ${dest}`; 
             } else if (lastRecordOc.tipo === 'chegada') {
-                // Se a última foi CHEGADA, ele está parado no destino. Prepara a SAÍDA (Destino → vazio)
                 let dest = getLocalDisplay(lastRecordOc.local, true);
                 fLocal.value = `${dest} → `;
+                // Coloca o cursor no final para digitar o próximo destino imediatamente
+                setTimeout(() => { fLocal.focus(); fLocal.setSelectionRange(fLocal.value.length, fLocal.value.length); }, 100);
             } else if (lastRecordOc.tipo === 'base') {
-                // Se finalizou, volta pra base
                 fLocal.value = `${base} → `;
+                setTimeout(() => { fLocal.focus(); fLocal.setSelectionRange(fLocal.value.length, fLocal.value.length); }, 100);
             }
 
             fPlantaoInfo.value = `${plantaoEl.value} | ${base}`;
@@ -704,7 +704,7 @@
                 const validShifts = ['SD 12hs', 'SN 12hs', 'DN 24hs'];
                 const plantaoToSave = validShifts.includes(plantaoEl.value) ? plantaoEl.value : 'SD 12hs';
 
-                localStorage.setItem('sistemaDeslocamentoHCI_v50', JSON.stringify({ 
+                localStorage.setItem('sistemaDeslocamentoHCI_v51', JSON.stringify({ 
                     rows: registros, observacao: observacaoEl.value.toUpperCase(), condutor: condutorEl.value.toUpperCase(), 
                     unidade: baseEl.value.toUpperCase(), ambulancia: ambulanciaEl.value.toUpperCase(), placa: placaEl.value.toUpperCase(), 
                     plantao: plantaoToSave, kmInicial: kmInicialEl.value, nomeLegivel: nomeLegivelEl.value.toUpperCase(), 
@@ -1040,7 +1040,7 @@
         }
 
         function carregarLocalStorage() {
-            let raw = localStorage.getItem('sistemaDeslocamentoHCI_v50'); 
+            let raw = localStorage.getItem('sistemaDeslocamentoHCI_v51'); 
             if(!raw) { prepararFormulario(); return false; }
             try {
                 let d = JSON.parse(raw); 
@@ -1073,7 +1073,7 @@
                 return true;
             } catch(e) { 
                 console.error("Dados corrompidos no localStorage. Limpando...", e);
-                localStorage.removeItem('sistemaDeslocamentoHCI_v50');
+                localStorage.removeItem('sistemaDeslocamentoHCI_v51');
                 prepararFormulario(); 
                 return false; 
             }
