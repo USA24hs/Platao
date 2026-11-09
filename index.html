@@ -349,18 +349,12 @@
 
         function limparNomeLocal(str) { return str ? str.replace(/🏥/g, '').trim().toUpperCase() : ''; }
 
-        // EXTRAIR ORIGEM OU DESTINO DE FORMA INTELIGENTE
         function getLocalDisplay(localStr, isArrival) {
             if (!localStr) return '';
-            // Divide pela seta, independente de espaços
             const partes = localStr.split('→');
             let origem = partes[0] ? partes[0].trim().toUpperCase() : '';
             let destino = partes[1] ? partes[1].trim().toUpperCase() : '';
-            
-            // Se for chegada, retorna o destino. Se o destino estiver vazio, retorna a origem.
-            if (isArrival) return destino || origem; 
-            // Se for saída, retorna a origem. Se a origem estiver vazia, retorna o destino.
-            return origem || destino; 
+            return isArrival ? (destino || origem) : (origem || destino);
         }
 
         function getLastRecord() {
@@ -404,17 +398,17 @@
             const base = limparNomeLocal(baseEl.value.trim()) || 'BASE'; 
             
             const itemsAtuais = registros.filter(r => r.ocorrenciaId === currentOcorrenciaId);
-            const lastRecord = itemsAtuais.length > 0 ? itemsAtuais[0] : null;
+            const lastRecordOc = itemsAtuais.length > 0 ? itemsAtuais[0] : null;
 
-            if (!lastRecord) {
+            if (!lastRecordOc) {
                 fLocal.value = `${base} → `;
-            } else if (lastRecord.tipo === 'saida') {
-                let dest = getLocalDisplay(lastRecord.local, true);
+            } else if (lastRecordOc.tipo === 'saida') {
+                let dest = getLocalDisplay(lastRecordOc.local, true);
                 fLocal.value = `${dest} → ${dest}`; 
-            } else if (lastRecord.tipo === 'chegada') {
-                let dest = getLocalDisplay(lastRecord.local, true);
+            } else if (lastRecordOc.tipo === 'chegada') {
+                let dest = getLocalDisplay(lastRecordOc.local, true);
                 fLocal.value = `${dest} → `;
-            } else if (lastRecord.tipo === 'base') {
+            } else if (lastRecordOc.tipo === 'base') {
                 fLocal.value = `${base} → `;
             }
 
@@ -468,14 +462,14 @@
 
         function validarSequencia(tipo) {
             const itemsAtuais = registros.filter(r => r.ocorrenciaId === currentOcorrenciaId);
-            const lastRecord = itemsAtuais.length > 0 ? itemsAtuais[0] : null;
+            const lastRecordOc = itemsAtuais.length > 0 ? itemsAtuais[0] : null;
 
-            if (!lastRecord) {
+            if (!lastRecordOc) {
                 if (tipo !== 'saida') return "A primeira ação de uma ocorrência deve ser SAÍDA (INÍCIO).";
                 return null;
             }
 
-            const lastType = lastRecord.tipo;
+            const lastType = lastRecordOc.tipo;
 
             if (tipo === 'saida' && lastType !== 'chegada') {
                 return "A última ação foi SAÍDA. Você deve registrar uma CHEGADA primeiro.";
@@ -502,13 +496,13 @@
                     return showToast("⚠️ Erro: Preencha o Local / Destino.");
                 }
 
-                // NOVA VALIDAÇÃO: BLOQUEAR CHEGADA NO MESMO LOCAL DE SAÍDA SE O KM MUDOU
+                // VALIDAÇÃO: BLOQUEAR CHEGADA NO MESMO LOCAL DE SAÍDA SE O KM MUDOU
                 if (tipo === 'chegada' || tipo === 'base') {
                     const itemsAtuais = registros.filter(r => r.ocorrenciaId === currentOcorrenciaId);
-                    const lastRecord = itemsAtuais.length > 0 ? itemsAtuais[0] : null;
+                    const lastRecordOc = itemsAtuais.length > 0 ? itemsAtuais[0] : null;
                     
-                    if (lastRecord && lastRecord.tipo === 'saida') {
-                        let localSaidaStr = lastRecord.local || '';
+                    if (lastRecordOc && lastRecordOc.tipo === 'saida') {
+                        let localSaidaStr = lastRecordOc.local || '';
                         let partesSaida = localSaidaStr.split('→');
                         let origemSaida = partesSaida[0] ? partesSaida[0].trim().toUpperCase() : '';
 
@@ -517,7 +511,7 @@
                         let destinoChegada = partesChegada[1] ? partesChegada[1].trim().toUpperCase() : '';
 
                         const kmAtual = parseFloat(fKm.value);
-                        const kmSaida = parseFloat(lastRecord.kmSaida);
+                        const kmSaida = parseFloat(lastRecordOc.kmSaida);
 
                         if (origemSaida && destinoChegada && origemSaida === destinoChegada && kmAtual !== kmSaida) {
                             fLocal.classList.add('local-alert-input');
@@ -706,7 +700,7 @@
                 const validShifts = ['SD 12hs', 'SN 12hs', 'DN 24hs'];
                 const plantaoToSave = validShifts.includes(plantaoEl.value) ? plantaoEl.value : 'SD 12hs';
 
-                localStorage.setItem('sistemaDeslocamentoHCI_v48', JSON.stringify({ 
+                localStorage.setItem('sistemaDeslocamentoHCI_v49', JSON.stringify({ 
                     rows: registros, observacao: observacaoEl.value.toUpperCase(), condutor: condutorEl.value.toUpperCase(), 
                     unidade: baseEl.value.toUpperCase(), ambulancia: ambulanciaEl.value.toUpperCase(), placa: placaEl.value.toUpperCase(), 
                     plantao: plantaoToSave, kmInicial: kmInicialEl.value, nomeLegivel: nomeLegivelEl.value.toUpperCase(), 
@@ -998,13 +992,13 @@
                         const isFirst = index === 0; 
 
                         if (r.horaSaida) {
-                            let localSaida = getLocalDisplay(r.local, false); // Extrai Origem
+                            let localSaida = getLocalDisplay(r.local, false);
                             if (isFirst) texto += `*INICIO:* ${localSaida} H: ${r.horaSaida} KM: ${r.kmSaida}\n`;
                             else texto += `*SAÍDA:* ${localSaida} H: ${r.horaSaida} KM: ${r.kmSaida}\n`;
                         }
                         
                         if (r.horaChegada) {
-                            let localChegada = getLocalDisplay(r.local, true); // Extrai Destino
+                            let localChegada = getLocalDisplay(r.local, true);
                             if (r.tipo === 'base') texto += `*FIM:* ${localChegada} H: ${r.horaChegada} KM: ${r.kmChegada}\n`;
                             else texto += `*CHEGADA:* ${localChegada} H: ${r.horaChegada} KM: ${r.kmChegada}\n`;
                         }
@@ -1042,7 +1036,7 @@
         }
 
         function carregarLocalStorage() {
-            let raw = localStorage.getItem('sistemaDeslocamentoHCI_v48'); 
+            let raw = localStorage.getItem('sistemaDeslocamentoHCI_v49'); 
             if(!raw) { prepararFormulario(); return false; }
             try {
                 let d = JSON.parse(raw); 
@@ -1075,7 +1069,7 @@
                 return true;
             } catch(e) { 
                 console.error("Dados corrompidos no localStorage. Limpando...", e);
-                localStorage.removeItem('sistemaDeslocamentoHCI_v48');
+                localStorage.removeItem('sistemaDeslocamentoHCI_v49');
                 prepararFormulario(); 
                 return false; 
             }
