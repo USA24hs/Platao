@@ -598,7 +598,7 @@
             localStorage.setItem('frotaKms_hci', JSON.stringify(frotaKms));
             
             let assinatura = ''; try { assinatura = canvas.toDataURL(); } catch(e) {}
-            localStorage.setItem('sistemaDeslocamentoHCI_v32', JSON.stringify({ 
+            localStorage.setItem('sistemaDeslocamentoHCI_v33', JSON.stringify({ 
                 rows: registros, observacao: observacaoEl.value.toUpperCase(), condutor: condutorEl.value.toUpperCase(), 
                 unidade: baseEl.value.toUpperCase(), ambulancia: ambulanciaEl.value.toUpperCase(), placa: placaEl.value.toUpperCase(), 
                 plantao: plantaoEl.value, kmInicial: kmInicialEl.value, nomeLegivel: nomeLegivelEl.value.toUpperCase(), 
@@ -825,11 +825,11 @@
             });
         }
 
-        // ======================= COMPARTILHAR WHATSAPP =======================
+        // ======================= COMPARTILHAR WHATSAPP (MODELO ATUALIZADO) =======================
         function compartilharWhatsApp() {
             // 1. Lógica da Saudação
             const isNoite = plantaoEl.value.includes('SN');
-            const saudacao = isNoite ? '*Boa noite!*' : '*Bom dia!*';
+            const saudacao = isNoite ? 'Boa noite!' : 'Bom dia!';
 
             // 2. Data e Hora atual
             const agora = new Date();
@@ -838,28 +838,28 @@
 
             // 3. Formatar O2 e Abastecimento (garantir %)
             const formatPct = (val) => {
-                if(!val) return '';
-                const v = val.toString().replace('%','');
+                if(!val) return '-';
+                const v = val.toString().replace('%','').trim();
                 return `${v}%`;
             };
 
-            // 4. Montar cabeçalho da mensagem
-            let texto = `${saudacao}\n\n`;
+            // 4. Extrair apenas a sigla do plantão (SD, SN, DN)
+            const plantaoSigla = plantaoEl.value.split(' ')[0];
+
+            // 5. Montar cabeçalho da mensagem
+            let texto = `*${saudacao}*\n\n`;
             texto += `🙋🏻‍♂️ CONDUTOR: ${condutorEl.value.toUpperCase()}\n`;
+            texto += `🏥 PLANTÃO: ${plantaoSigla} | ${baseEl.value.toUpperCase()}\n`;
             texto += `🚑 VTR: ${ambulanciaEl.value.toUpperCase()} PLACA: ${placaEl.value.toUpperCase()}\n`;
-            if(o2PortatilEl.value || o2FixoEl.value) {
-                texto += `⛑️ O² PORTÁTIL: ${formatPct(o2PortatilEl.value) || '-'} FIXO: ${formatPct(o2FixoEl.value) || '-'}\n`;
-            }
-            if(abastecimentoEl.value) {
-                texto += `⛽ ABASTECIMENTO: ${formatPct(abastecimentoEl.value)}\n`;
-            }
+            texto += `⛑️ O² PORTÁTIL: ${formatPct(o2PortatilEl.value)} FIXO: ${formatPct(o2FixoEl.value)}\n`;
+            texto += `⛽ ABASTECIMENTO: ${formatPct(abastecimentoEl.value)}\n`;
             texto += `📅 ${dataStr} 🕖 ${horaStr}\n`;
-            texto += `📝 OBS: ${observacaoEl.value ? observacaoEl.value.toUpperCase() : 'SEM AVARIAS'}\n\n`;
+            texto += `📝 OBS: ${observacaoEl.value ? observacaoEl.value.toUpperCase() : 'SEM NOVAS AVARIAS'}\n\n`;
             texto += `🙏🏻Bom plantão a todos!\n`;
             texto += `-----------------------------------\n`;
             texto += `*🚑 RELATÓRIO DE DESLOCAMENTO*\n\n`;
 
-            // 5. Agrupar e montar a Timeline
+            // 6. Agrupar e montar a Timeline
             const gruposMap = new Map();
             registros.forEach(r => {
                 const key = r.ocorrenciaId || `${r.data}_${r.shift}_${r.id}`; 
@@ -916,7 +916,7 @@
                 });
             }
 
-            // 6. Resumo final
+            // 7. Resumo final
             texto += `*📊 RESUMO DO PLANTÃO*\n`;
             texto += `Total de Deslocamentos: ${gruposMap.size}\n`;
             texto += `Total KM Rodado: ${totalKmGeral.toFixed(1)} km\n\n`;
@@ -937,7 +937,7 @@
 
         // ======================= PERSISTÊNCIA =======================
         function carregarLocalStorage() {
-            let raw = localStorage.getItem('sistemaDeslocamentoHCI_v32'); 
+            let raw = localStorage.getItem('sistemaDeslocamentoHCI_v33'); 
             if(!raw) { prepararFormulario(); return false; }
             try {
                 let d = JSON.parse(raw); 
