@@ -304,10 +304,21 @@
         fKm.addEventListener('input', () => { fKm.classList.remove('km-alert-input'); });
         fHora.addEventListener('input', () => { fHora.classList.remove('time-alert-input'); });
         
+        // FOCO NO CAMPO LOCAL: seleciona automaticamente a parte do DESTINO para facilitar edição
         fLocal.addEventListener('focus', () => {
             setTimeout(() => {
-                fLocal.setSelectionRange(fLocal.value.length, fLocal.value.length);
-            }, 10);
+                const val = fLocal.value;
+                const arrowPos = val.indexOf('→');
+                if (arrowPos !== -1) {
+                    let start = arrowPos + 1;
+                    while (start < val.length && val[start] === ' ') start++;
+                    if (start < val.length) {
+                        fLocal.setSelectionRange(start, val.length);
+                        return;
+                    }
+                }
+                fLocal.setSelectionRange(val.length, val.length);
+            }, 50);
         });
         fLocal.addEventListener('input', () => { fLocal.classList.remove('local-alert-input'); });
 
@@ -415,9 +426,9 @@
                 let dest = getLocalDisplay(lastRecordOc.local, true);
                 fLocal.value = `${dest} → ${dest}`; 
             } else if (lastRecordOc.tipo === 'chegada') {
-                // 3. SAÍDA (Prepara o campo com Destino -> VAZIO para o usuário digitar o próximo HRL)
+                // 3. PRÓXIMA SAÍDA (campo fica Destino -> Destino; usuário edita o 2º destino)
                 let dest = getLocalDisplay(lastRecordOc.local, true);
-                fLocal.value = `${dest} → `; 
+                fLocal.value = `${dest} → ${dest}`; 
             } else if (lastRecordOc.tipo === 'base') {
                 // 4. FIM (Volta para a base e reinicia)
                 fLocal.value = `${base} → `;
@@ -482,17 +493,14 @@
 
             const lastType = lastRecordOc.tipo;
 
-            // Impede duas saídas seguidas
             if (tipo === 'saida' && lastType !== 'chegada') {
                 return "A última ação foi SAÍDA. Você deve registrar uma CHEGADA primeiro.";
             }
             
-            // Impede duas chegadas seguidas
             if (tipo === 'chegada' && lastType !== 'saida') {
                 return "A última ação foi CHEGADA. Você deve registrar uma SAÍDA primeiro.";
             }
             
-            // Base (Fim) é SEMPRE permitida e não gera notificação de erro!
             return null;
         }
 
@@ -604,6 +612,11 @@
                     fLocal.classList.add('local-alert-input');
                     return showToast('⚠️ Preencha o DESTINO para registrar a Saída.');
                 }
+                // NOVO: impede saída com origem == destino (evita salvar HTO → HTO por engano)
+                if (origem && destino && origem.toUpperCase() === destino.toUpperCase()) {
+                    fLocal.classList.add('local-alert-input');
+                    return showToast(`⚠️ Origem e destino iguais (${origem}). Altere o destino para continuar.`);
+                }
                 local = `${origem} → ${destino}`;
             } else if (tipo === 'chegada') {
                 if (!destino) {
@@ -616,7 +629,7 @@
                 const base = limparNomeLocal(baseEl.value.trim()) || 'BASE'; 
                 origem = origem || getLocalAtual() || base;
                 local = `${origem} → ${base}`;
-                fLocal.value = local; // Força a barra mostrar a origem -> base
+                fLocal.value = local;
             }
 
             if (editingRecordId) {
@@ -661,7 +674,6 @@
                 const index = registros.findIndex(r => r.veiculo === veiculoAtual && r.ocorrenciaId === currentOcorrenciaId && !r.horaChegada);
 
                 if (index !== -1) {
-                    // Tem saída em aberto
                     registros[index].horaChegada = hora;
                     registros[index].kmChegada = km.toString();
                     registros[index].tipo = tipo; 
@@ -674,7 +686,6 @@
                         showToast('📍 Chegada registrada!');
                     }
                 } else {
-                    // Não tem saída em aberto (clicou em Base direto, por exemplo)
                     if (tipo === 'base') {
                         registros.unshift({
                             id: Date.now().toString(),
@@ -870,7 +881,7 @@
                     const isFirst = index === 0;
                     
                     if (r.horaSaida) {
-                        let localSaida = getLocalDisplay(r.local, false); // Extrai Origem
+                        let localSaida = getLocalDisplay(r.local, false);
                         kmInicialFicha = isFirst ? (parseFloat(r.kmSaida) || 0) : kmInicialFicha;
                         
                         if (isFirst) {
@@ -899,7 +910,7 @@
                     }
 
                     if (r.horaChegada) {
-                        let localChegada = getLocalDisplay(r.local, true); // Extrai Destino
+                        let localChegada = getLocalDisplay(r.local, true);
                         kmFinalFicha = parseFloat(r.kmChegada) || 0;
                         
                         if (r.tipo === 'base') {
@@ -1176,6 +1187,7 @@
                 gruposMap.forEach(items => {
                     const orderedItems = [...items.items].reverse(); 
                     const first = orderedItems[0];
+                    let kmIni = 0;
                     if (first && first.kmSaida) kmIni = parseFloat(first.kmSaida);
                     
                     let kmFim = kmIni;
