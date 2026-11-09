@@ -13,6 +13,9 @@
         body { background: var(--bg-body); font-family: 'Inter', sans-serif; padding: 0.5rem; padding-bottom: calc(70px + env(safe-area-inset-bottom)); overflow-x: hidden; }
         .report-container { max-width: 800px; margin: 0 auto; background: var(--card-bg); border-radius: 16px; box-shadow: 0 4px 15px -5px rgba(0,0,0,0.08); overflow: hidden; border: 1px solid var(--border); }
         
+        /* FORÇAR CAIXA ALTA EM TODOS OS INPUTS DE TEXTO */
+        input[type="text"], textarea { text-transform: uppercase; }
+        
         /* HEADER */
         .header { background: linear-gradient(135deg, var(--primary-dark), var(--primary)); padding: 0.8rem 1rem; color: #fff; transition: all 0.3s ease; }
         .header-top { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 0.75rem; padding-bottom: 0.75rem; border-bottom: 1px solid rgba(255,255,255,0.15); transition: all 0.3s ease; }
@@ -53,7 +56,7 @@
         .form-item.full { grid-column: 1 / -1; }
         .form-item label { font-size: 0.65rem; font-weight: 700; color: #166534; text-transform: uppercase; margin-bottom: 2px; }
         
-        .form-item input { width: 100%; min-width: 0; padding: 8px; border-radius: 8px; border: 1px solid #86efac; font-family: 'Inter'; font-size: 0.95rem; font-weight: 600; color: #064e3b; background: #fff; box-sizing: border-box; text-transform: uppercase; transition: 0.3s; }
+        .form-item input { width: 100%; min-width: 0; padding: 8px; border-radius: 8px; border: 1px solid #86efac; font-family: 'Inter'; font-size: 0.95rem; font-weight: 600; color: #064e3b; background: #fff; box-sizing: border-box; transition: 0.3s; }
         .form-item input:focus { outline: 2px solid #15803d; border-color: transparent; }
         
         /* CLASSE PARA DESTACAR O CAMPO KM QUANDO HOUVER ALERTA */
@@ -105,7 +108,7 @@
         .summary-box strong { font-size: 1.2rem; color: var(--primary-dark); }
         .req-list { background: #fff; border: 1px solid #cbd5e1; border-radius: 8px; padding: 8px 12px; }
         .req-title { font-size: 0.7rem; font-weight: 800; color: var(--primary-dark); text-transform: uppercase; margin-bottom: 6px; border-bottom: 1px dashed #e2e8f0; padding-bottom: 4px; }
-        .req-item { display: flex; justify-content: space-between; font-size: 0.8rem; padding: 4px 0; border-bottom: 1px dashed #f1f5f9; color: #334155; font-weight: 600; }
+        .req-item { display: flex; justify-content: space-between; font-size: 0.8rem; padding: 4px 0; border-bottom: 1px dashed #f1f5f9; color: #334155; font-weight: 600; text-transform: uppercase; }
         .req-item:last-child { border-bottom: none; }
         .req-item span:last-child { color: var(--primary); font-weight: 800; }
 
@@ -254,7 +257,7 @@
         </div>
         
         <div class="two-cols">
-            <div class="obs-box card"><div class="card-title"><i class="fas fa-clipboard-list"></i> Observações</div><textarea id="observacao" rows="2" placeholder="Intercorrências..."></textarea></div>
+            <div class="obs-box card"><div class="card-title"><i class="fas fa-clipboard-list"></i> Observações</div><textarea id="observacao" rows="2" placeholder="INTERCORRÊNCIAS..."></textarea></div>
             <div class="sign-box"><div class="card-title"><i class="fas fa-signature"></i> Assinatura</div><canvas id="signCanvas" width="400" height="90" style="width:100%;height:90px;"></canvas><div class="sign-actions"><button class="btn-clear" id="clearCanvasBtn"><i class="fas fa-eraser"></i> Limpar</button></div><div class="legible-name"><input type="text" id="nomeLegivel" placeholder="Nome completo" value="Anderson Martins"></div></div>
         </div>
 
@@ -320,16 +323,14 @@
         const modalKmValue = document.getElementById('modalKmValue');
         const btnModalCorrigir = document.getElementById('btnModalCorrigir');
         const btnModalIgnorar = document.getElementById('btnModalIgnorar');
-        let pendingActionType = null; // Guarda qual botão foi clicado (saida, chegada, base)
+        let pendingActionType = null; 
 
         let registros = []; 
         let currentOcorrenciaId = Date.now().toString(); 
         let editingRecordId = null;
 
         // Remove a borda vermelha do KM se o usuário começar a digitar
-        fKm.addEventListener('input', () => {
-            fKm.classList.remove('km-alert-input');
-        });
+        fKm.addEventListener('input', () => { fKm.classList.remove('km-alert-input'); });
 
         // Inicialização do seletor de meses
         for(let m = 1; m <= 12; m++) { let opt = document.createElement('option'); opt.value = m; opt.textContent = nomeMes(m).substring(0,3); mesSelect.appendChild(opt); }
@@ -382,7 +383,7 @@
         }
         
         function getUltimoKmChegada() { 
-            const veiculoAtual = `${ambulanciaEl.value.trim()} - ${placaEl.value.trim()}`;
+            const veiculoAtual = `${ambulanciaEl.value.trim().toUpperCase()} - ${placaEl.value.trim().toUpperCase()}`;
             for(let i = 0; i < registros.length; i++) { 
                 if (registros[i].veiculo !== veiculoAtual) continue; 
                 if(registros[i].kmChegada) return registros[i].kmChegada; 
@@ -392,7 +393,7 @@
         }
 
         function getLocalAtual() {
-            const veiculoAtual = `${ambulanciaEl.value.trim()} - ${placaEl.value.trim()}`;
+            const veiculoAtual = `${ambulanciaEl.value.trim().toUpperCase()} - ${placaEl.value.trim().toUpperCase()}`;
             for (let i = 0; i < registros.length; i++) {
                 if (registros[i].veiculo !== veiculoAtual) continue;
                 const local = registros[i].local || '';
@@ -423,7 +424,7 @@
 
             fPlantaoInfo.value = `${plantaoEl.value} | ${base}`;
             atualizarLimitesDatas();
-            fKm.classList.remove('km-alert-input'); // Limpa o alerta visual
+            fKm.classList.remove('km-alert-input'); 
         }
 
         function resetFormUI() {
@@ -462,16 +463,14 @@
             const kmAtual = parseFloat(fKm.value);
             const ultimoKm = parseFloat(getUltimoKmChegada());
 
-            // Se o km for igual ao último e não estiver no modo de edição, dispara o alerta
             if (!isNaN(kmAtual) && !isNaN(ultimoKm) && kmAtual === ultimoKm && !editingRecordId) {
                 pendingActionType = tipo;
                 modalKmValue.textContent = kmAtual;
                 modalKmAlert.classList.add('active');
                 fKm.classList.add('km-alert-input');
-                return; // Para aqui e espera a decisão do usuário
+                return; 
             }
 
-            // Se o km mudou ou está editando, segue o fluxo normal
             executarAdicionarRegistro(tipo);
         }
 
@@ -497,7 +496,7 @@
 
             if (!hora || isNaN(km)) return showToast('⚠️ Preencha Hora e KM corretamente.');
             
-            const veiculoAtual = `${ambulanciaEl.value.trim()} - ${placaEl.value.trim()}`;
+            const veiculoAtual = `${ambulanciaEl.value.trim().toUpperCase()} - ${placaEl.value.trim().toUpperCase()}`;
             const plantaoAtual = plantaoEl.value;
 
             if (tipo === 'base') {
@@ -593,10 +592,10 @@
             localStorage.setItem('frotaKms_hci', JSON.stringify(frotaKms));
             
             let assinatura = ''; try { assinatura = canvas.toDataURL(); } catch(e) {}
-            localStorage.setItem('sistemaDeslocamentoHCI_v27', JSON.stringify({ 
-                rows: registros, observacao: observacaoEl.value, condutor: condutorEl.value, unidade: baseEl.value, 
-                ambulancia: ambulanciaEl.value, placa: placaEl.value, plantao: plantaoEl.value, kmInicial: kmInicialEl.value, 
-                nomeLegivel: nomeLegivelEl.value, mes: parseInt(mesSelect.value), ano: parseInt(anoSelect.value), assinaturaImg: assinatura,
+            localStorage.setItem('sistemaDeslocamentoHCI_v28', JSON.stringify({ 
+                rows: registros, observacao: observacaoEl.value.toUpperCase(), condutor: condutorEl.value.toUpperCase(), unidade: baseEl.value.toUpperCase(), 
+                ambulancia: ambulanciaEl.value.toUpperCase(), placa: placaEl.value.toUpperCase(), plantao: plantaoEl.value, kmInicial: kmInicialEl.value, 
+                nomeLegivel: nomeLegivelEl.value.toUpperCase(), mes: parseInt(mesSelect.value), ano: parseInt(anoSelect.value), assinaturaImg: assinatura,
                 currentOcorrenciaId: currentOcorrenciaId
             }));
 
@@ -604,6 +603,7 @@
             renderizarFichas();
         }
 
+        // CÁLCULO CORRIGIDO DO RESUMO
         function renderizarResumo() {
             if(registros.length === 0) {
                 resumoContainer.innerHTML = '<p style="font-size:0.8rem; color:#94a3b8; text-align:center;">Aguardando lançamentos...</p>';
@@ -617,20 +617,32 @@
                 const key = r.ocorrenciaId || `${r.data}_${r.shift}_${r.id}`; 
                 if (!gruposMap.has(key)) gruposMap.set(key, []);
                 gruposMap.get(key).push(r);
-
-                if (r.kmSaida && r.kmChegada) {
-                    let s = parseFloat(r.kmSaida);
-                    let c = parseFloat(r.kmChegada);
-                    if (c >= s) totalKm += (c - s);
-                }
             });
 
             let totalOcorrencias = gruposMap.size;
             let solicitantes = {};
 
             gruposMap.forEach(items => {
+                // Ordem cronológica para achar o início e fim
                 const orderedItems = [...items].reverse(); 
+                
+                // Pega o primeiro KM de saída
+                let kmIni = 0;
                 const first = orderedItems[0];
+                if (first && first.kmSaida) kmIni = parseFloat(first.kmSaida);
+
+                // Pega o último KM (seja de chegada ou de saída se a viagem estiver em aberto)
+                let kmFim = kmIni;
+                for(let i = orderedItems.length - 1; i >= 0; i--) {
+                    if(orderedItems[i].kmChegada) { kmFim = parseFloat(orderedItems[i].kmChegada); break; }
+                    if(orderedItems[i].kmSaida) { kmFim = parseFloat(orderedItems[i].kmSaida); break; }
+                }
+
+                if (kmIni > 0 && kmFim >= kmIni) {
+                    totalKm += (kmFim - kmIni);
+                }
+
+                // Contar solicitantes
                 if (first && first.local) {
                     const partes = first.local.split('→');
                     if (partes.length >= 2) {
@@ -775,7 +787,7 @@
                         <div class="ficha-header">
                             <div class="ficha-header-info">
                                 <span><i class="far fa-calendar-alt"></i> DATA: ${formatDateBR(grupo.data)} | ${grupo.shift}</span>
-                                <span>${ambulanciaEl.value} - ${placaEl.value}</span>
+                                <span>${ambulanciaEl.value.toUpperCase()} - ${placaEl.value.toUpperCase()}</span>
                             </div>
                             <div class="ficha-actions">
                                 ${btnEdit}
@@ -810,9 +822,9 @@
 
             let texto = `*🚑 RELATÓRIO DE DESLOCAMENTO*\n`;
             texto += `📅 Data: ${formatDateBR(hoje())} | Plantão: ${plantaoEl.value}\n`;
-            texto += `🏥 Base: ${baseEl.value}\n`; 
-            texto += `🚑 Veículo: ${ambulanciaEl.value} (${placaEl.value})\n`;
-            texto += `👨‍⚕️ Condutor: ${condutorEl.value}\n`;
+            texto += `🏥 Base: ${baseEl.value.toUpperCase()}\n`; 
+            texto += `🚑 Veículo: ${ambulanciaEl.value.toUpperCase()} (${placaEl.value.toUpperCase()})\n`;
+            texto += `👨‍⚕️ Condutor: ${condutorEl.value.toUpperCase()}\n`;
             texto += `-----------------------------------\n\n`;
 
             let totalKmGeral = 0;
@@ -820,9 +832,17 @@
 
             gruposMap.forEach(grupo => {
                 const items = [...grupo.items].reverse();
-                let kmIni = 0; let kmFim = 0;
-
+                
+                let kmIni = 0;
                 const first = items[0];
+                if (first && first.kmSaida) kmIni = parseFloat(first.kmSaida);
+
+                let kmFim = kmIni;
+                for(let i = items.length - 1; i >= 0; i--) {
+                    if(items[i].kmChegada) { kmFim = parseFloat(items[i].kmChegada); break; }
+                    if(items[i].kmSaida) { kmFim = parseFloat(items[i].kmSaida); break; }
+                }
+
                 if (first && first.local) {
                     const partes = first.local.split('→');
                     if (partes.length >= 2) {
@@ -837,19 +857,17 @@
                     let destino = limparNomeLocal(r.local.split('→')[1] || '');
 
                     if (r.horaSaida) {
-                        kmIni = isFirst ? (parseFloat(r.kmSaida) || 0) : kmIni;
                         if (isFirst) texto += `*INICIO:* ${origem} H: ${r.horaSaida} KM: ${r.kmSaida}\n`;
                         else texto += `*SAÍDA:* ${origem} H: ${r.horaSaida} KM: ${r.kmSaida}\n`;
                     }
                     
                     if (r.horaChegada) {
-                        kmFim = parseFloat(r.kmChegada) || 0;
                         if (r.tipo === 'base') texto += `*FIM:* ${destino} H: ${r.horaChegada} KM: ${r.kmChegada}\n`;
                         else texto += `*CHEGADA:* ${destino} H: ${r.horaChegada} KM: ${r.kmChegada}\n`;
                     }
                 });
 
-                const kmRod = kmFim > 0 ? (kmFim - kmIni) : 0;
+                const kmRod = kmFim >= kmIni ? (kmFim - kmIni) : 0;
                 totalKmGeral += kmRod;
                 texto += `\n*DATA: ${formatDateBR(grupo.data)}  KM ROD: ${kmRod.toFixed(1)}*\n`;
                 texto += `-----------------------------------\n\n`;
@@ -866,7 +884,7 @@
             });
 
             if (observacaoEl.value.trim()) {
-                texto += `\n*📋 OBSERVAÇÕES:*\n${observacaoEl.value.trim()}`;
+                texto += `\n*📋 OBSERVAÇÕES:*\n${observacaoEl.value.toUpperCase().trim()}`;
             }
 
             const url = `https://api.whatsapp.com/send?text=${encodeURIComponent(texto)}`;
@@ -875,17 +893,17 @@
 
         // ======================= PERSISTÊNCIA =======================
         function carregarLocalStorage() {
-            let raw = localStorage.getItem('sistemaDeslocamentoHCI_v27'); 
+            let raw = localStorage.getItem('sistemaDeslocamentoHCI_v28'); 
             if(!raw) { prepararFormulario(); return false; }
             try {
                 let d = JSON.parse(raw); 
-                condutorEl.value = d.condutor || 'Anderson Martins'; 
+                condutorEl.value = d.condutor || 'ANDERSON MARTINS'; 
                 baseEl.value = d.unidade || 'SÓ SAÚDE'; 
-                ambulanciaEl.value = d.ambulancia || 'Master'; 
+                ambulanciaEl.value = d.ambulancia || 'MASTER'; 
                 placaEl.value = d.placa || 'RKD-5A25'; 
                 plantaoEl.value = d.plantao || 'SD 12hs'; 
                 kmInicialEl.value = d.kmInicial || ''; 
-                nomeLegivelEl.value = d.nomeLegivel || 'Anderson Martins'; 
+                nomeLegivelEl.value = d.nomeLegivel || 'ANDERSON MARTINS'; 
                 observacaoEl.value = d.observacao || '';
                 
                 if(d.mes) mesSelect.value = d.mes; if(d.ano) anoSelect.value = d.ano;
@@ -958,6 +976,15 @@
                 gruposMap.forEach(items => {
                     const orderedItems = [...items.items].reverse(); 
                     const first = orderedItems[0];
+                    if (first && first.kmSaida) kmIni = parseFloat(first.kmSaida);
+                    
+                    let kmFim = kmIni;
+                    for(let i = orderedItems.length - 1; i >= 0; i--) {
+                        if(orderedItems[i].kmChegada) { kmFim = parseFloat(orderedItems[i].kmChegada); break; }
+                        if(orderedItems[i].kmSaida) { kmFim = parseFloat(orderedItems[i].kmSaida); break; }
+                    }
+                    if (kmIni > 0 && kmFim >= kmIni) totalKmPdf += (kmFim - kmIni);
+
                     if (first && first.local) {
                         const partes = first.local.split('→');
                         if (partes.length >= 2) {
@@ -965,12 +992,6 @@
                             if (destino) solicitantesPdf[destino] = (solicitantesPdf[destino] || 0) + 1;
                         }
                     }
-                    items.items.forEach(r => {
-                        if (r.kmSaida && r.kmChegada) {
-                            let s = parseFloat(r.kmSaida); let c = parseFloat(r.kmChegada);
-                            if (c >= s) totalKmPdf += (c - s);
-                        }
-                    });
                 });
 
                 let resumoPdfHTML = `
@@ -992,7 +1013,7 @@
                 
                 resumoPdfHTML += `</ul></div></div>`;
 
-                const obsHTML = observacaoEl.value ? `<div style="padding:10px; border:1px solid #ddd; background:#f9f9f9; margin-top:20px;"><strong>📋 Observações:</strong> ${observacaoEl.value.replace(/\n/g, '<br>')}</div>` : '';
+                const obsHTML = observacaoEl.value ? `<div style="padding:10px; border:1px solid #ddd; background:#f9f9f9; margin-top:20px;"><strong>📋 Observações:</strong> ${observacaoEl.value.toUpperCase().replace(/\n/g, '<br>')}</div>` : '';
 
                 const relatorioHTML = `
                     <!DOCTYPE html><html><head><meta charset="UTF-8"><title>Relatório 🚑</title>
@@ -1000,9 +1021,9 @@
                     </head><body><div class="container">
                         <h1>📄 Relatório de Deslocamento</h1><div class="sub">Controle de Frota · ${mesNome2} / ${ano}</div>
                         <table class="info-table">
-                            <tr><td>Condutor</td><td>${condutorEl.value}</td><td>Plantão</td><td>${plantaoEl.value}</td></tr>
-                            <tr><td>Ambulância</td><td>${ambulanciaEl.value}</td><td>Placa</td><td>${placaEl.value}</td></tr>
-                            <tr><td>Km Inicial</td><td>${kmInicialEl.value || '-'}</td><td>Base</td><td>${baseEl.value}</td></tr>
+                            <tr><td>Condutor</td><td>${condutorEl.value.toUpperCase()}</td><td>Plantão</td><td>${plantaoEl.value}</td></tr>
+                            <tr><td>Ambulância</td><td>${ambulanciaEl.value.toUpperCase()}</td><td>Placa</td><td>${placaEl.value.toUpperCase()}</td></tr>
+                            <tr><td>Km Inicial</td><td>${kmInicialEl.value || '-'}</td><td>Base</td><td>${baseEl.value.toUpperCase()}</td></tr>
                         </table>
                         
                         ${resumoPdfHTML}
@@ -1010,7 +1031,7 @@
                         ${fichasHTML}
                         ${obsHTML}
 
-                        <div class="footer"><div class="signature"><div>Assinatura:</div><img src="${assinaturaImg}" alt="Assinatura"></div><div><strong>Condutor:</strong> ${nomeLegivelEl.value}</div></div>
+                        <div class="footer"><div class="signature"><div>Assinatura:</div><img src="${assinaturaImg}" alt="Assinatura"></div><div><strong>Condutor:</strong> ${nomeLegivelEl.value.toUpperCase()}</div></div>
                     </div><div class="no-print" style="text-align:center; margin-top:20px;"><button onclick="window.print()" style="padding:10px 20px; font-size:14px;">🖨️ Imprimir PDF</button> <button onclick="window.close()" style="padding:10px 20px; font-size:14px;">❌ Fechar</button></div></body></html>`;
                 const win = window.open('', '_blank'); win.document.write(relatorioHTML); win.document.close(); win.focus();
                 showToast('✅ PDF Gerado!');
@@ -1018,7 +1039,6 @@
         }
 
         // ======================= EVENTOS =======================
-        // Os botões agora chamam a função de verificação do KM (tentarAdicionarRegistro)
         document.getElementById('btnRegSaida').addEventListener('click', () => tentarAdicionarRegistro('saida'));
         document.getElementById('btnRegChegada').addEventListener('click', () => tentarAdicionarRegistro('chegada'));
         document.getElementById('btnRegBase').addEventListener('click', () => tentarAdicionarRegistro('base'));
@@ -1043,14 +1063,14 @@
         [plantaoEl, mesSelect, anoSelect].forEach(el => { el.addEventListener('change', () => { atualizarLimitesDatas(); salvarERenderizar(); }); });
         
         ambulanciaEl.addEventListener('change', () => {
-            const veiculoKey = `${ambulanciaEl.value.trim()} - ${placaEl.value.trim()}`;
+            const veiculoKey = `${ambulanciaEl.value.trim().toUpperCase()} - ${placaEl.value.trim().toUpperCase()}`;
             const frotaKms = JSON.parse(localStorage.getItem('frotaKms_hci') || '{}');
             if (frotaKms[veiculoKey]) kmInicialEl.value = frotaKms[veiculoKey]; else kmInicialEl.value = '';
             prepararFormulario();
         });
 
         placaEl.addEventListener('change', () => {
-            const veiculoKey = `${ambulanciaEl.value.trim()} - ${placaEl.value.trim()}`;
+            const veiculoKey = `${ambulanciaEl.value.trim().toUpperCase()} - ${placaEl.value.trim().toUpperCase()}`;
             const frotaKms = JSON.parse(localStorage.getItem('frotaKms_hci') || '{}');
             if (frotaKms[veiculoKey]) kmInicialEl.value = frotaKms[veiculoKey]; else kmInicialEl.value = '';
             prepararFormulario();
