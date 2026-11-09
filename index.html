@@ -386,11 +386,21 @@
         redimencionarCanvas();
 
         // ======================= LÓGICA DE NEGÓCIO =======================
-        function limparNomeLocal(str) { 
-            if (!str) return ''; 
-            return str.replace(/🏥/g, '').trim().toUpperCase(); 
-        }
         
+        // Função auxiliar para extrair o nome do local correto dependendo da ação
+        function getLocalDisplay(localStr, isArrival) {
+            if (!localStr) return '';
+            const partes = localStr.split('→');
+            let origem = partes[0] ? partes[0].trim().toUpperCase() : '';
+            let destino = partes[1] ? partes[1].trim().toUpperCase() : '';
+
+            if (isArrival) {
+                return destino || origem; // Se for chegada, pega o Destino. Se estiver vazio, pega a Origem (caso digitaram só o nome).
+            } else {
+                return origem || destino; // Se for saída, pega a Origem. Se estiver vazio, pega o Destino.
+            }
+        }
+
         function getLastRecord() {
             const veiculoAtual = `${ambulanciaEl.value.trim().toUpperCase()} - ${placaEl.value.trim().toUpperCase()}`;
             return registros.find(r => r.veiculo === veiculoAtual);
@@ -412,9 +422,7 @@
                 if (registros[i].veiculo !== veiculoAtual) continue;
                 const local = registros[i].local || '';
                 if (!local) continue;
-                const partes = local.split('→');
-                if (partes.length >= 2) return limparNomeLocal(partes[1]);
-                return limparNomeLocal(partes[0]);
+                return getLocalDisplay(local, true); // Pega sempre o último destino
             }
             return null;
         }
@@ -476,14 +484,14 @@
         // ======================= VALIDAÇÃO DE SEQUÊNCIA =======================
         function validarSequencia(tipo) {
             const itemsAtuais = registros.filter(r => r.ocorrenciaId === currentOcorrenciaId);
-            const lastRecord = itemsAtuais.length > 0 ? itemsAtuais[0] : null;
+            const lastRecord = itemsAtuais.length > 0 ? itemsAtuais[0] : null; // O mais recente está no índice 0
 
             if (!lastRecord) {
                 if (tipo !== 'saida') return "A primeira ação de uma ocorrência deve ser SAÍDA (INÍCIO).";
                 return null;
             }
 
-            const lastType = lastRecord.tipo;
+            const lastType = lastRecord.tipo; // 'saida', 'chegada', 'base'
 
             if (tipo === 'saida' && lastType !== 'chegada') {
                 return "A última ação foi SAÍDA. Você deve registrar uma CHEGADA primeiro.";
@@ -500,42 +508,22 @@
 
         // ======================= INTERCEPTADOR DE ALERTA =======================
         function tentarAdicionarRegistro(tipo) {
-            // 1. Validar sequência base
+            // 1. Validar sequência lógica (Inicio -> Chegada -> Saída -> Fim)
             const erroSeq = validarSequencia(tipo);
             if (erroSeq) return showToast(`⚠️ ${erroSeq}`);
 
-            // 2. VALIDAÇÃO CRUCIAL DE LOCAL (Origem vs Destino)
+            // 2. VALIDAÇÃO SUAVE DE LOCAL
             const localInput = limparNomeLocal(fLocal.value);
             const partes = localInput.split('→');
             const origemInput = partes[0] ? partes[0].trim() : '';
             const destinoInput = partes[1] ? partes[1].trim() : '';
 
-            if (tipo !== 'base' && !destinoInput) {
+            if (tipo !== 'base' && !destinoInput && !origemInput) {
                 fLocal.classList.add('local-alert-input');
-                return showToast("⚠️ Erro: Preencha o local de DESTINO.");
+                return showToast("⚠️ Erro: Preencha o Local / Destino.");
             }
 
-            if (origemInput && destinoInput && origemInput === destinoInput) {
-                fLocal.classList.add('local-alert-input');
-                return showToast("⚠️ Erro: O destino não pode ser o mesmo local da origem.");
-            }
-
-            if (tipo === 'chegada' || tipo === 'base') {
-                const itemsAtuais = registros.filter(r => r.ocorrenciaId === currentOcorrenciaId);
-                const lastRecord = itemsAtuais.length > 0 ? itemsAtuais[0] : null;
-                if (lastRecord && lastRecord.tipo === 'saida') {
-                    const lastLocal = lastRecord.local || '';
-                    const lastPartes = lastLocal.split('→');
-                    const lastOrigem = lastPartes[0] ? lastPartes[0].trim() : '';
-                    
-                    if (destinoInput && lastOrigem && destinoInput === lastOrigem) {
-                        fLocal.classList.add('local-alert-input');
-                        return showToast("⚠️ Erro: Você não pode chegar no local de onde acabou de sair.");
-                    }
-                }
-            }
-
-            // 3. Verificar KM e Hora
+            // 3. Verificar KM e Hora (Só bloqueia se AMBOS forem iguais)
             const lastRecord = getLastRecord();
             let kmIgual = false;
             let horaIgual = false;
@@ -556,7 +544,6 @@
                 }
             }
 
-            // REGRA: Só notifica se AMBOS (KM E Hora) forem iguais. 
             if (kmIgual && horaIgual && !editingRecordId) {
                 pendingActionType = tipo;
                 
@@ -581,7 +568,6 @@
         // BOTÕES DO MODAL
         btnModalCorrigir.addEventListener('click', () => {
             modalKmAlert.classList.remove('active');
-            // Dá foco no campo de hora ou km (prioriza hora, pois é mais rápido)
             fHora.focus();
             fHora.select();
         });
@@ -607,8 +593,8 @@
 
             if (tipo === 'base') {
                 const base = limparNomeLocal(baseEl.value.trim()) || 'BASE'; 
-                const origem = local.split('→')[0] ? limparNomeLocal(local.split('→')[0]) : getLocalAtual();
-                local = `${origem || 'LOCAL'} → ${base}`;
+                const origem = getLocalDisplay(local, false) || getLocalAtual() || 'LOCAL';
+                local = `${origem} → ${base}`;
             }
 
             if (editingRecordId) {
@@ -698,7 +684,7 @@
             localStorage.setItem('frotaKms_hci', JSON.stringify(frotaKms));
             
             let assinatura = ''; try { assinatura = canvas.toDataURL(); } catch(e) {}
-            localStorage.setItem('sistemaDeslocamentoHCI_v36', JSON.stringify({ 
+            localStorage.setItem('sistemaDeslocamentoHCI_v37', JSON.stringify({ 
                 rows: registros, observacao: observacaoEl.value.toUpperCase(), condutor: condutorEl.value.toUpperCase(), 
                 unidade: baseEl.value.toUpperCase(), ambulancia: ambulanciaEl.value.toUpperCase(), placa: placaEl.value.toUpperCase(), 
                 plantao: plantaoEl.value, kmInicial: kmInicialEl.value, nomeLegivel: nomeLegivelEl.value.toUpperCase(), 
@@ -832,8 +818,7 @@
                 items.forEach((r, index) => {
                     const isFirst = index === 0;
                     
-                    let origem = limparNomeLocal(r.local.split('→')[0] || '');
-                    let destino = limparNomeLocal(r.local.split('→')[1] || '');
+                    let nomeLocal = getLocalDisplay(r.local, r.tipo === 'chegada' || r.tipo === 'base');
 
                     if (r.horaSaida) {
                         kmInicialFicha = isFirst ? (parseFloat(r.kmSaida) || 0) : kmInicialFicha;
@@ -843,7 +828,7 @@
                                 <div class="timeline-row">
                                     <div class="timeline-tag inicio">INICIO:</div>
                                     <div class="timeline-content">
-                                        <span class="local">${origem}</span>
+                                        <span class="local">${nomeLocal}</span>
                                         <span class="hora">H: ${r.horaSaida}</span>
                                         <span class="km">KM: ${r.kmSaida}</span>
                                     </div>
@@ -854,7 +839,7 @@
                                 <div class="timeline-row">
                                     <div class="timeline-tag saida">SAÍDA:</div>
                                     <div class="timeline-content">
-                                        <span class="local">${origem}</span>
+                                        <span class="local">${nomeLocal}</span>
                                         <span class="hora">H: ${r.horaSaida}</span>
                                         <span class="km">KM: ${r.kmSaida}</span>
                                     </div>
@@ -871,7 +856,7 @@
                                 <div class="timeline-row">
                                     <div class="timeline-tag fim">FIM:</div>
                                     <div class="timeline-content">
-                                        <span class="local">${destino}</span>
+                                        <span class="local">${nomeLocal}</span>
                                         <span class="hora">H: ${r.horaChegada}</span>
                                         <span class="km">KM: ${r.kmChegada}</span>
                                     </div>
@@ -882,7 +867,7 @@
                                 <div class="timeline-row">
                                     <div class="timeline-tag chegada">CHEGADA:</div>
                                     <div class="timeline-content">
-                                        <span class="local">${destino}</span>
+                                        <span class="local">${nomeLocal}</span>
                                         <span class="hora">H: ${r.horaChegada}</span>
                                         <span class="km">KM: ${r.kmChegada}</span>
                                     </div>
@@ -1003,17 +988,16 @@
 
                     items.forEach((r, index) => {
                         const isFirst = index === 0; 
-                        let origem = limparNomeLocal(r.local.split('→')[0] || ''); 
-                        let destino = limparNomeLocal(r.local.split('→')[1] || '');
+                        let nomeLocal = getLocalDisplay(r.local, r.tipo === 'chegada' || r.tipo === 'base');
 
                         if (r.horaSaida) {
-                            if (isFirst) texto += `*INICIO:* ${origem} H: ${r.horaSaida} KM: ${r.kmSaida}\n`;
-                            else texto += `*SAÍDA:* ${origem} H: ${r.horaSaida} KM: ${r.kmSaida}\n`;
+                            if (isFirst) texto += `*INICIO:* ${nomeLocal} H: ${r.horaSaida} KM: ${r.kmSaida}\n`;
+                            else texto += `*SAÍDA:* ${nomeLocal} H: ${r.horaSaida} KM: ${r.kmSaida}\n`;
                         }
                         
                         if (r.horaChegada) {
-                            if (r.tipo === 'base') texto += `*FIM:* ${destino} H: ${r.horaChegada} KM: ${r.kmChegada}\n`;
-                            else texto += `*CHEGADA:* ${destino} H: ${r.horaChegada} KM: ${r.kmChegada}\n`;
+                            if (r.tipo === 'base') texto += `*FIM:* ${nomeLocal} H: ${r.horaChegada} KM: ${r.kmChegada}\n`;
+                            else texto += `*CHEGADA:* ${nomeLocal} H: ${r.horaChegada} KM: ${r.kmChegada}\n`;
                         }
                     });
 
@@ -1054,7 +1038,7 @@
 
         // ======================= PERSISTÊNCIA =======================
         function carregarLocalStorage() {
-            let raw = localStorage.getItem('sistemaDeslocamentoHCI_v36'); 
+            let raw = localStorage.getItem('sistemaDeslocamentoHCI_v37'); 
             if(!raw) { prepararFormulario(); return false; }
             try {
                 let d = JSON.parse(raw); 
@@ -1108,19 +1092,18 @@
 
                         items.forEach((r, index) => {
                             const isFirst = index === 0; 
-                            let origem = limparNomeLocal(r.local.split('→')[0] || ''); 
-                            let destino = limparNomeLocal(r.local.split('→')[1] || '');
+                            let nomeLocal = getLocalDisplay(r.local, r.tipo === 'chegada' || r.tipo === 'base');
 
                             if (r.horaSaida) {
                                 kmIni = isFirst ? (parseFloat(r.kmSaida) || 0) : kmIni;
-                                if (isFirst) timelineStr += `<div style="display:flex; justify-content:space-between; font-weight:bold; color:#0e5a77; margin-bottom:4px;"><span>INICIO: ${origem}</span><span>H: ${r.horaSaida}</span><span>KM: ${r.kmSaida}</span></div>`;
-                                else timelineStr += `<div style="display:flex; justify-content:space-between; color:#f59e0b; font-weight:bold; margin-bottom:4px;"><span>SAÍDA: ${origem}</span><span>H: ${r.horaSaida}</span><span>KM: ${r.kmSaida}</span></div>`;
+                                if (isFirst) timelineStr += `<div style="display:flex; justify-content:space-between; font-weight:bold; color:#0e5a77; margin-bottom:4px;"><span>INICIO: ${nomeLocal}</span><span>H: ${r.horaSaida}</span><span>KM: ${r.kmSaida}</span></div>`;
+                                else timelineStr += `<div style="display:flex; justify-content:space-between; color:#f59e0b; font-weight:bold; margin-bottom:4px;"><span>SAÍDA: ${nomeLocal}</span><span>H: ${r.horaSaida}</span><span>KM: ${r.kmSaida}</span></div>`;
                             }
                             
                             if (r.horaChegada) {
                                 kmFim = parseFloat(r.kmChegada) || 0;
-                                if (r.tipo === 'base') timelineStr += `<div style="display:flex; justify-content:space-between; font-weight:bold; color:#dc2626; margin-bottom:4px;"><span>FIM: ${destino}</span><span>H: ${r.horaChegada}</span><span>KM: ${r.kmChegada}</span></div>`;
-                                else timelineStr += `<div style="display:flex; justify-content:space-between; color:#15803d; font-weight:bold; margin-bottom:4px;"><span>CHEGADA: ${destino}</span><span>H: ${r.horaChegada}</span><span>KM: ${r.kmChegada}</span></div>`;
+                                if (r.tipo === 'base') timelineStr += `<div style="display:flex; justify-content:space-between; font-weight:bold; color:#dc2626; margin-bottom:4px;"><span>FIM: ${nomeLocal}</span><span>H: ${r.horaChegada}</span><span>KM: ${r.kmChegada}</span></div>`;
+                                else timelineStr += `<div style="display:flex; justify-content:space-between; color:#15803d; font-weight:bold; margin-bottom:4px;"><span>CHEGADA: ${nomeLocal}</span><span>H: ${r.horaChegada}</span><span>KM: ${r.kmChegada}</span></div>`;
                             }
                         });
 
