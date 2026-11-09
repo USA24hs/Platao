@@ -484,8 +484,11 @@
 
         function tentarAdicionarRegistro(tipo) {
             try {
-                const erroSeq = validarSequencia(tipo);
-                if (erroSeq) return showToast(`⚠️ ${erroSeq}`);
+                // CORREÇÃO: Se estiver editando, NÃO valida a sequência
+                if (!editingRecordId) {
+                    const erroSeq = validarSequencia(tipo);
+                    if (erroSeq) return showToast(`⚠️ ${erroSeq}`);
+                }
 
                 const localInput = limparNomeLocal(fLocal.value);
                 if (tipo !== 'base' && !localInput) {
@@ -499,7 +502,7 @@
                 let ultimoKmVal = 0;
                 let ultimaHoraVal = '';
 
-                if (lastRecord) {
+                if (lastRecord && !editingRecordId) {
                     ultimoKmVal = parseFloat(lastRecord.kmChegada || lastRecord.kmSaida || 0);
                     ultimaHoraVal = lastRecord.horaChegada || lastRecord.horaSaida || '';
 
@@ -580,6 +583,7 @@
             if (editingRecordId) {
                 const index = registros.findIndex(r => r.id === editingRecordId);
                 if (index !== -1) {
+                    registros[index].tipo = tipo; // Atualiza o tipo de registro caso tenha mudado (ex: saida para chegada)
                     if (tipo === 'chegada' || tipo === 'base') {
                         registros[index].horaChegada = hora;
                         registros[index].kmChegada = km.toString();
@@ -665,7 +669,7 @@
                 const validShifts = ['SD 12hs', 'SN 12hs', 'DN 24hs'];
                 const plantaoToSave = validShifts.includes(plantaoEl.value) ? plantaoEl.value : 'SD 12hs';
 
-                localStorage.setItem('sistemaDeslocamentoHCI_v43', JSON.stringify({ 
+                localStorage.setItem('sistemaDeslocamentoHCI_v44', JSON.stringify({ 
                     rows: registros, observacao: observacaoEl.value.toUpperCase(), condutor: condutorEl.value.toUpperCase(), 
                     unidade: baseEl.value.toUpperCase(), ambulancia: ambulanciaEl.value.toUpperCase(), placa: placaEl.value.toUpperCase(), 
                     plantao: plantaoToSave, kmInicial: kmInicialEl.value, nomeLegivel: nomeLegivelEl.value.toUpperCase(), 
@@ -800,7 +804,6 @@
                 items.forEach((r, index) => {
                     const isFirst = index === 0;
                     
-                    // CORREÇÃO CRUCIAL: Separar origem e destino para cada linha do histórico
                     if (r.horaSaida) {
                         let localSaida = getLocalDisplay(r.local, false); // Extrai Origem
                         kmInicialFicha = isFirst ? (parseFloat(r.kmSaida) || 0) : kmInicialFicha;
@@ -1002,7 +1005,7 @@
         }
 
         function carregarLocalStorage() {
-            let raw = localStorage.getItem('sistemaDeslocamentoHCI_v43'); 
+            let raw = localStorage.getItem('sistemaDeslocamentoHCI_v44'); 
             if(!raw) { prepararFormulario(); return false; }
             try {
                 let d = JSON.parse(raw); 
@@ -1035,7 +1038,7 @@
                 return true;
             } catch(e) { 
                 console.error("Dados corrompidos no localStorage. Limpando...", e);
-                localStorage.removeItem('sistemaDeslocamentoHCI_v43');
+                localStorage.removeItem('sistemaDeslocamentoHCI_v44');
                 prepararFormulario(); 
                 return false; 
             }
