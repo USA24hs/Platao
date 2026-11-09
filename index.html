@@ -349,12 +349,18 @@
 
         function limparNomeLocal(str) { return str ? str.replace(/🏥/g, '').trim().toUpperCase() : ''; }
 
+        // EXTRAIR ORIGEM OU DESTINO DE FORMA INTELIGENTE
         function getLocalDisplay(localStr, isArrival) {
             if (!localStr) return '';
+            // Divide pela seta, independente de espaços
             const partes = localStr.split('→');
             let origem = partes[0] ? partes[0].trim().toUpperCase() : '';
             let destino = partes[1] ? partes[1].trim().toUpperCase() : '';
-            return isArrival ? (destino || origem) : (origem || destino);
+            
+            // Se for chegada, retorna o destino. Se o destino estiver vazio, retorna a origem.
+            if (isArrival) return destino || origem; 
+            // Se for saída, retorna a origem. Se a origem estiver vazia, retorna o destino.
+            return origem || destino; 
         }
 
         function getLastRecord() {
@@ -700,7 +706,7 @@
                 const validShifts = ['SD 12hs', 'SN 12hs', 'DN 24hs'];
                 const plantaoToSave = validShifts.includes(plantaoEl.value) ? plantaoEl.value : 'SD 12hs';
 
-                localStorage.setItem('sistemaDeslocamentoHCI_v47', JSON.stringify({ 
+                localStorage.setItem('sistemaDeslocamentoHCI_v48', JSON.stringify({ 
                     rows: registros, observacao: observacaoEl.value.toUpperCase(), condutor: condutorEl.value.toUpperCase(), 
                     unidade: baseEl.value.toUpperCase(), ambulancia: ambulanciaEl.value.toUpperCase(), placa: placaEl.value.toUpperCase(), 
                     plantao: plantaoToSave, kmInicial: kmInicialEl.value, nomeLegivel: nomeLegivelEl.value.toUpperCase(), 
@@ -836,7 +842,7 @@
                     const isFirst = index === 0;
                     
                     if (r.horaSaida) {
-                        let localSaida = getLocalDisplay(r.local, false); 
+                        let localSaida = getLocalDisplay(r.local, false); // Extrai Origem
                         kmInicialFicha = isFirst ? (parseFloat(r.kmSaida) || 0) : kmInicialFicha;
                         
                         if (isFirst) {
@@ -865,7 +871,7 @@
                     }
 
                     if (r.horaChegada) {
-                        let localChegada = getLocalDisplay(r.local, true); 
+                        let localChegada = getLocalDisplay(r.local, true); // Extrai Destino
                         kmFinalFicha = parseFloat(r.kmChegada) || 0;
                         
                         if (r.tipo === 'base') {
@@ -992,13 +998,13 @@
                         const isFirst = index === 0; 
 
                         if (r.horaSaida) {
-                            let localSaida = getLocalDisplay(r.local, false);
+                            let localSaida = getLocalDisplay(r.local, false); // Extrai Origem
                             if (isFirst) texto += `*INICIO:* ${localSaida} H: ${r.horaSaida} KM: ${r.kmSaida}\n`;
                             else texto += `*SAÍDA:* ${localSaida} H: ${r.horaSaida} KM: ${r.kmSaida}\n`;
                         }
                         
                         if (r.horaChegada) {
-                            let localChegada = getLocalDisplay(r.local, true);
+                            let localChegada = getLocalDisplay(r.local, true); // Extrai Destino
                             if (r.tipo === 'base') texto += `*FIM:* ${localChegada} H: ${r.horaChegada} KM: ${r.kmChegada}\n`;
                             else texto += `*CHEGADA:* ${localChegada} H: ${r.horaChegada} KM: ${r.kmChegada}\n`;
                         }
@@ -1036,7 +1042,7 @@
         }
 
         function carregarLocalStorage() {
-            let raw = localStorage.getItem('sistemaDeslocamentoHCI_v47'); 
+            let raw = localStorage.getItem('sistemaDeslocamentoHCI_v48'); 
             if(!raw) { prepararFormulario(); return false; }
             try {
                 let d = JSON.parse(raw); 
@@ -1069,7 +1075,7 @@
                 return true;
             } catch(e) { 
                 console.error("Dados corrompidos no localStorage. Limpando...", e);
-                localStorage.removeItem('sistemaDeslocamentoHCI_v47');
+                localStorage.removeItem('sistemaDeslocamentoHCI_v48');
                 prepararFormulario(); 
                 return false; 
             }
