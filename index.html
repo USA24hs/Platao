@@ -383,7 +383,6 @@
             return null;
         }
 
-        // NOVA LÓGICA DE PREPARAÇÃO DO FORMULÁRIO (SEM LOOP)
         function prepararFormulario() {
             const validShifts = ['SD 12hs', 'SN 12hs', 'DN 24hs'];
             if (!validShifts.includes(plantaoEl.value)) {
@@ -398,17 +397,14 @@
             
             const base = limparNomeLocal(baseEl.value.trim()) || 'BASE'; 
             
-            // Inteligência de preenchimento do Local
             const itemsAtuais = registros.filter(r => r.ocorrenciaId === currentOcorrenciaId);
             const lastRecord = itemsAtuais.length > 0 ? itemsAtuais[0] : null;
 
             if (!lastRecord) {
                 fLocal.value = `${base} → `;
             } else if (lastRecord.tipo === 'saida') {
-                // Se a última foi saída, ele está em trânsito para o destino. Mantém o local.
                 fLocal.value = lastRecord.local || `${base} → `;
             } else if (lastRecord.tipo === 'chegada') {
-                // Se a última foi chegada, ele está parado no destino. Prepara para sair do destino.
                 let dest = getLocalDisplay(lastRecord.local, true);
                 fLocal.value = `${dest} → `;
             } else if (lastRecord.tipo === 'base') {
@@ -497,7 +493,6 @@
                     return showToast("⚠️ Erro: Preencha o Local / Destino.");
                 }
 
-                // Verificar KM e Hora
                 const lastRecord = getLastRecord();
                 let kmIgual = false;
                 let horaIgual = false;
@@ -548,7 +543,6 @@
             try { executarAdicionarRegistro(pendingActionType); } catch(e) { console.error(e); }
         });
 
-        // SALVAMENTO E FORMATAÇÃO ESTRITA DO LOCAL
         function executarAdicionarRegistro(tipo) {
             const data = fData.value;
             const hora = fHora.value;
@@ -560,7 +554,6 @@
             const veiculoAtual = `${ambulanciaEl.value.trim().toUpperCase()} - ${placaEl.value.trim().toUpperCase()}`;
             const plantaoAtual = plantaoEl.value || 'SD 12hs';
 
-            // Formatação estrita Origem → Destino
             let partes = local.split('→');
             let origem = partes[0] ? partes[0].trim() : '';
             let destino = partes[1] ? partes[1].trim() : '';
@@ -573,7 +566,6 @@
                 local = `${origem} → ${destino}`;
             } else if (tipo === 'chegada') {
                 if (!destino) {
-                     // Fallback: se o usuário só digitou o local, assume que chegou nele.
                      destino = origem;
                      local = `${getLocalAtual() || limparNomeLocal(baseEl.value.trim()) || 'ORIGEM'} → ${destino}`;
                 } else {
@@ -673,7 +665,7 @@
                 const validShifts = ['SD 12hs', 'SN 12hs', 'DN 24hs'];
                 const plantaoToSave = validShifts.includes(plantaoEl.value) ? plantaoEl.value : 'SD 12hs';
 
-                localStorage.setItem('sistemaDeslocamentoHCI_v42', JSON.stringify({ 
+                localStorage.setItem('sistemaDeslocamentoHCI_v43', JSON.stringify({ 
                     rows: registros, observacao: observacaoEl.value.toUpperCase(), condutor: condutorEl.value.toUpperCase(), 
                     unidade: baseEl.value.toUpperCase(), ambulancia: ambulanciaEl.value.toUpperCase(), placa: placaEl.value.toUpperCase(), 
                     plantao: plantaoToSave, kmInicial: kmInicialEl.value, nomeLegivel: nomeLegivelEl.value.toUpperCase(), 
@@ -808,9 +800,9 @@
                 items.forEach((r, index) => {
                     const isFirst = index === 0;
                     
-                    let nomeLocal = getLocalDisplay(r.local, r.tipo === 'chegada' || r.tipo === 'base');
-
+                    // CORREÇÃO CRUCIAL: Separar origem e destino para cada linha do histórico
                     if (r.horaSaida) {
+                        let localSaida = getLocalDisplay(r.local, false); // Extrai Origem
                         kmInicialFicha = isFirst ? (parseFloat(r.kmSaida) || 0) : kmInicialFicha;
                         
                         if (isFirst) {
@@ -818,7 +810,7 @@
                                 <div class="timeline-row">
                                     <div class="timeline-tag inicio">INICIO:</div>
                                     <div class="timeline-content">
-                                        <span class="local">${nomeLocal}</span>
+                                        <span class="local">${localSaida}</span>
                                         <span class="hora">H: ${r.horaSaida}</span>
                                         <span class="km">KM: ${r.kmSaida}</span>
                                     </div>
@@ -829,7 +821,7 @@
                                 <div class="timeline-row">
                                     <div class="timeline-tag saida">SAÍDA:</div>
                                     <div class="timeline-content">
-                                        <span class="local">${nomeLocal}</span>
+                                        <span class="local">${localSaida}</span>
                                         <span class="hora">H: ${r.horaSaida}</span>
                                         <span class="km">KM: ${r.kmSaida}</span>
                                     </div>
@@ -839,6 +831,7 @@
                     }
 
                     if (r.horaChegada) {
+                        let localChegada = getLocalDisplay(r.local, true); // Extrai Destino
                         kmFinalFicha = parseFloat(r.kmChegada) || 0;
                         
                         if (r.tipo === 'base') {
@@ -846,7 +839,7 @@
                                 <div class="timeline-row">
                                     <div class="timeline-tag fim">FIM:</div>
                                     <div class="timeline-content">
-                                        <span class="local">${nomeLocal}</span>
+                                        <span class="local">${localChegada}</span>
                                         <span class="hora">H: ${r.horaChegada}</span>
                                         <span class="km">KM: ${r.kmChegada}</span>
                                     </div>
@@ -857,7 +850,7 @@
                                 <div class="timeline-row">
                                     <div class="timeline-tag chegada">CHEGADA:</div>
                                     <div class="timeline-content">
-                                        <span class="local">${nomeLocal}</span>
+                                        <span class="local">${localChegada}</span>
                                         <span class="hora">H: ${r.horaChegada}</span>
                                         <span class="km">KM: ${r.kmChegada}</span>
                                     </div>
@@ -963,16 +956,17 @@
 
                     items.forEach((r, index) => {
                         const isFirst = index === 0; 
-                        let nomeLocal = getLocalDisplay(r.local, r.tipo === 'chegada' || r.tipo === 'base');
 
                         if (r.horaSaida) {
-                            if (isFirst) texto += `*INICIO:* ${nomeLocal} H: ${r.horaSaida} KM: ${r.kmSaida}\n`;
-                            else texto += `*SAÍDA:* ${nomeLocal} H: ${r.horaSaida} KM: ${r.kmSaida}\n`;
+                            let localSaida = getLocalDisplay(r.local, false);
+                            if (isFirst) texto += `*INICIO:* ${localSaida} H: ${r.horaSaida} KM: ${r.kmSaida}\n`;
+                            else texto += `*SAÍDA:* ${localSaida} H: ${r.horaSaida} KM: ${r.kmSaida}\n`;
                         }
                         
                         if (r.horaChegada) {
-                            if (r.tipo === 'base') texto += `*FIM:* ${nomeLocal} H: ${r.horaChegada} KM: ${r.kmChegada}\n`;
-                            else texto += `*CHEGADA:* ${nomeLocal} H: ${r.horaChegada} KM: ${r.kmChegada}\n`;
+                            let localChegada = getLocalDisplay(r.local, true);
+                            if (r.tipo === 'base') texto += `*FIM:* ${localChegada} H: ${r.horaChegada} KM: ${r.kmChegada}\n`;
+                            else texto += `*CHEGADA:* ${localChegada} H: ${r.horaChegada} KM: ${r.kmChegada}\n`;
                         }
                     });
 
@@ -1008,7 +1002,7 @@
         }
 
         function carregarLocalStorage() {
-            let raw = localStorage.getItem('sistemaDeslocamentoHCI_v42'); 
+            let raw = localStorage.getItem('sistemaDeslocamentoHCI_v43'); 
             if(!raw) { prepararFormulario(); return false; }
             try {
                 let d = JSON.parse(raw); 
@@ -1041,7 +1035,7 @@
                 return true;
             } catch(e) { 
                 console.error("Dados corrompidos no localStorage. Limpando...", e);
-                localStorage.removeItem('sistemaDeslocamentoHCI_v42');
+                localStorage.removeItem('sistemaDeslocamentoHCI_v43');
                 prepararFormulario(); 
                 return false; 
             }
@@ -1071,18 +1065,19 @@
 
                         items.forEach((r, index) => {
                             const isFirst = index === 0; 
-                            let nomeLocal = getLocalDisplay(r.local, r.tipo === 'chegada' || r.tipo === 'base');
 
                             if (r.horaSaida) {
+                                let localSaida = getLocalDisplay(r.local, false);
                                 kmIni = isFirst ? (parseFloat(r.kmSaida) || 0) : kmIni;
-                                if (isFirst) timelineStr += `<div style="display:flex; justify-content:space-between; font-weight:bold; color:#0e5a77; margin-bottom:4px;"><span>INICIO: ${nomeLocal}</span><span>H: ${r.horaSaida}</span><span>KM: ${r.kmSaida}</span></div>`;
-                                else timelineStr += `<div style="display:flex; justify-content:space-between; color:#f59e0b; font-weight:bold; margin-bottom:4px;"><span>SAÍDA: ${nomeLocal}</span><span>H: ${r.horaSaida}</span><span>KM: ${r.kmSaida}</span></div>`;
+                                if (isFirst) timelineStr += `<div style="display:flex; justify-content:space-between; font-weight:bold; color:#0e5a77; margin-bottom:4px;"><span>INICIO: ${localSaida}</span><span>H: ${r.horaSaida}</span><span>KM: ${r.kmSaida}</span></div>`;
+                                else timelineStr += `<div style="display:flex; justify-content:space-between; color:#f59e0b; font-weight:bold; margin-bottom:4px;"><span>SAÍDA: ${localSaida}</span><span>H: ${r.horaSaida}</span><span>KM: ${r.kmSaida}</span></div>`;
                             }
                             
                             if (r.horaChegada) {
+                                let localChegada = getLocalDisplay(r.local, true);
                                 kmFim = parseFloat(r.kmChegada) || 0;
-                                if (r.tipo === 'base') timelineStr += `<div style="display:flex; justify-content:space-between; font-weight:bold; color:#dc2626; margin-bottom:4px;"><span>FIM: ${nomeLocal}</span><span>H: ${r.horaChegada}</span><span>KM: ${r.kmChegada}</span></div>`;
-                                else timelineStr += `<div style="display:flex; justify-content:space-between; color:#15803d; font-weight:bold; margin-bottom:4px;"><span>CHEGADA: ${nomeLocal}</span><span>H: ${r.horaChegada}</span><span>KM: ${r.kmChegada}</span></div>`;
+                                if (r.tipo === 'base') timelineStr += `<div style="display:flex; justify-content:space-between; font-weight:bold; color:#dc2626; margin-bottom:4px;"><span>FIM: ${localChegada}</span><span>H: ${r.horaChegada}</span><span>KM: ${r.kmChegada}</span></div>`;
+                                else timelineStr += `<div style="display:flex; justify-content:space-between; color:#15803d; font-weight:bold; margin-bottom:4px;"><span>CHEGADA: ${localChegada}</span><span>H: ${r.horaChegada}</span><span>KM: ${r.kmChegada}</span></div>`;
                             }
                         });
 
