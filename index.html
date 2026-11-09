@@ -76,9 +76,10 @@
         .btn-del-ficha { background: #fee2e2; color: #b91c1c; border: none; cursor: pointer; padding: 6px 10px; border-radius: 6px; font-size: 0.9rem; transition: 0.2s; display: flex; align-items: center; justify-content: center; }
         .btn-del-ficha.locked { background: #e2e8f0; color: #64748b; cursor: not-allowed; }
         
-        .ficha-body { padding: 10px 12px; display: flex; flex-direction: column; gap: 6px; font-family: 'Inter', monospace; font-size: 0.8rem; }
+        /* ALTERAÇÃO AQUI: Fonte sans-serif em vez de monospace */
+        .ficha-body { padding: 10px 12px; display: flex; flex-direction: column; gap: 8px; font-family: 'Inter', sans-serif; font-size: 0.8rem; }
         
-        .timeline-row { display: flex; align-items: flex-start; gap: 6px; line-height: 1.3; }
+        .timeline-row { display: flex; align-items: center; gap: 6px; line-height: 1.3; }
         .timeline-tag { width: 70px; flex-shrink: 0; font-size: 0.7rem; font-weight: 800; letter-spacing: 0.5px; text-transform: uppercase; }
         
         .timeline-tag.inicio { color: var(--primary); }
@@ -86,7 +87,22 @@
         .timeline-tag.saida { color: #f59e0b; }
         .timeline-tag.fim { color: var(--danger); }
         
-        .timeline-content { flex-grow: 1; text-transform: uppercase; color: #1e293b; font-weight: 500; }
+        /* ALTERAÇÃO AQUI: Usando Flexbox para alinhar perfeitamente e remover espaços vazios */
+        .timeline-content { 
+            flex-grow: 1; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center;
+            text-transform: uppercase; 
+            color: #1e293b; 
+            font-weight: 500; 
+        }
+        
+        /* Fixando a largura da Hora e do KM para alinhar em colunas perfeitas */
+        .timeline-content .local { flex: 1; padding-right: 8px; }
+        .timeline-content .hora { width: 75px; text-align: center; color: #334155; font-weight: 600; }
+        .timeline-content .km { width: 85px; text-align: right; color: #334155; font-weight: 600; }
+
         .ficha-footer { background: #f8fafc; padding: 8px 12px; border-top: 1px dashed #cbd5e1; display: flex; justify-content: space-between; font-size: 0.8rem; font-weight: 700; color: #1e293b; }
 
         /* RESUMO DO PLANTÃO */
@@ -135,6 +151,12 @@
             .form-actions button { font-size: 0.75rem; padding: 10px 2px; }
             .form-actions button i { font-size: 0.85rem; }
 
+            /* Ajuste fino para o celular */
+            .timeline-content .hora { width: 70px; }
+            .timeline-content .km { width: 75px; }
+            .ficha-body { font-size: 0.75rem; gap: 6px; padding: 8px; }
+            .timeline-tag { width: 60px; font-size: 0.65rem; }
+
             .btn-pdf { padding: 10px; font-size: 0.85rem; }
         }
         
@@ -153,7 +175,6 @@
                 <button id="toggleHeaderBtn" class="toggle-header-btn"><i class="fas fa-chevron-up"></i></button>
             </div>
         </div>
-        <!-- ATUALIZADO CONFORME SOLICITADO -->
         <div class="info-grid">
             <div class="info-item"><label>🏥 Base</label><input type="text" id="BaseHeader" value="SÓ SAÚDE"></div>
             <div class="info-item"><label>👨‍⚕️ Condutor</label><input type="text" id="condutorHeader" value="Anderson Martins"></div>
@@ -245,12 +266,12 @@
         const diasNoMes = (m,a) => new Date(a, m, 0).getDate();
         const showToast = (msg) => { const t = document.getElementById('toast'); t.textContent = msg; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 3000); };
 
-        // Elementos DOM (ATUALIZADO unidadeEl para baseEl)
+        // Elementos DOM
         const historicoContainer = document.getElementById('historicoContainer');
         const resumoContainer = document.getElementById('resumoContainer');
         const observacaoEl = document.getElementById('observacao');
         const condutorEl = document.getElementById('condutorHeader');
-        const baseEl = document.getElementById('BaseHeader'); // Novo ID
+        const baseEl = document.getElementById('BaseHeader'); 
         const ambulanciaEl = document.getElementById('ambulanciaHeader');
         const placaEl = document.getElementById('placaHeader');
         const plantaoEl = document.getElementById('plantaoHeader');
@@ -298,7 +319,6 @@
                 mainHeader.classList.add('header-collapsed');
             }
         }
-        // Atualizado array para incluir baseEl
         [baseEl, condutorEl, ambulanciaEl, placaEl, kmInicialEl, plantaoEl].forEach(el => {
             el.addEventListener('blur', checkAndCollapseHeader);
             el.addEventListener('change', checkAndCollapseHeader);
@@ -353,7 +373,7 @@
             let kmRef = getUltimoKmChegada();
             if (kmRef) fKm.value = kmRef;
             
-            const base = limparNomeLocal(baseEl.value.trim()) || 'BASE'; // Atualizado
+            const base = limparNomeLocal(baseEl.value.trim()) || 'BASE'; 
             const localAtual = getLocalAtual();
             
             if (!localAtual) {
@@ -362,7 +382,7 @@
                 fLocal.value = `${localAtual} → `;
             }
 
-            fPlantaoInfo.value = `${plantaoEl.value} | ${base}`; // Atualizado
+            fPlantaoInfo.value = `${plantaoEl.value} | ${base}`;
             atualizarLimitesDatas();
         }
 
@@ -410,7 +430,7 @@
             const plantaoAtual = plantaoEl.value;
 
             if (tipo === 'base') {
-                const base = limparNomeLocal(baseEl.value.trim()) || 'BASE'; // Atualizado
+                const base = limparNomeLocal(baseEl.value.trim()) || 'BASE'; 
                 const origem = local.split('→')[0] ? limparNomeLocal(local.split('→')[0]) : getLocalAtual();
                 local = `${origem || 'LOCAL'} → ${base}`;
             }
@@ -502,8 +522,7 @@
             localStorage.setItem('frotaKms_hci', JSON.stringify(frotaKms));
             
             let assinatura = ''; try { assinatura = canvas.toDataURL(); } catch(e) {}
-            // Mudei a chave para "unidade" no localStorage para manter compatibilidade, mas salva o valor do baseEl
-            localStorage.setItem('sistemaDeslocamentoHCI_v25', JSON.stringify({ 
+            localStorage.setItem('sistemaDeslocamentoHCI_v26', JSON.stringify({ 
                 rows: registros, observacao: observacaoEl.value, condutor: condutorEl.value, unidade: baseEl.value, 
                 ambulancia: ambulanciaEl.value, placa: placaEl.value, plantao: plantaoEl.value, kmInicial: kmInicialEl.value, 
                 nomeLegivel: nomeLegivelEl.value, mes: parseInt(mesSelect.value), ano: parseInt(anoSelect.value), assinaturaImg: assinatura,
@@ -622,14 +641,22 @@
                             timelineHTML += `
                                 <div class="timeline-row">
                                     <div class="timeline-tag inicio">INICIO:</div>
-                                    <div class="timeline-content">${origem} H: ${r.horaSaida} KM: ${r.kmSaida}</div>
+                                    <div class="timeline-content">
+                                        <span class="local">${origem}</span>
+                                        <span class="hora">H: ${r.horaSaida}</span>
+                                        <span class="km">KM: ${r.kmSaida}</span>
+                                    </div>
                                 </div>
                             `;
                         } else {
                             timelineHTML += `
                                 <div class="timeline-row">
                                     <div class="timeline-tag saida">SAÍDA:</div>
-                                    <div class="timeline-content">${origem} H: ${r.horaSaida} KM: ${r.kmSaida}</div>
+                                    <div class="timeline-content">
+                                        <span class="local">${origem}</span>
+                                        <span class="hora">H: ${r.horaSaida}</span>
+                                        <span class="km">KM: ${r.kmSaida}</span>
+                                    </div>
                                 </div>
                             `;
                         }
@@ -642,14 +669,22 @@
                             timelineHTML += `
                                 <div class="timeline-row">
                                     <div class="timeline-tag fim">FIM:</div>
-                                    <div class="timeline-content">${destino} H: ${r.horaChegada} KM: ${r.kmChegada}</div>
+                                    <div class="timeline-content">
+                                        <span class="local">${destino}</span>
+                                        <span class="hora">H: ${r.horaChegada}</span>
+                                        <span class="km">KM: ${r.kmChegada}</span>
+                                    </div>
                                 </div>
                             `;
                         } else {
                             timelineHTML += `
                                 <div class="timeline-row">
                                     <div class="timeline-tag chegada">CHEGADA:</div>
-                                    <div class="timeline-content">${destino} H: ${r.horaChegada} KM: ${r.kmChegada}</div>
+                                    <div class="timeline-content">
+                                        <span class="local">${destino}</span>
+                                        <span class="hora">H: ${r.horaChegada}</span>
+                                        <span class="km">KM: ${r.kmChegada}</span>
+                                    </div>
                                 </div>
                             `;
                         }
@@ -704,7 +739,7 @@
 
             let texto = `*🚑 RELATÓRIO DE DESLOCAMENTO*\n`;
             texto += `📅 Data: ${formatDateBR(hoje())} | Plantão: ${plantaoEl.value}\n`;
-            texto += `🏥 Base: ${baseEl.value}\n`; // Atualizado
+            texto += `🏥 Base: ${baseEl.value}\n`; 
             texto += `🚑 Veículo: ${ambulanciaEl.value} (${placaEl.value})\n`;
             texto += `👨‍⚕️ Condutor: ${condutorEl.value}\n`;
             texto += `-----------------------------------\n\n`;
@@ -769,12 +804,12 @@
 
         // ======================= PERSISTÊNCIA =======================
         function carregarLocalStorage() {
-            let raw = localStorage.getItem('sistemaDeslocamentoHCI_v25'); 
+            let raw = localStorage.getItem('sistemaDeslocamentoHCI_v26'); 
             if(!raw) { prepararFormulario(); return false; }
             try {
                 let d = JSON.parse(raw); 
                 condutorEl.value = d.condutor || 'Anderson Martins'; 
-                baseEl.value = d.unidade || 'SÓ SAÚDE'; // Atualizado para ler a chave "unidade" antiga e colocar no baseEl
+                baseEl.value = d.unidade || 'SÓ SAÚDE'; 
                 ambulanciaEl.value = d.ambulancia || 'Master'; 
                 placaEl.value = d.placa || 'RKD-5A25'; 
                 plantaoEl.value = d.plantao || 'SD 12hs'; 
@@ -822,14 +857,14 @@
 
                         if (r.horaSaida) {
                             kmIni = isFirst ? (parseFloat(r.kmSaida) || 0) : kmIni;
-                            if (isFirst) timelineStr += `<div style="font-weight:bold; color:#0e5a77;">INICIO: ${origem} H: ${r.horaSaida} KM: ${r.kmSaida}</div>`;
-                            else timelineStr += `<div style="color:#f59e0b; font-weight:bold;">SAÍDA: ${origem} H: ${r.horaSaida} KM: ${r.kmSaida}</div>`;
+                            if (isFirst) timelineStr += `<div style="display:flex; justify-content:space-between; font-weight:bold; color:#0e5a77;"><span>INICIO: ${origem}</span><span>H: ${r.horaSaida}</span><span>KM: ${r.kmSaida}</span></div>`;
+                            else timelineStr += `<div style="display:flex; justify-content:space-between; color:#f59e0b; font-weight:bold;"><span>SAÍDA: ${origem}</span><span>H: ${r.horaSaida}</span><span>KM: ${r.kmSaida}</span></div>`;
                         }
                         
                         if (r.horaChegada) {
                             kmFim = parseFloat(r.kmChegada) || 0;
-                            if (r.tipo === 'base') timelineStr += `<div style="font-weight:bold; color:#dc2626;">FIM: ${destino} H: ${r.horaChegada} KM: ${r.kmChegada}</div>`;
-                            else timelineStr += `<div style="color:#15803d; font-weight:bold;">CHEGADA: ${destino} H: ${r.horaChegada} KM: ${r.kmChegada}</div>`;
+                            if (r.tipo === 'base') timelineStr += `<div style="display:flex; justify-content:space-between; font-weight:bold; color:#dc2626;"><span>FIM: ${destino}</span><span>H: ${r.horaChegada}</span><span>KM: ${r.kmChegada}</span></div>`;
+                            else timelineStr += `<div style="display:flex; justify-content:space-between; color:#15803d; font-weight:bold;"><span>CHEGADA: ${destino}</span><span>H: ${r.horaChegada}</span><span>KM: ${r.kmChegada}</span></div>`;
                         }
                     });
 
@@ -838,7 +873,7 @@
                     fichasHTML += `
                         <div style="border:1px solid #ccc; padding:10px; margin-bottom:15px; border-radius:8px;">
                             <div style="background:#f1f5f9; padding:5px; font-weight:bold; font-size:10pt; margin-bottom:10px;">DATA: ${formatDateBR(grupo.data)} | ${grupo.shift}</div>
-                            <div style="font-size:9pt; line-height:1.6; font-family:monospace;">${timelineStr}</div>
+                            <div style="font-size:9pt; line-height:1.8;">${timelineStr}</div>
                             <div style="border-top:1px dashed #ccc; margin-top:10px; padding-top:5px; display:flex; justify-content:space-between; font-weight:bold; font-size:10pt;">
                                 <span>DATA: ${formatDateBR(grupo.data)}</span>
                                 <span>KM ROD: ${kmRod}</span>
@@ -929,7 +964,6 @@
             fHora.focus();
         });
 
-        // Atualizado array para incluir baseEl
         [condutorEl, baseEl, ambulanciaEl, placaEl, kmInicialEl, nomeLegivelEl, observacaoEl].forEach(el => { 
             el.addEventListener('input', () => salvarERenderizar()); 
         });
