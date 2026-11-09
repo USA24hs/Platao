@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=yes">
-    <title>Sistema de Deslocamento - Ambulância HCI</title>
+    <title>Sistema de Deslocamento</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
@@ -598,7 +598,7 @@
             localStorage.setItem('frotaKms_hci', JSON.stringify(frotaKms));
             
             let assinatura = ''; try { assinatura = canvas.toDataURL(); } catch(e) {}
-            localStorage.setItem('sistemaDeslocamentoHCI_v30', JSON.stringify({ 
+            localStorage.setItem('sistemaDeslocamentoHCI_v31', JSON.stringify({ 
                 rows: registros, observacao: observacaoEl.value.toUpperCase(), condutor: condutorEl.value.toUpperCase(), 
                 unidade: baseEl.value.toUpperCase(), ambulancia: ambulanciaEl.value.toUpperCase(), placa: placaEl.value.toUpperCase(), 
                 plantao: plantaoEl.value, kmInicial: kmInicialEl.value, nomeLegivel: nomeLegivelEl.value.toUpperCase(), 
@@ -613,7 +613,23 @@
 
         function renderizarResumo() {
             if(registros.length === 0) {
-                resumoContainer.innerHTML = '<p style="font-size:0.8rem; color:#94a3b8; text-align:center;">Aguardando lançamentos...</p>';
+                // Em vez de "Aguardando...", mostra o resumo zerado para manter a estrutura e atender ao pedido
+                resumoContainer.innerHTML = `
+                    <div class="summary-grid">
+                        <div class="summary-box">
+                            <span>Deslocamentos</span>
+                            <strong>0</strong>
+                        </div>
+                        <div class="summary-box">
+                            <span>KM Rodados</span>
+                            <strong style="color: var(--success)">0.0</strong>
+                        </div>
+                    </div>
+                    <div class="req-list">
+                        <div class="req-title">Unidades Solicitantes</div>
+                        <div style="text-align:center; font-size:0.75rem; color:#94a3b8; padding:5px;">PLANTÃO SEM OCORRÊNCIAS</div>
+                    </div>
+                `;
                 return;
             }
 
@@ -694,7 +710,7 @@
         function renderizarFichas() {
             historicoContainer.innerHTML = '';
             if(registros.length === 0) {
-                historicoContainer.innerHTML = '<p style="font-size:0.8rem; color:#94a3b8; text-align:center;">Nenhum deslocamento registrado.</p>';
+                historicoContainer.innerHTML = '<p style="font-size:0.8rem; color:#475569; text-align:center; font-weight:bold; padding:10px;">PLANTÃO SEM OCORRÊNCIAS</p>';
                 return;
             }
 
@@ -810,12 +826,8 @@
             });
         }
 
-        // ======================= COMPARTILHAR WHATSAPP (NOVO MODELO) =======================
+        // ======================= COMPARTILHAR WHATSAPP =======================
         function compartilharWhatsApp() {
-            if(registros.length === 0) {
-                return showToast('⚠️ Não há registros para compartilhar.');
-            }
-
             // 1. Lógica da Saudação
             const isNoite = plantaoEl.value.includes('SN');
             const saudacao = isNoite ? '*Boa noite!*' : '*Bom dia!*';
@@ -834,16 +846,16 @@
 
             // 4. Montar cabeçalho da mensagem
             let texto = `${saudacao}\n\n`;
-            texto += `🙋🏻‍♂️ Condutor: ${condutorEl.value.toUpperCase()}\n`;
+            texto += `🙋🏻‍♂️ CONDUTOR: ${condutorEl.value.toUpperCase()}\n`;
             texto += `🚑 VTR: ${ambulanciaEl.value.toUpperCase()} PLACA: ${placaEl.value.toUpperCase()}\n`;
             if(o2PortatilEl.value || o2FixoEl.value) {
-                texto += `⛑️ O² Portátil: ${formatPct(o2PortatilEl.value) || '-'} Fixo: ${formatPct(o2FixoEl.value) || '-'}\n`;
+                texto += `⛑️ O² PORTÁTIL: ${formatPct(o2PortatilEl.value) || '-'} FIXO: ${formatPct(o2FixoEl.value) || '-'}\n`;
             }
             if(abastecimentoEl.value) {
-                texto += `⛽ Abastecimento: ${formatPct(abastecimentoEl.value)}\n`;
+                texto += `⛽ ABASTECIMENTO: ${formatPct(abastecimentoEl.value)}\n`;
             }
             texto += `📅 ${dataStr} 🕖 ${horaStr}\n`;
-            texto += `📝 Obs: ${observacaoEl.value ? observacaoEl.value.toUpperCase() : 'Sem avarias'}\n\n`;
+            texto += `📝 OBS: ${observacaoEl.value ? observacaoEl.value.toUpperCase() : 'SEM AVARIAS'}\n\n`;
             texto += `🙏🏻Bom plantão a todos!\n`;
             texto += `-----------------------------------\n`;
             texto += `*🚑 RELATÓRIO DE DESLOCAMENTO*\n\n`;
@@ -859,47 +871,51 @@
             let totalKmGeral = 0;
             let solicitantes = {};
 
-            gruposMap.forEach(grupo => {
-                const items = [...grupo.items].reverse();
-                let kmIni = 0; let kmFim = 0;
+            if (gruposMap.size === 0) {
+                texto += `*PLANTÃO SEM OCORRÊNCIAS*\n\n`;
+            } else {
+                gruposMap.forEach(grupo => {
+                    const items = [...grupo.items].reverse();
+                    let kmIni = 0; let kmFim = 0;
 
-                const first = items[0];
-                if (first && first.kmSaida) kmIni = parseFloat(first.kmSaida);
+                    const first = items[0];
+                    if (first && first.kmSaida) kmIni = parseFloat(first.kmSaida);
 
-                for(let i = items.length - 1; i >= 0; i--) {
-                    if(items[i].kmChegada) { kmFim = parseFloat(items[i].kmChegada); break; }
-                    if(items[i].kmSaida) { kmFim = parseFloat(items[i].kmSaida); break; }
-                }
-
-                if (first && first.local) {
-                    const partes = first.local.split('→');
-                    if (partes.length >= 2) {
-                        let destino = partes[1].trim().toUpperCase();
-                        if (destino) solicitantes[destino] = (solicitantes[destino] || 0) + 1;
+                    for(let i = items.length - 1; i >= 0; i--) {
+                        if(items[i].kmChegada) { kmFim = parseFloat(items[i].kmChegada); break; }
+                        if(items[i].kmSaida) { kmFim = parseFloat(items[i].kmSaida); break; }
                     }
-                }
 
-                items.forEach((r, index) => {
-                    const isFirst = index === 0; 
-                    let origem = limparNomeLocal(r.local.split('→')[0] || ''); 
-                    let destino = limparNomeLocal(r.local.split('→')[1] || '');
+                    if (first && first.local) {
+                        const partes = first.local.split('→');
+                        if (partes.length >= 2) {
+                            let destino = partes[1].trim().toUpperCase();
+                            if (destino) solicitantes[destino] = (solicitantes[destino] || 0) + 1;
+                        }
+                    }
 
-                    if (r.horaSaida) {
-                        if (isFirst) texto += `*INICIO:* ${origem} H: ${r.horaSaida} KM: ${r.kmSaida}\n`;
-                        else texto += `*SAÍDA:* ${origem} H: ${r.horaSaida} KM: ${r.kmSaida}\n`;
-                    }
-                    
-                    if (r.horaChegada) {
-                        if (r.tipo === 'base') texto += `*FIM:* ${destino} H: ${r.horaChegada} KM: ${r.kmChegada}\n`;
-                        else texto += `*CHEGADA:* ${destino} H: ${r.horaChegada} KM: ${r.kmChegada}\n`;
-                    }
+                    items.forEach((r, index) => {
+                        const isFirst = index === 0; 
+                        let origem = limparNomeLocal(r.local.split('→')[0] || ''); 
+                        let destino = limparNomeLocal(r.local.split('→')[1] || '');
+
+                        if (r.horaSaida) {
+                            if (isFirst) texto += `*INICIO:* ${origem} H: ${r.horaSaida} KM: ${r.kmSaida}\n`;
+                            else texto += `*SAÍDA:* ${origem} H: ${r.horaSaida} KM: ${r.kmSaida}\n`;
+                        }
+                        
+                        if (r.horaChegada) {
+                            if (r.tipo === 'base') texto += `*FIM:* ${destino} H: ${r.horaChegada} KM: ${r.kmChegada}\n`;
+                            else texto += `*CHEGADA:* ${destino} H: ${r.horaChegada} KM: ${r.kmChegada}\n`;
+                        }
+                    });
+
+                    const kmRod = kmFim >= kmIni ? (kmFim - kmIni) : 0;
+                    totalKmGeral += kmRod;
+                    texto += `\n*DATA: ${formatDateBR(grupo.data)}  KM ROD: ${kmRod.toFixed(1)}*\n`;
+                    texto += `-----------------------------------\n\n`;
                 });
-
-                const kmRod = kmFim >= kmIni ? (kmFim - kmIni) : 0;
-                totalKmGeral += kmRod;
-                texto += `\n*DATA: ${formatDateBR(grupo.data)}  KM ROD: ${kmRod.toFixed(1)}*\n`;
-                texto += `-----------------------------------\n\n`;
-            });
+            }
 
             // 6. Resumo final
             texto += `*📊 RESUMO DO PLANTÃO*\n`;
@@ -908,9 +924,13 @@
             
             texto += `*🏥 UNIDADES SOLICITANTES:*\n`;
             const sortedSolicitantes = Object.keys(solicitantes).sort((a,b) => solicitantes[b] - solicitantes[a]);
-            sortedSolicitantes.forEach(local => {
-                texto += `• ${local}: ${solicitantes[local]}\n`;
-            });
+            if (sortedSolicitantes.length > 0) {
+                sortedSolicitantes.forEach(local => {
+                    texto += `• ${local}: ${solicitantes[local]}\n`;
+                });
+            } else {
+                texto += `Nenhuma\n`;
+            }
 
             const url = `https://api.whatsapp.com/send?text=${encodeURIComponent(texto)}`;
             window.open(url, '_blank');
@@ -918,7 +938,7 @@
 
         // ======================= PERSISTÊNCIA =======================
         function carregarLocalStorage() {
-            let raw = localStorage.getItem('sistemaDeslocamentoHCI_v30'); 
+            let raw = localStorage.getItem('sistemaDeslocamentoHCI_v31'); 
             if(!raw) { prepararFormulario(); return false; }
             try {
                 let d = JSON.parse(raw); 
@@ -962,42 +982,46 @@
 
                 let fichasHTML = '';
 
-                gruposMap.forEach(grupo => {
-                    const items = [...grupo.items].reverse();
-                    let timelineStr = '';
-                    let kmIni = 0; let kmFim = 0;
+                if (gruposMap.size === 0) {
+                    fichasHTML = '<div style="text-align:center; font-weight:bold; padding:20px; color:#475569; font-size:12pt;">PLANTÃO SEM OCORRÊNCIAS</div>';
+                } else {
+                    gruposMap.forEach(grupo => {
+                        const items = [...grupo.items].reverse();
+                        let timelineStr = '';
+                        let kmIni = 0; let kmFim = 0;
 
-                    items.forEach((r, index) => {
-                        const isFirst = index === 0; 
-                        let origem = limparNomeLocal(r.local.split('→')[0] || ''); 
-                        let destino = limparNomeLocal(r.local.split('→')[1] || '');
+                        items.forEach((r, index) => {
+                            const isFirst = index === 0; 
+                            let origem = limparNomeLocal(r.local.split('→')[0] || ''); 
+                            let destino = limparNomeLocal(r.local.split('→')[1] || '');
 
-                        if (r.horaSaida) {
-                            kmIni = isFirst ? (parseFloat(r.kmSaida) || 0) : kmIni;
-                            if (isFirst) timelineStr += `<div style="display:flex; justify-content:space-between; font-weight:bold; color:#0e5a77; margin-bottom:4px;"><span>INICIO: ${origem}</span><span>H: ${r.horaSaida}</span><span>KM: ${r.kmSaida}</span></div>`;
-                            else timelineStr += `<div style="display:flex; justify-content:space-between; color:#f59e0b; font-weight:bold; margin-bottom:4px;"><span>SAÍDA: ${origem}</span><span>H: ${r.horaSaida}</span><span>KM: ${r.kmSaida}</span></div>`;
-                        }
+                            if (r.horaSaida) {
+                                kmIni = isFirst ? (parseFloat(r.kmSaida) || 0) : kmIni;
+                                if (isFirst) timelineStr += `<div style="display:flex; justify-content:space-between; font-weight:bold; color:#0e5a77; margin-bottom:4px;"><span>INICIO: ${origem}</span><span>H: ${r.horaSaida}</span><span>KM: ${r.kmSaida}</span></div>`;
+                                else timelineStr += `<div style="display:flex; justify-content:space-between; color:#f59e0b; font-weight:bold; margin-bottom:4px;"><span>SAÍDA: ${origem}</span><span>H: ${r.horaSaida}</span><span>KM: ${r.kmSaida}</span></div>`;
+                            }
+                            
+                            if (r.horaChegada) {
+                                kmFim = parseFloat(r.kmChegada) || 0;
+                                if (r.tipo === 'base') timelineStr += `<div style="display:flex; justify-content:space-between; font-weight:bold; color:#dc2626; margin-bottom:4px;"><span>FIM: ${destino}</span><span>H: ${r.horaChegada}</span><span>KM: ${r.kmChegada}</span></div>`;
+                                else timelineStr += `<div style="display:flex; justify-content:space-between; color:#15803d; font-weight:bold; margin-bottom:4px;"><span>CHEGADA: ${destino}</span><span>H: ${r.horaChegada}</span><span>KM: ${r.kmChegada}</span></div>`;
+                            }
+                        });
+
+                        const kmRod = kmFim > 0 ? (kmFim - kmIni).toFixed(1) : '0.0';
                         
-                        if (r.horaChegada) {
-                            kmFim = parseFloat(r.kmChegada) || 0;
-                            if (r.tipo === 'base') timelineStr += `<div style="display:flex; justify-content:space-between; font-weight:bold; color:#dc2626; margin-bottom:4px;"><span>FIM: ${destino}</span><span>H: ${r.horaChegada}</span><span>KM: ${r.kmChegada}</span></div>`;
-                            else timelineStr += `<div style="display:flex; justify-content:space-between; color:#15803d; font-weight:bold; margin-bottom:4px;"><span>CHEGADA: ${destino}</span><span>H: ${r.horaChegada}</span><span>KM: ${r.kmChegada}</span></div>`;
-                        }
-                    });
-
-                    const kmRod = kmFim > 0 ? (kmFim - kmIni).toFixed(1) : '0.0';
-                    
-                    fichasHTML += `
-                        <div style="border:1px solid #ccc; padding:10px; margin-bottom:15px; border-radius:8px;">
-                            <div style="background:#f1f5f9; padding:5px; font-weight:bold; font-size:10pt; margin-bottom:10px;">DATA: ${formatDateBR(grupo.data)} | ${grupo.shift}</div>
-                            <div style="font-size:9pt; line-height:1.8;">${timelineStr}</div>
-                            <div style="border-top:1px dashed #ccc; margin-top:10px; padding-top:5px; display:flex; justify-content:space-between; font-weight:bold; font-size:10pt;">
-                                <span>DATA: ${formatDateBR(grupo.data)}</span>
-                                <span>KM ROD: ${kmRod}</span>
+                        fichasHTML += `
+                            <div style="border:1px solid #ccc; padding:10px; margin-bottom:15px; border-radius:8px;">
+                                <div style="background:#f1f5f9; padding:5px; font-weight:bold; font-size:10pt; margin-bottom:10px;">DATA: ${formatDateBR(grupo.data)} | ${grupo.shift}</div>
+                                <div style="font-size:9pt; line-height:1.8;">${timelineStr}</div>
+                                <div style="border-top:1px dashed #ccc; margin-top:10px; padding-top:5px; display:flex; justify-content:space-between; font-weight:bold; font-size:10pt;">
+                                    <span>DATA: ${formatDateBR(grupo.data)}</span>
+                                    <span>KM ROD: ${kmRod}</span>
+                                </div>
                             </div>
-                        </div>
-                    `;
-                });
+                        `;
+                    });
+                }
 
                 let totalKmPdf = 0;
                 let solicitantesPdf = {};
@@ -1035,13 +1059,17 @@
                 `;
                 
                 const sortedPdf = Object.keys(solicitantesPdf).sort((a,b) => solicitantesPdf[b] - solicitantesPdf[a]);
-                sortedPdf.forEach(local => {
-                    resumoPdfHTML += `<li>${local}: <strong>${solicitantesPdf[local]}</strong></li>`;
-                });
+                if (sortedPdf.length > 0) {
+                    sortedPdf.forEach(local => {
+                        resumoPdfHTML += `<li>${local}: <strong>${solicitantesPdf[local]}</strong></li>`;
+                    });
+                } else {
+                    resumoPdfHTML += `<li>Nenhuma</li>`;
+                }
                 
                 resumoPdfHTML += `</ul></div></div>`;
 
-                const obsHTML = observacaoEl.value ? `<div style="padding:10px; border:1px solid #ddd; background:#f9f9f9; margin-top:20px;"><strong>📋 Observações:</strong> ${observacaoEl.value.toUpperCase().replace(/\n/g, '<br>')}</div>` : '';
+                const obsHTML = observacaoEl.value ? `<div style="padding:10px; border:1px solid #ddd; background:#f9f9f9; margin-top:20px;"><strong>📋 OBSERVAÇÕES:</strong> ${observacaoEl.value.toUpperCase().replace(/\n/g, '<br>')}</div>` : '';
 
                 const relatorioHTML = `
                     <!DOCTYPE html><html><head><meta charset="UTF-8"><title>Relatório 🚑</title>
@@ -1049,11 +1077,11 @@
                     </head><body><div class="container">
                         <h1>📄 Relatório de Deslocamento</h1><div class="sub">Controle de Frota · ${mesNome2} / ${ano}</div>
                         <table class="info-table">
-                            <tr><td>Condutor</td><td>${condutorEl.value.toUpperCase()}</td><td>Plantão</td><td>${plantaoEl.value}</td></tr>
-                            <tr><td>Ambulância</td><td>${ambulanciaEl.value.toUpperCase()}</td><td>Placa</td><td>${placaEl.value.toUpperCase()}</td></tr>
-                            <tr><td>Km Inicial</td><td>${kmInicialEl.value || '-'}</td><td>Base</td><td>${baseEl.value.toUpperCase()}</td></tr>
-                            <tr><td>O² Portátil</td><td>${o2PortatilEl.value || '-'}</td><td>O² Fixo</td><td>${o2FixoEl.value || '-'}</td></tr>
-                            <tr><td>Abastecimento</td><td>${abastecimentoEl.value || '-'}</td><td>Gerado em</td><td>${dataHora}</td></tr>
+                            <tr><td>CONDUTOR</td><td>${condutorEl.value.toUpperCase()}</td><td>PLANTÃO</td><td>${plantaoEl.value.toUpperCase()}</td></tr>
+                            <tr><td>AMBULÂNCIA</td><td>${ambulanciaEl.value.toUpperCase()}</td><td>PLACA</td><td>${placaEl.value.toUpperCase()}</td></tr>
+                            <tr><td>KM INICIAL</td><td>${kmInicialEl.value || '-'}</td><td>BASE</td><td>${baseEl.value.toUpperCase()}</td></tr>
+                            <tr><td>O² PORTÁTIL</td><td>${o2PortatilEl.value || '-'}</td><td>O² FIXO</td><td>${o2FixoEl.value || '-'}</td></tr>
+                            <tr><td>ABASTECIMENTO</td><td>${abastecimentoEl.value || '-'}</td><td>GERADO EM</td><td>${dataHora}</td></tr>
                         </table>
                         
                         ${resumoPdfHTML}
