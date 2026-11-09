@@ -123,7 +123,7 @@
         
         .btn-pdf { background: linear-gradient(135deg, #dc2626, #b91c1c); color: #fff; border: none; padding: 12px 20px; border-radius: 10px; font-weight: 800; cursor: pointer; font-size: 0.95rem; display: flex; align-items: center; gap: 8px; justify-content: center; width: 100%; font-family: 'Inter'; transition: 0.2s; margin-top: 0.5rem; }
 
-        /* ======================= NOVO MODAL DE ALERTA KM | HORA ======================= */
+        /* ======================= MODAL DE ALERTA ======================= */
         .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 12000; display: none; align-items: center; justify-content: center; padding: 20px; backdrop-filter: blur(2px); }
         .modal-overlay.active { display: flex; }
         .modal-box { background: #fff; border-radius: 16px; width: 100%; max-width: 400px; overflow: hidden; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.3); animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
@@ -268,15 +268,15 @@
     </div>
 </div>
 
-<!-- MODAL DE ALERTA DE KM E HORA -->
+<!-- MODAL DE ALERTA -->
 <div class="modal-overlay" id="modalKmAlert">
     <div class="modal-box">
         <div class="modal-header">
             <i class="fas fa-exclamation-triangle"></i>
-            <h3>Atenção: KM | Hora não alterado!</h3>
+            <h3>Atenção: KM e Hora não alterados!</h3>
         </div>
         <div class="modal-body">
-            Os seguintes campos estão com o mesmo valor do último registro:<br>
+            Os campos estão com os mesmos valores do último registro:<br>
             <div id="modalAlertDetails" style="margin-top: 10px; font-weight: bold; font-size: 1.1rem; color: var(--danger); line-height: 1.4;"></div>
             <br>Você esqueceu de atualizar?
         </div>
@@ -390,7 +390,6 @@
             return str.replace(/🏥/g, '').trim().toUpperCase(); 
         }
         
-        // FUNÇÃO AUXILIAR PARA PEGAR O ÚLTIMO REGISTRO DO VEÍCULO
         function getLastRecord() {
             const veiculoAtual = `${ambulanciaEl.value.trim().toUpperCase()} - ${placaEl.value.trim().toUpperCase()}`;
             return registros.find(r => r.veiculo === veiculoAtual);
@@ -419,7 +418,6 @@
             return null;
         }
 
-        // FUNÇÃO QUE PREENCHE AUTOMÁTICO
         function prepararFormulario() {
             fData.value = hoje();
             fHora.value = getHoraAtual();
@@ -473,8 +471,40 @@
         }
         window.editarOcorrencia = editarOcorrencia;
 
-        // ======================= INTERCEPTADOR DE ALERTA KM | HORA =======================
+        // ======================= VALIDAÇÃO DE SEQUÊNCIA =======================
+        function validarSequencia(tipo) {
+            // Pega todos os registros da ocorrência atual
+            const itemsAtuais = registros.filter(r => r.ocorrenciaId === currentOcorrenciaId);
+            // Como os registros estão em ordem decrescente, o primeiro é o último adicionado
+            const lastRecord = itemsAtuais.length > 0 ? itemsAtuais[0] : null;
+
+            if (!lastRecord) {
+                if (tipo !== 'saida') return "A primeira ação de uma ocorrência deve ser SAÍDA (INÍCIO).";
+                return null; // Ok
+            }
+
+            const lastType = lastRecord.tipo; // 'saida', 'chegada', 'base'
+
+            if (tipo === 'saida' && lastType !== 'chegada') {
+                return "A última ação foi SAÍDA. Você deve registrar uma CHEGADA primeiro.";
+            }
+            if ((tipo === 'chegada' || tipo === 'base') && lastType !== 'saida') {
+                return "A última ação foi CHEGADA. Você deve registrar uma SAÍDA primeiro.";
+            }
+            if (lastType === 'base') {
+                return "Esta ocorrência já foi finalizada na BASE. Inicie um novo deslocamento clicando no '+'.";
+            }
+
+            return null;
+        }
+
+        // ======================= INTERCEPTADOR DE ALERTA =======================
         function tentarAdicionarRegistro(tipo) {
+            // 1. Validar sequência
+            const erroSeq = validarSequencia(tipo);
+            if (erroSeq) return showToast(`⚠️ ${erroSeq}`);
+
+            // 2. Verificar KM e Hora
             const lastRecord = getLastRecord();
             let kmIgual = false;
             let horaIgual = false;
@@ -495,39 +525,33 @@
                 }
             }
 
-            // Se estiver editando, não bloqueia, mas se for novo registro e algum for igual, avisa
-            if ((kmIgual || horaIgual) && !editingRecordId) {
+            // REGRA: Só notifica se AMBOS (KM E Hora) forem iguais. 
+            if (kmIgual && horaIgual && !editingRecordId) {
                 pendingActionType = tipo;
                 
                 let details = [];
-                if (kmIgual) {
-                    details.push(`⛽ KM: ${ultimoKmVal}`);
-                    fKm.classList.add('km-alert-input');
-                }
-                if (horaIgual) {
-                    details.push(`⏰ Hora: ${ultimaHoraVal}`);
-                    fHora.classList.add('time-alert-input');
-                }
+                details.push(`⏱️ Hora: ${ultimaHoraVal}`);
+                details.push(`🚑 KM: ${ultimoKmVal}`);
                 
                 modalAlertDetails.innerHTML = details.join('<br>');
                 modalKmAlert.classList.add('active');
+                fKm.classList.add('km-alert-input');
+                fHora.classList.add('time-alert-input');
                 return; 
             }
 
+            // Se passou, limpa alertas e executa
+            fKm.classList.remove('km-alert-input');
+            fHora.classList.remove('time-alert-input');
             executarAdicionarRegistro(tipo);
         }
 
         // BOTÕES DO MODAL
         btnModalCorrigir.addEventListener('click', () => {
             modalKmAlert.classList.remove('active');
-            // Dá foco no campo que está com erro (prioriza o KM)
-            if (fKm.classList.contains('km-alert-input')) {
-                fKm.focus();
-                fKm.select();
-            } else if (fHora.classList.contains('time-alert-input')) {
-                fHora.focus();
-                fHora.select();
-            }
+            // Dá foco no campo de hora ou km (prioriza hora, pois é mais rápido)
+            fHora.focus();
+            fHora.select();
         });
 
         btnModalIgnorar.addEventListener('click', () => {
@@ -537,7 +561,7 @@
             executarAdicionarRegistro(pendingActionType);
         });
 
-        // ======================= SALVAR (Lógica Real) =======================
+        // ======================= SALVAR =======================
         function executarAdicionarRegistro(tipo) {
             const data = fData.value;
             const hora = fHora.value;
@@ -605,7 +629,7 @@
                     
                     showToast(tipo === 'base' ? '🏥 Fim de Plantão na Base!' : '📍 Chegada registrada!');
                 } else {
-                    showToast('⚠️ Não há saída em aberto. Clique em SAÍDA primeiro.');
+                    showToast('⚠️ Erro interno: Não há saída em aberto.');
                     return;
                 }
             }
@@ -642,7 +666,7 @@
             localStorage.setItem('frotaKms_hci', JSON.stringify(frotaKms));
             
             let assinatura = ''; try { assinatura = canvas.toDataURL(); } catch(e) {}
-            localStorage.setItem('sistemaDeslocamentoHCI_v34', JSON.stringify({ 
+            localStorage.setItem('sistemaDeslocamentoHCI_v35', JSON.stringify({ 
                 rows: registros, observacao: observacaoEl.value.toUpperCase(), condutor: condutorEl.value.toUpperCase(), 
                 unidade: baseEl.value.toUpperCase(), ambulancia: ambulanciaEl.value.toUpperCase(), placa: placaEl.value.toUpperCase(), 
                 plantao: plantaoEl.value, kmInicial: kmInicialEl.value, nomeLegivel: nomeLegivelEl.value.toUpperCase(), 
@@ -836,6 +860,14 @@
                     }
                 });
 
+                // Lógica para Data de Início e Fim
+                let dataInicio = formatDateBR(items[0].data);
+                let dataFim = dataInicio; 
+                for (let i = items.length - 1; i >= 0; i--) {
+                    if (items[i].horaChegada) { dataFim = formatDateBR(items[i].data); break; }
+                }
+                const tituloData = dataInicio === dataFim ? `DATA: ${dataInicio}` : `INÍCIO DATA: ${dataInicio} FIM DATA: ${dataFim}`;
+
                 const kmRodado = kmFinalFicha > 0 ? (kmFinalFicha - kmInicialFicha) : 0;
                 const canDelete = isRecordDeletable(grupo.data, grupo.shift);
                 
@@ -848,7 +880,7 @@
                     <div class="ficha-card">
                         <div class="ficha-header">
                             <div class="ficha-header-info">
-                                <span><i class="far fa-calendar-alt"></i> DATA: ${formatDateBR(grupo.data)} | ${grupo.shift}</span>
+                                <span><i class="far fa-calendar-alt"></i> ${tituloData} | ${grupo.shift}</span>
                                 <span>${ambulanciaEl.value.toUpperCase()} - ${placaEl.value.toUpperCase()}</span>
                             </div>
                             <div class="ficha-actions">
@@ -860,7 +892,7 @@
                             ${timelineHTML}
                         </div>
                         <div class="ficha-footer">
-                            <span>DATA: ${formatDateBR(grupo.data)}</span>
+                            <span>${tituloData}</span>
                             <span>KM ROD: <span style="color:var(--success);">${kmRodado.toFixed(1)}</span></span>
                         </div>
                     </div>
@@ -955,7 +987,16 @@
 
                     const kmRod = kmFim >= kmIni ? (kmFim - kmIni) : 0;
                     totalKmGeral += kmRod;
-                    texto += `\n*DATA: ${formatDateBR(grupo.data)}  KM ROD: ${kmRod.toFixed(1)}*\n`;
+
+                    // Lógica para Data de Início e Fim no WhatsApp
+                    let dataInicioStr = formatDateBR(items[0].data);
+                    let dataFimStr = dataInicioStr; 
+                    for (let i = items.length - 1; i >= 0; i--) {
+                        if (items[i].horaChegada) { dataFimStr = formatDateBR(items[i].data); break; }
+                    }
+                    const stringData = dataInicioStr === dataFimStr ? `*DATA: ${dataInicioStr}` : `*INÍCIO DATA: ${dataInicioStr} FIM DATA: ${dataFimStr}`;
+                    
+                    texto += `\n${stringData}  KM ROD: ${kmRod.toFixed(1)}*\n`;
                     texto += `-----------------------------------\n\n`;
                 });
             }
@@ -981,7 +1022,7 @@
 
         // ======================= PERSISTÊNCIA =======================
         function carregarLocalStorage() {
-            let raw = localStorage.getItem('sistemaDeslocamentoHCI_v34'); 
+            let raw = localStorage.getItem('sistemaDeslocamentoHCI_v35'); 
             if(!raw) { prepararFormulario(); return false; }
             try {
                 let d = JSON.parse(raw); 
@@ -1052,13 +1093,21 @@
                         });
 
                         const kmRod = kmFim > 0 ? (kmFim - kmIni).toFixed(1) : '0.0';
+
+                        // Lógica para Data de Início e Fim no PDF
+                        let dataInicioStr = formatDateBR(items[0].data);
+                        let dataFimStr = dataInicioStr; 
+                        for (let i = items.length - 1; i >= 0; i--) {
+                            if (items[i].horaChegada) { dataFimStr = formatDateBR(items[i].data); break; }
+                        }
+                        const tituloData = dataInicioStr === dataFimStr ? `DATA: ${dataInicioStr}` : `INÍCIO DATA: ${dataInicioStr} FIM DATA: ${dataFimStr}`;
                         
                         fichasHTML += `
                             <div style="border:1px solid #ccc; padding:10px; margin-bottom:15px; border-radius:8px;">
-                                <div style="background:#f1f5f9; padding:5px; font-weight:bold; font-size:10pt; margin-bottom:10px;">DATA: ${formatDateBR(grupo.data)} | ${grupo.shift}</div>
+                                <div style="background:#f1f5f9; padding:5px; font-weight:bold; font-size:10pt; margin-bottom:10px;">${tituloData} | ${grupo.shift}</div>
                                 <div style="font-size:9pt; line-height:1.8;">${timelineStr}</div>
                                 <div style="border-top:1px dashed #ccc; margin-top:10px; padding-top:5px; display:flex; justify-content:space-between; font-weight:bold; font-size:10pt;">
-                                    <span>DATA: ${formatDateBR(grupo.data)}</span>
+                                    <span>${tituloData}</span>
                                     <span>KM ROD: ${kmRod}</span>
                                 </div>
                             </div>
