@@ -419,18 +419,18 @@
             const lastRecordOc = itemsAtuais.length > 0 ? itemsAtuais[0] : null;
 
             if (!lastRecordOc) {
-                // 1. INÍCIO (Sai da Base para o Destino)
+                // INÍCIO: campo mostra BASE → (vazio, condutor digita o destino)
                 fLocal.value = `${base} → `;
             } else if (lastRecordOc.tipo === 'saida') {
-                // 2. CHEGADA (Prepara o campo com Destino -> Destino para o botão Chegada)
+                // Após SAÍDA: campo mostra DESTINO → DESTINO (auto) para a próxima CHEGADA
                 let dest = getLocalDisplay(lastRecordOc.local, true);
                 fLocal.value = `${dest} → ${dest}`; 
             } else if (lastRecordOc.tipo === 'chegada') {
-                // 3. PRÓXIMA SAÍDA (campo fica Destino -> Destino; usuário edita o 2º destino)
+                // Após CHEGADA: campo mostra DESTINO → DESTINO (auto); condutor edita o 2º destino para a próxima SAÍDA
                 let dest = getLocalDisplay(lastRecordOc.local, true);
                 fLocal.value = `${dest} → ${dest}`; 
             } else if (lastRecordOc.tipo === 'base') {
-                // 4. FIM (Volta para a base e reinicia)
+                // Após FIM: volta para BASE → (nova ocorrência)
                 fLocal.value = `${base} → `;
             }
 
@@ -612,11 +612,8 @@
                     fLocal.classList.add('local-alert-input');
                     return showToast('⚠️ Preencha o DESTINO para registrar a Saída.');
                 }
-                // NOVO: impede saída com origem == destino (evita salvar HTO → HTO por engano)
-                if (origem && destino && origem.toUpperCase() === destino.toUpperCase()) {
-                    fLocal.classList.add('local-alert-input');
-                    return showToast(`⚠️ Origem e destino iguais (${origem}). Altere o destino para continuar.`);
-                }
+                // Saída com origem == destino é PERMITIDA (ex.: HTO → HTO após chegada,
+                // representando deslocamento que retorna ao mesmo local ou apenas fechamento de ciclo)
                 local = `${origem} → ${destino}`;
             } else if (tipo === 'chegada') {
                 if (!destino) {
