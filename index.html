@@ -59,8 +59,8 @@
         .form-item input { width: 100%; min-width: 0; padding: 8px; border-radius: 8px; border: 1px solid #86efac; font-family: 'Inter'; font-size: 0.95rem; font-weight: 600; color: #064e3b; background: #fff; box-sizing: border-box; transition: 0.3s; }
         .form-item input:focus { outline: 2px solid #15803d; border-color: transparent; }
         
-        /* CLASSE PARA DESTACAR O CAMPO KM QUANDO HOUVER ALERTA */
-        .km-alert-input { border-color: var(--danger) !important; background: #fef2f2 !important; color: var(--danger) !important; outline: 2px solid var(--danger) !important; animation: pulse-red 1s infinite; }
+        /* CLASSES PARA DESTACAR ERROS */
+        .km-alert-input, .time-alert-input { border-color: var(--danger) !important; background: #fef2f2 !important; color: var(--danger) !important; outline: 2px solid var(--danger) !important; animation: pulse-red 1s infinite; }
         @keyframes pulse-red { 0% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.4); } 70% { box-shadow: 0 0 0 6px rgba(220, 38, 38, 0); } 100% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0); } }
 
         .form-actions { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; width: 100%; }
@@ -123,7 +123,7 @@
         
         .btn-pdf { background: linear-gradient(135deg, #dc2626, #b91c1c); color: #fff; border: none; padding: 12px 20px; border-radius: 10px; font-weight: 800; cursor: pointer; font-size: 0.95rem; display: flex; align-items: center; gap: 8px; justify-content: center; width: 100%; font-family: 'Inter'; transition: 0.2s; margin-top: 0.5rem; }
 
-        /* ======================= NOVO MODAL DE ALERTA KM ======================= */
+        /* ======================= NOVO MODAL DE ALERTA KM | HORA ======================= */
         .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 12000; display: none; align-items: center; justify-content: center; padding: 20px; backdrop-filter: blur(2px); }
         .modal-overlay.active { display: flex; }
         .modal-box { background: #fff; border-radius: 16px; width: 100%; max-width: 400px; overflow: hidden; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.3); animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
@@ -268,19 +268,20 @@
     </div>
 </div>
 
-<!-- MODAL DE ALERTA DE KM -->
+<!-- MODAL DE ALERTA DE KM E HORA -->
 <div class="modal-overlay" id="modalKmAlert">
     <div class="modal-box">
         <div class="modal-header">
             <i class="fas fa-exclamation-triangle"></i>
-            <h3>Atenção: KM não alterado!</h3>
+            <h3>Atenção: KM | Hora não alterado!</h3>
         </div>
         <div class="modal-body">
-            O campo de KM está com o mesmo valor do último registro (<strong id="modalKmValue">0</strong>).<br><br>
-            Você esqueceu de atualizar o odômetro?
+            Os seguintes campos estão com o mesmo valor do último registro:<br>
+            <div id="modalAlertDetails" style="margin-top: 10px; font-weight: bold; font-size: 1.1rem; color: var(--danger); line-height: 1.4;"></div>
+            <br>Você esqueceu de atualizar?
         </div>
         <div class="modal-actions">
-            <button class="btn-modal btn-modal-confirm" id="btnModalCorrigir"><i class="fas fa-pen"></i> Corrigir KM Agora</button>
+            <button class="btn-modal btn-modal-confirm" id="btnModalCorrigir"><i class="fas fa-pen"></i> Corrigir Agora</button>
             <button class="btn-modal btn-modal-cancel" id="btnModalIgnorar">Não mudou, salvar assim mesmo</button>
         </div>
     </div>
@@ -326,7 +327,7 @@
 
         // Elementos do Modal
         const modalKmAlert = document.getElementById('modalKmAlert');
-        const modalKmValue = document.getElementById('modalKmValue');
+        const modalAlertDetails = document.getElementById('modalAlertDetails');
         const btnModalCorrigir = document.getElementById('btnModalCorrigir');
         const btnModalIgnorar = document.getElementById('btnModalIgnorar');
         let pendingActionType = null; 
@@ -335,8 +336,9 @@
         let currentOcorrenciaId = Date.now().toString(); 
         let editingRecordId = null;
 
-        // Remove a borda vermelha do KM se o usuário começar a digitar
+        // Remove a borda vermelha se o usuário começar a digitar
         fKm.addEventListener('input', () => { fKm.classList.remove('km-alert-input'); });
+        fHora.addEventListener('input', () => { fHora.classList.remove('time-alert-input'); });
 
         // Inicialização do seletor de meses
         for(let m = 1; m <= 12; m++) { let opt = document.createElement('option'); opt.value = m; opt.textContent = nomeMes(m).substring(0,3); mesSelect.appendChild(opt); }
@@ -388,6 +390,12 @@
             return str.replace(/🏥/g, '').trim().toUpperCase(); 
         }
         
+        // FUNÇÃO AUXILIAR PARA PEGAR O ÚLTIMO REGISTRO DO VEÍCULO
+        function getLastRecord() {
+            const veiculoAtual = `${ambulanciaEl.value.trim().toUpperCase()} - ${placaEl.value.trim().toUpperCase()}`;
+            return registros.find(r => r.veiculo === veiculoAtual);
+        }
+
         function getUltimoKmChegada() { 
             const veiculoAtual = `${ambulanciaEl.value.trim().toUpperCase()} - ${placaEl.value.trim().toUpperCase()}`;
             for(let i = 0; i < registros.length; i++) { 
@@ -431,6 +439,7 @@
             fPlantaoInfo.value = `${plantaoEl.value} | ${base}`;
             atualizarLimitesDatas();
             fKm.classList.remove('km-alert-input'); 
+            fHora.classList.remove('time-alert-input');
         }
 
         function resetFormUI() {
@@ -464,16 +473,44 @@
         }
         window.editarOcorrencia = editarOcorrencia;
 
-        // ======================= INTERCEPTADOR DE ALERTA KM =======================
+        // ======================= INTERCEPTADOR DE ALERTA KM | HORA =======================
         function tentarAdicionarRegistro(tipo) {
-            const kmAtual = parseFloat(fKm.value);
-            const ultimoKm = parseFloat(getUltimoKmChegada());
+            const lastRecord = getLastRecord();
+            let kmIgual = false;
+            let horaIgual = false;
+            let ultimoKmVal = 0;
+            let ultimaHoraVal = '';
 
-            if (!isNaN(kmAtual) && !isNaN(ultimoKm) && kmAtual === ultimoKm && !editingRecordId) {
+            if (lastRecord) {
+                ultimoKmVal = parseFloat(lastRecord.kmChegada || lastRecord.kmSaida || 0);
+                ultimaHoraVal = lastRecord.horaChegada || lastRecord.horaSaida || '';
+
+                const kmAtual = parseFloat(fKm.value);
+                if (!isNaN(kmAtual) && !isNaN(ultimoKmVal) && kmAtual === ultimoKmVal) {
+                    kmIgual = true;
+                }
+
+                if (fHora.value && ultimaHoraVal && fHora.value === ultimaHoraVal) {
+                    horaIgual = true;
+                }
+            }
+
+            // Se estiver editando, não bloqueia, mas se for novo registro e algum for igual, avisa
+            if ((kmIgual || horaIgual) && !editingRecordId) {
                 pendingActionType = tipo;
-                modalKmValue.textContent = kmAtual;
+                
+                let details = [];
+                if (kmIgual) {
+                    details.push(`⛽ KM: ${ultimoKmVal}`);
+                    fKm.classList.add('km-alert-input');
+                }
+                if (horaIgual) {
+                    details.push(`⏰ Hora: ${ultimaHoraVal}`);
+                    fHora.classList.add('time-alert-input');
+                }
+                
+                modalAlertDetails.innerHTML = details.join('<br>');
                 modalKmAlert.classList.add('active');
-                fKm.classList.add('km-alert-input');
                 return; 
             }
 
@@ -483,13 +520,20 @@
         // BOTÕES DO MODAL
         btnModalCorrigir.addEventListener('click', () => {
             modalKmAlert.classList.remove('active');
-            fKm.focus();
-            fKm.select();
+            // Dá foco no campo que está com erro (prioriza o KM)
+            if (fKm.classList.contains('km-alert-input')) {
+                fKm.focus();
+                fKm.select();
+            } else if (fHora.classList.contains('time-alert-input')) {
+                fHora.focus();
+                fHora.select();
+            }
         });
 
         btnModalIgnorar.addEventListener('click', () => {
             modalKmAlert.classList.remove('active');
             fKm.classList.remove('km-alert-input');
+            fHora.classList.remove('time-alert-input');
             executarAdicionarRegistro(pendingActionType);
         });
 
@@ -598,7 +642,7 @@
             localStorage.setItem('frotaKms_hci', JSON.stringify(frotaKms));
             
             let assinatura = ''; try { assinatura = canvas.toDataURL(); } catch(e) {}
-            localStorage.setItem('sistemaDeslocamentoHCI_v33', JSON.stringify({ 
+            localStorage.setItem('sistemaDeslocamentoHCI_v34', JSON.stringify({ 
                 rows: registros, observacao: observacaoEl.value.toUpperCase(), condutor: condutorEl.value.toUpperCase(), 
                 unidade: baseEl.value.toUpperCase(), ambulancia: ambulanciaEl.value.toUpperCase(), placa: placaEl.value.toUpperCase(), 
                 plantao: plantaoEl.value, kmInicial: kmInicialEl.value, nomeLegivel: nomeLegivelEl.value.toUpperCase(), 
@@ -825,7 +869,7 @@
             });
         }
 
-        // ======================= COMPARTILHAR WHATSAPP (MODELO ATUALIZADO) =======================
+        // ======================= COMPARTILHAR WHATSAPP =======================
         function compartilharWhatsApp() {
             // 1. Lógica da Saudação
             const isNoite = plantaoEl.value.includes('SN');
@@ -937,7 +981,7 @@
 
         // ======================= PERSISTÊNCIA =======================
         function carregarLocalStorage() {
-            let raw = localStorage.getItem('sistemaDeslocamentoHCI_v33'); 
+            let raw = localStorage.getItem('sistemaDeslocamentoHCI_v34'); 
             if(!raw) { prepararFormulario(); return false; }
             try {
                 let d = JSON.parse(raw); 
