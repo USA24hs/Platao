@@ -383,6 +383,7 @@
             return null;
         }
 
+        // FUNÇÃO DE PREENCHIMENTO INTELIGENTE
         function prepararFormulario() {
             const validShifts = ['SD 12hs', 'SN 12hs', 'DN 24hs'];
             if (!validShifts.includes(plantaoEl.value)) {
@@ -403,8 +404,11 @@
             if (!lastRecord) {
                 fLocal.value = `${base} → `;
             } else if (lastRecord.tipo === 'saida') {
-                fLocal.value = lastRecord.local || `${base} → `;
+                // Se a última ação foi Saída, a próxima é Chegada. Preenche "Destino → Destino"
+                let dest = getLocalDisplay(lastRecord.local, true);
+                fLocal.value = `${dest} → ${dest}`; 
             } else if (lastRecord.tipo === 'chegada') {
+                // Se a última ação foi Chegada, a próxima é Saída. Deixa pronto para digitar o novo destino.
                 let dest = getLocalDisplay(lastRecord.local, true);
                 fLocal.value = `${dest} → `;
             } else if (lastRecord.tipo === 'base') {
@@ -484,7 +488,6 @@
 
         function tentarAdicionarRegistro(tipo) {
             try {
-                // CORREÇÃO: Se estiver editando, NÃO valida a sequência
                 if (!editingRecordId) {
                     const erroSeq = validarSequencia(tipo);
                     if (erroSeq) return showToast(`⚠️ ${erroSeq}`);
@@ -561,6 +564,7 @@
             let origem = partes[0] ? partes[0].trim() : '';
             let destino = partes[1] ? partes[1].trim() : '';
 
+            // Garantir que a seta exista no salvamento
             if (tipo === 'saida') {
                 if (!destino) {
                     fLocal.classList.add('local-alert-input');
@@ -569,8 +573,8 @@
                 local = `${origem} → ${destino}`;
             } else if (tipo === 'chegada') {
                 if (!destino) {
-                     destino = origem;
-                     local = `${getLocalAtual() || limparNomeLocal(baseEl.value.trim()) || 'ORIGEM'} → ${destino}`;
+                     destino = origem || getLocalAtual() || limparNomeLocal(baseEl.value.trim()) || 'ORIGEM';
+                     local = `${destino} → ${destino}`;
                 } else {
                      local = `${origem} → ${destino}`;
                 }
@@ -583,7 +587,7 @@
             if (editingRecordId) {
                 const index = registros.findIndex(r => r.id === editingRecordId);
                 if (index !== -1) {
-                    registros[index].tipo = tipo; // Atualiza o tipo de registro caso tenha mudado (ex: saida para chegada)
+                    registros[index].tipo = tipo; 
                     if (tipo === 'chegada' || tipo === 'base') {
                         registros[index].horaChegada = hora;
                         registros[index].kmChegada = km.toString();
@@ -669,7 +673,7 @@
                 const validShifts = ['SD 12hs', 'SN 12hs', 'DN 24hs'];
                 const plantaoToSave = validShifts.includes(plantaoEl.value) ? plantaoEl.value : 'SD 12hs';
 
-                localStorage.setItem('sistemaDeslocamentoHCI_v44', JSON.stringify({ 
+                localStorage.setItem('sistemaDeslocamentoHCI_v45', JSON.stringify({ 
                     rows: registros, observacao: observacaoEl.value.toUpperCase(), condutor: condutorEl.value.toUpperCase(), 
                     unidade: baseEl.value.toUpperCase(), ambulancia: ambulanciaEl.value.toUpperCase(), placa: placaEl.value.toUpperCase(), 
                     plantao: plantaoToSave, kmInicial: kmInicialEl.value, nomeLegivel: nomeLegivelEl.value.toUpperCase(), 
@@ -1005,7 +1009,7 @@
         }
 
         function carregarLocalStorage() {
-            let raw = localStorage.getItem('sistemaDeslocamentoHCI_v44'); 
+            let raw = localStorage.getItem('sistemaDeslocamentoHCI_v45'); 
             if(!raw) { prepararFormulario(); return false; }
             try {
                 let d = JSON.parse(raw); 
@@ -1038,7 +1042,7 @@
                 return true;
             } catch(e) { 
                 console.error("Dados corrompidos no localStorage. Limpando...", e);
-                localStorage.removeItem('sistemaDeslocamentoHCI_v44');
+                localStorage.removeItem('sistemaDeslocamentoHCI_v45');
                 prepararFormulario(); 
                 return false; 
             }
