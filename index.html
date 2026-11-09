@@ -52,7 +52,6 @@
         
         .form-item input { width: 100%; min-width: 0; padding: 8px; border-radius: 8px; border: 1px solid #86efac; font-family: 'Inter'; font-size: 0.95rem; font-weight: 600; color: #064e3b; background: #fff; box-sizing: border-box; transition: 0.3s; }
         .form-item input:focus { outline: 2px solid #15803d; border-color: transparent; }
-        .form-item input::placeholder { color: #94a3b8; font-weight: 400; font-size: 0.85rem; }
         
         .km-alert-input, .time-alert-input, .local-alert-input { border-color: var(--danger) !important; background: #fef2f2 !important; color: var(--danger) !important; outline: 2px solid var(--danger) !important; animation: pulse-red 1s infinite; }
         @keyframes pulse-red { 0% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.4); } 70% { box-shadow: 0 0 0 6px rgba(220, 38, 38, 0); } 100% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0); } }
@@ -204,7 +203,8 @@
                 </div>
                 <div class="form-item full">
                     <label>Local / Destino (Origem → Destino)</label>
-                    <input type="text" id="fLocal" placeholder="DIGITE O DESTINO OU LOCAL">
+                    <!-- ALTERAÇÃO AQUI: Placeholder mais claro -->
+                    <input type="text" id="fLocal" placeholder="DIGITE O DESTINO AQUI">
                 </div>
             </div>
             
@@ -304,6 +304,13 @@
 
         fKm.addEventListener('input', () => { fKm.classList.remove('km-alert-input'); });
         fHora.addEventListener('input', () => { fHora.classList.remove('time-alert-input'); });
+        
+        // MELHORIA DE UX: Ao clicar no input de local, joga o cursor para o final para facilitar a digitação do destino
+        fLocal.addEventListener('focus', () => {
+            setTimeout(() => {
+                fLocal.setSelectionRange(fLocal.value.length, fLocal.value.length);
+            }, 10);
+        });
         fLocal.addEventListener('input', () => { fLocal.classList.remove('local-alert-input'); });
 
         for(let m = 1; m <= 12; m++) { let opt = document.createElement('option'); opt.value = m; opt.textContent = nomeMes(m).substring(0,3); mesSelect.appendChild(opt); }
@@ -384,7 +391,7 @@
             return null;
         }
 
-        // FUNÇÃO DE PREENCHIMENTO INTELIGENTE COM FOCO AUTOMÁTICO
+        // FUNÇÃO DE PREENCHIMENTO INTELIGENTE (CORRIGIDA)
         function prepararFormulario() {
             const validShifts = ['SD 12hs', 'SN 12hs', 'DN 24hs'];
             if (!validShifts.includes(plantaoEl.value)) {
@@ -410,11 +417,8 @@
             } else if (lastRecordOc.tipo === 'chegada') {
                 let dest = getLocalDisplay(lastRecordOc.local, true);
                 fLocal.value = `${dest} → `;
-                // Coloca o cursor no final para digitar o próximo destino imediatamente
-                setTimeout(() => { fLocal.focus(); fLocal.setSelectionRange(fLocal.value.length, fLocal.value.length); }, 100);
             } else if (lastRecordOc.tipo === 'base') {
                 fLocal.value = `${base} → `;
-                setTimeout(() => { fLocal.focus(); fLocal.setSelectionRange(fLocal.value.length, fLocal.value.length); }, 100);
             }
 
             fPlantaoInfo.value = `${plantaoEl.value} | ${base}`;
