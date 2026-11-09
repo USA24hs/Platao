@@ -260,7 +260,6 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', () => {
-        // ======================= FUNÇÕES AUXILIARES =======================
         const hoje = () => new Date().toISOString().slice(0,10);
         const getHoraAtual = () => { const now = new Date(); return `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`; };
         const formatDateBR = (s) => s ? s.split('-').reverse().join('/') : '';
@@ -268,7 +267,6 @@
         const diasNoMes = (m,a) => new Date(a, m, 0).getDate();
         const showToast = (msg) => { const t = document.getElementById('toast'); t.textContent = msg; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 4000); };
 
-        // Elementos DOM
         const historicoContainer = document.getElementById('historicoContainer');
         const resumoContainer = document.getElementById('resumoContainer');
         const observacaoEl = document.getElementById('observacao');
@@ -353,12 +351,10 @@
 
         function getLocalDisplay(localStr, isArrival) {
             if (!localStr) return '';
-            try {
-                const partes = localStr.split('→');
-                let origem = partes[0] ? partes[0].trim().toUpperCase() : '';
-                let destino = partes[1] ? partes[1].trim().toUpperCase() : '';
-                return isArrival ? (destino || origem) : (origem || destino);
-            } catch(e) { return limparNomeLocal(localStr); }
+            const partes = localStr.split('→');
+            let origem = partes[0] ? partes[0].trim().toUpperCase() : '';
+            let destino = partes[1] ? partes[1].trim().toUpperCase() : '';
+            return isArrival ? (destino || origem) : (origem || destino);
         }
 
         function getLastRecord() {
@@ -388,37 +384,31 @@
         }
 
         function prepararFormulario() {
-            try {
-                const validShifts = ['SD 12hs', 'SN 12hs', 'DN 24hs'];
-                if (!validShifts.includes(plantaoEl.value)) {
-                    plantaoEl.value = 'SD 12hs';
-                }
-
-                fData.value = hoje();
-                fHora.value = getHoraAtual();
-                
-                let kmRef = getUltimoKmChegada();
-                if (kmRef) fKm.value = kmRef;
-                
-                const base = limparNomeLocal(baseEl.value.trim()) || 'BASE'; 
-                const localAtual = getLocalAtual();
-                
-                if (!localAtual) {
-                    fLocal.value = `${base} → `;
-                } else {
-                    fLocal.value = `${localAtual} → `;
-                }
-                
-                atualizarLimitesDatas();
-                fKm.classList.remove('km-alert-input'); 
-                fHora.classList.remove('time-alert-input');
-                fLocal.classList.remove('local-alert-input');
-            } catch(e) {
-                console.error("Erro no prepararFormulario", e);
-            } finally {
-                const baseFallback = limparNomeLocal(baseEl.value.trim()) || 'BASE';
-                fPlantaoInfo.value = `${plantaoEl.value || 'SD 12hs'} | ${baseFallback}`;
+            const validShifts = ['SD 12hs', 'SN 12hs', 'DN 24hs'];
+            if (!validShifts.includes(plantaoEl.value)) {
+                plantaoEl.value = 'SD 12hs';
             }
+
+            fData.value = hoje();
+            fHora.value = getHoraAtual();
+            
+            let kmRef = getUltimoKmChegada();
+            if (kmRef) fKm.value = kmRef;
+            
+            const base = limparNomeLocal(baseEl.value.trim()) || 'BASE'; 
+            const localAtual = getLocalAtual();
+            
+            if (!localAtual) {
+                fLocal.value = `${base} → `;
+            } else {
+                fLocal.value = `${localAtual} → `;
+            }
+
+            fPlantaoInfo.value = `${plantaoEl.value} | ${base}`;
+            atualizarLimitesDatas();
+            fKm.classList.remove('km-alert-input'); 
+            fHora.classList.remove('time-alert-input');
+            fLocal.classList.remove('local-alert-input');
         }
 
         function resetFormUI() {
@@ -559,12 +549,20 @@
 
             if (tipo === 'base') {
                 const base = limparNomeLocal(baseEl.value.trim()) || 'BASE'; 
-                const origem = getLocalDisplay(local, false) || getLocalAtual() || 'LOCAL';
+                let origem = local.split('→')[0].trim();
+                if (!origem) origem = getLocalAtual() || base;
                 local = `${origem} → ${base}`;
             } else {
                 if (!local.includes('→')) {
-                    if (tipo === 'saida') local = `${local} → `;
-                    else local = ` → ${local}`;
+                    if (tipo === 'saida') {
+                        local = `${local} → `; 
+                    } else {
+                        const origemAtual = getLocalAtual() || limparNomeLocal(baseEl.value.trim()) || 'BASE';
+                        local = `${origemAtual} → ${local}`;
+                    }
+                } else {
+                    const p = local.split('→');
+                    local = `${p[0].trim()} → ${p[1] ? p[1].trim() : ''}`;
                 }
             }
 
@@ -656,7 +654,7 @@
                 const validShifts = ['SD 12hs', 'SN 12hs', 'DN 24hs'];
                 const plantaoToSave = validShifts.includes(plantaoEl.value) ? plantaoEl.value : 'SD 12hs';
 
-                localStorage.setItem('sistemaDeslocamentoHCI_v40', JSON.stringify({ 
+                localStorage.setItem('sistemaDeslocamentoHCI_v41', JSON.stringify({ 
                     rows: registros, observacao: observacaoEl.value.toUpperCase(), condutor: condutorEl.value.toUpperCase(), 
                     unidade: baseEl.value.toUpperCase(), ambulancia: ambulanciaEl.value.toUpperCase(), placa: placaEl.value.toUpperCase(), 
                     plantao: plantaoToSave, kmInicial: kmInicialEl.value, nomeLegivel: nomeLegivelEl.value.toUpperCase(), 
@@ -991,7 +989,7 @@
         }
 
         function carregarLocalStorage() {
-            let raw = localStorage.getItem('sistemaDeslocamentoHCI_v40'); 
+            let raw = localStorage.getItem('sistemaDeslocamentoHCI_v41'); 
             if(!raw) { prepararFormulario(); return false; }
             try {
                 let d = JSON.parse(raw); 
@@ -1024,7 +1022,7 @@
                 return true;
             } catch(e) { 
                 console.error("Dados corrompidos no localStorage. Limpando...", e);
-                localStorage.removeItem('sistemaDeslocamentoHCI_v40');
+                localStorage.removeItem('sistemaDeslocamentoHCI_v41');
                 prepararFormulario(); 
                 return false; 
             }
@@ -1199,7 +1197,6 @@
 
         window.addEventListener('beforeunload', () => salvarERenderizar());
 
-        // Inicialização rigorosa
         carregarLocalStorage();
         atualizarLimitesDatas();
     });
