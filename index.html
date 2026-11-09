@@ -60,7 +60,7 @@
         .form-item input:focus { outline: 2px solid #15803d; border-color: transparent; }
         
         /* CLASSES PARA DESTACAR ERROS */
-        .km-alert-input, .time-alert-input { border-color: var(--danger) !important; background: #fef2f2 !important; color: var(--danger) !important; outline: 2px solid var(--danger) !important; animation: pulse-red 1s infinite; }
+        .km-alert-input, .time-alert-input, .local-alert-input { border-color: var(--danger) !important; background: #fef2f2 !important; color: var(--danger) !important; outline: 2px solid var(--danger) !important; animation: pulse-red 1s infinite; }
         @keyframes pulse-red { 0% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.4); } 70% { box-shadow: 0 0 0 6px rgba(220, 38, 38, 0); } 100% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0); } }
 
         .form-actions { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; width: 100%; }
@@ -297,7 +297,7 @@
         const formatDateBR = (s) => s ? s.split('-').reverse().join('/') : '';
         const nomeMes = (m) => ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'][m-1];
         const diasNoMes = (m,a) => new Date(a, m, 0).getDate();
-        const showToast = (msg) => { const t = document.getElementById('toast'); t.textContent = msg; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 3000); };
+        const showToast = (msg) => { const t = document.getElementById('toast'); t.textContent = msg; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 4000); };
 
         // Elementos DOM
         const historicoContainer = document.getElementById('historicoContainer');
@@ -339,6 +339,7 @@
         // Remove a borda vermelha se o usuário começar a digitar
         fKm.addEventListener('input', () => { fKm.classList.remove('km-alert-input'); });
         fHora.addEventListener('input', () => { fHora.classList.remove('time-alert-input'); });
+        fLocal.addEventListener('input', () => { fLocal.classList.remove('local-alert-input'); });
 
         // Inicialização do seletor de meses
         for(let m = 1; m <= 12; m++) { let opt = document.createElement('option'); opt.value = m; opt.textContent = nomeMes(m).substring(0,3); mesSelect.appendChild(opt); }
@@ -438,6 +439,7 @@
             atualizarLimitesDatas();
             fKm.classList.remove('km-alert-input'); 
             fHora.classList.remove('time-alert-input');
+            fLocal.classList.remove('local-alert-input');
         }
 
         function resetFormUI() {
@@ -473,17 +475,15 @@
 
         // ======================= VALIDAÇÃO DE SEQUÊNCIA =======================
         function validarSequencia(tipo) {
-            // Pega todos os registros da ocorrência atual
             const itemsAtuais = registros.filter(r => r.ocorrenciaId === currentOcorrenciaId);
-            // Como os registros estão em ordem decrescente, o primeiro é o último adicionado
             const lastRecord = itemsAtuais.length > 0 ? itemsAtuais[0] : null;
 
             if (!lastRecord) {
                 if (tipo !== 'saida') return "A primeira ação de uma ocorrência deve ser SAÍDA (INÍCIO).";
-                return null; // Ok
+                return null;
             }
 
-            const lastType = lastRecord.tipo; // 'saida', 'chegada', 'base'
+            const lastType = lastRecord.tipo;
 
             if (tipo === 'saida' && lastType !== 'chegada') {
                 return "A última ação foi SAÍDA. Você deve registrar uma CHEGADA primeiro.";
@@ -500,11 +500,42 @@
 
         // ======================= INTERCEPTADOR DE ALERTA =======================
         function tentarAdicionarRegistro(tipo) {
-            // 1. Validar sequência
+            // 1. Validar sequência base
             const erroSeq = validarSequencia(tipo);
             if (erroSeq) return showToast(`⚠️ ${erroSeq}`);
 
-            // 2. Verificar KM e Hora
+            // 2. VALIDAÇÃO CRUCIAL DE LOCAL (Origem vs Destino)
+            const localInput = limparNomeLocal(fLocal.value);
+            const partes = localInput.split('→');
+            const origemInput = partes[0] ? partes[0].trim() : '';
+            const destinoInput = partes[1] ? partes[1].trim() : '';
+
+            if (tipo !== 'base' && !destinoInput) {
+                fLocal.classList.add('local-alert-input');
+                return showToast("⚠️ Erro: Preencha o local de DESTINO.");
+            }
+
+            if (origemInput && destinoInput && origemInput === destinoInput) {
+                fLocal.classList.add('local-alert-input');
+                return showToast("⚠️ Erro: O destino não pode ser o mesmo local da origem.");
+            }
+
+            if (tipo === 'chegada' || tipo === 'base') {
+                const itemsAtuais = registros.filter(r => r.ocorrenciaId === currentOcorrenciaId);
+                const lastRecord = itemsAtuais.length > 0 ? itemsAtuais[0] : null;
+                if (lastRecord && lastRecord.tipo === 'saida') {
+                    const lastLocal = lastRecord.local || '';
+                    const lastPartes = lastLocal.split('→');
+                    const lastOrigem = lastPartes[0] ? lastPartes[0].trim() : '';
+                    
+                    if (destinoInput && lastOrigem && destinoInput === lastOrigem) {
+                        fLocal.classList.add('local-alert-input');
+                        return showToast("⚠️ Erro: Você não pode chegar no local de onde acabou de sair.");
+                    }
+                }
+            }
+
+            // 3. Verificar KM e Hora
             const lastRecord = getLastRecord();
             let kmIgual = false;
             let horaIgual = false;
@@ -531,7 +562,7 @@
                 
                 let details = [];
                 details.push(`⏱️ Hora: ${ultimaHoraVal}`);
-                details.push(`🚑 KM: ${ultimoKmVal}`);
+                details.push(`🛞 KM: ${ultimoKmVal}`);
                 
                 modalAlertDetails.innerHTML = details.join('<br>');
                 modalKmAlert.classList.add('active');
@@ -543,6 +574,7 @@
             // Se passou, limpa alertas e executa
             fKm.classList.remove('km-alert-input');
             fHora.classList.remove('time-alert-input');
+            fLocal.classList.remove('local-alert-input');
             executarAdicionarRegistro(tipo);
         }
 
@@ -666,7 +698,7 @@
             localStorage.setItem('frotaKms_hci', JSON.stringify(frotaKms));
             
             let assinatura = ''; try { assinatura = canvas.toDataURL(); } catch(e) {}
-            localStorage.setItem('sistemaDeslocamentoHCI_v35', JSON.stringify({ 
+            localStorage.setItem('sistemaDeslocamentoHCI_v36', JSON.stringify({ 
                 rows: registros, observacao: observacaoEl.value.toUpperCase(), condutor: condutorEl.value.toUpperCase(), 
                 unidade: baseEl.value.toUpperCase(), ambulancia: ambulanciaEl.value.toUpperCase(), placa: placaEl.value.toUpperCase(), 
                 plantao: plantaoEl.value, kmInicial: kmInicialEl.value, nomeLegivel: nomeLegivelEl.value.toUpperCase(), 
@@ -1022,7 +1054,7 @@
 
         // ======================= PERSISTÊNCIA =======================
         function carregarLocalStorage() {
-            let raw = localStorage.getItem('sistemaDeslocamentoHCI_v35'); 
+            let raw = localStorage.getItem('sistemaDeslocamentoHCI_v36'); 
             if(!raw) { prepararFormulario(); return false; }
             try {
                 let d = JSON.parse(raw); 
