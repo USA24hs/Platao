@@ -395,9 +395,9 @@
             let destino = partes[1] ? partes[1].trim().toUpperCase() : '';
 
             if (isArrival) {
-                return destino || origem; // Se for chegada, pega o Destino. Se estiver vazio, pega a Origem.
+                return destino || origem; 
             } else {
-                return origem || destino; // Se for saída, pega a Origem. Se estiver vazio, pega o Destino.
+                return origem || destino; 
             }
         }
 
@@ -422,12 +422,18 @@
                 if (registros[i].veiculo !== veiculoAtual) continue;
                 const local = registros[i].local || '';
                 if (!local) continue;
-                return getLocalDisplay(local, true); // Pega sempre o último destino
+                return getLocalDisplay(local, true); 
             }
             return null;
         }
 
         function prepararFormulario() {
+            // GARANTIA DE PLANTÃO NÃO FICAR EM BRANCO
+            const validShifts = ['SD 12hs', 'SN 12hs', 'DN 24hs'];
+            if (!validShifts.includes(plantaoEl.value)) {
+                plantaoEl.value = 'SD 12hs';
+            }
+
             fData.value = hoje();
             fHora.value = getHoraAtual();
             
@@ -456,6 +462,13 @@
             editingRecordId = null;
             prepararFormulario();
         }
+
+        // Evento para atualizar a info do plantão quando mudar
+        plantaoEl.addEventListener('change', () => {
+            const base = limparNomeLocal(baseEl.value.trim()) || 'BASE';
+            fPlantaoInfo.value = `${plantaoEl.value} | ${base}`;
+            salvarERenderizar();
+        });
 
         // ======================= EDITAR =======================
         function editarOcorrencia(ocorrenciaId) {
@@ -508,57 +521,62 @@
 
         // ======================= INTERCEPTADOR DE ALERTA =======================
         function tentarAdicionarRegistro(tipo) {
-            // 1. Validar sequência lógica
-            const erroSeq = validarSequencia(tipo);
-            if (erroSeq) return showToast(`⚠️ ${erroSeq}`);
+            try {
+                // 1. Validar sequência lógica
+                const erroSeq = validarSequencia(tipo);
+                if (erroSeq) return showToast(`⚠️ ${erroSeq}`);
 
-            // 2. VALIDAÇÃO SUAVE DE LOCAL
-            const localInput = limparNomeLocal(fLocal.value);
-            if (tipo !== 'base' && !localInput) {
-                fLocal.classList.add('local-alert-input');
-                return showToast("⚠️ Erro: Preencha o Local / Destino.");
-            }
-
-            // 3. Verificar KM e Hora
-            const lastRecord = getLastRecord();
-            let kmIgual = false;
-            let horaIgual = false;
-            let ultimoKmVal = 0;
-            let ultimaHoraVal = '';
-
-            if (lastRecord) {
-                ultimoKmVal = parseFloat(lastRecord.kmChegada || lastRecord.kmSaida || 0);
-                ultimaHoraVal = lastRecord.horaChegada || lastRecord.horaSaida || '';
-
-                const kmAtual = parseFloat(fKm.value);
-                if (!isNaN(kmAtual) && !isNaN(ultimoKmVal) && kmAtual === ultimoKmVal) {
-                    kmIgual = true;
+                // 2. VALIDAÇÃO SUAVE DE LOCAL
+                const localInput = limparNomeLocal(fLocal.value);
+                if (tipo !== 'base' && !localInput) {
+                    fLocal.classList.add('local-alert-input');
+                    return showToast("⚠️ Erro: Preencha o Local / Destino.");
                 }
 
-                if (fHora.value && ultimaHoraVal && fHora.value === ultimaHoraVal) {
-                    horaIgual = true;
+                // 3. Verificar KM e Hora
+                const lastRecord = getLastRecord();
+                let kmIgual = false;
+                let horaIgual = false;
+                let ultimoKmVal = 0;
+                let ultimaHoraVal = '';
+
+                if (lastRecord) {
+                    ultimoKmVal = parseFloat(lastRecord.kmChegada || lastRecord.kmSaida || 0);
+                    ultimaHoraVal = lastRecord.horaChegada || lastRecord.horaSaida || '';
+
+                    const kmAtual = parseFloat(fKm.value);
+                    if (!isNaN(kmAtual) && !isNaN(ultimoKmVal) && kmAtual === ultimoKmVal) {
+                        kmIgual = true;
+                    }
+
+                    if (fHora.value && ultimaHoraVal && fHora.value === ultimaHoraVal) {
+                        horaIgual = true;
+                    }
                 }
-            }
 
-            if (kmIgual && horaIgual && !editingRecordId) {
-                pendingActionType = tipo;
-                
-                let details = [];
-                details.push(`⏱️ Hora: ${ultimaHoraVal}`);
-                details.push(`🛞 KM: ${ultimoKmVal}`);
-                
-                modalAlertDetails.innerHTML = details.join('<br>');
-                modalKmAlert.classList.add('active');
-                fKm.classList.add('km-alert-input');
-                fHora.classList.add('time-alert-input');
-                return; 
-            }
+                if (kmIgual && horaIgual && !editingRecordId) {
+                    pendingActionType = tipo;
+                    
+                    let details = [];
+                    details.push(`⏱️ Hora: ${ultimaHoraVal}`);
+                    details.push(`🛞 KM: ${ultimoKmVal}`);
+                    
+                    modalAlertDetails.innerHTML = details.join('<br>');
+                    modalKmAlert.classList.add('active');
+                    fKm.classList.add('km-alert-input');
+                    fHora.classList.add('time-alert-input');
+                    return; 
+                }
 
-            // Se passou, limpa alertas e executa
-            fKm.classList.remove('km-alert-input');
-            fHora.classList.remove('time-alert-input');
-            fLocal.classList.remove('local-alert-input');
-            executarAdicionarRegistro(tipo);
+                // Se passou, limpa alertas e executa
+                fKm.classList.remove('km-alert-input');
+                fHora.classList.remove('time-alert-input');
+                fLocal.classList.remove('local-alert-input');
+                executarAdicionarRegistro(tipo);
+            } catch (error) {
+                console.error(error);
+                showToast("⚠️ Erro inesperado ao salvar. Tente novamente.");
+            }
         }
 
         // BOTÕES DO MODAL
@@ -585,7 +603,7 @@
             if (!hora || isNaN(km)) return showToast('⚠️ Preencha Hora e KM corretamente.');
             
             const veiculoAtual = `${ambulanciaEl.value.trim().toUpperCase()} - ${placaEl.value.trim().toUpperCase()}`;
-            const plantaoAtual = plantaoEl.value;
+            const plantaoAtual = plantaoEl.value || 'SD 12hs';
 
             if (tipo === 'base') {
                 const base = limparNomeLocal(baseEl.value.trim()) || 'BASE'; 
@@ -670,27 +688,35 @@
 
         // ======================= RENDERIZAÇÃO =======================
         function salvarERenderizar() {
-            const frotaKms = JSON.parse(localStorage.getItem('frotaKms_hci') || '{}');
-            registros.forEach(r => {
-                if (r.veiculo) {
-                    if (r.kmChegada) frotaKms[r.veiculo] = r.kmChegada;
-                    else if (r.kmSaida && !frotaKms[r.veiculo]) frotaKms[r.veiculo] = r.kmSaida;
-                }
-            });
-            localStorage.setItem('frotaKms_hci', JSON.stringify(frotaKms));
-            
-            let assinatura = ''; try { assinatura = canvas.toDataURL(); } catch(e) {}
-            localStorage.setItem('sistemaDeslocamentoHCI_v37', JSON.stringify({ 
-                rows: registros, observacao: observacaoEl.value.toUpperCase(), condutor: condutorEl.value.toUpperCase(), 
-                unidade: baseEl.value.toUpperCase(), ambulancia: ambulanciaEl.value.toUpperCase(), placa: placaEl.value.toUpperCase(), 
-                plantao: plantaoEl.value, kmInicial: kmInicialEl.value, nomeLegivel: nomeLegivelEl.value.toUpperCase(), 
-                o2Portatil: o2PortatilEl.value, o2Fixo: o2FixoEl.value, abastecimento: abastecimentoEl.value,
-                mes: parseInt(mesSelect.value), ano: parseInt(anoSelect.value), assinaturaImg: assinatura,
-                currentOcorrenciaId: currentOcorrenciaId
-            }));
+            try {
+                const frotaKms = JSON.parse(localStorage.getItem('frotaKms_hci') || '{}');
+                registros.forEach(r => {
+                    if (r.veiculo) {
+                        if (r.kmChegada) frotaKms[r.veiculo] = r.kmChegada;
+                        else if (r.kmSaida && !frotaKms[r.veiculo]) frotaKms[r.veiculo] = r.kmSaida;
+                    }
+                });
+                localStorage.setItem('frotaKms_hci', JSON.stringify(frotaKms));
+                
+                let assinatura = ''; try { assinatura = canvas.toDataURL(); } catch(e) {}
+                
+                const validShifts = ['SD 12hs', 'SN 12hs', 'DN 24hs'];
+                const plantaoToSave = validShifts.includes(plantaoEl.value) ? plantaoEl.value : 'SD 12hs';
 
-            renderizarResumo();
-            renderizarFichas();
+                localStorage.setItem('sistemaDeslocamentoHCI_v38', JSON.stringify({ 
+                    rows: registros, observacao: observacaoEl.value.toUpperCase(), condutor: condutorEl.value.toUpperCase(), 
+                    unidade: baseEl.value.toUpperCase(), ambulancia: ambulanciaEl.value.toUpperCase(), placa: placaEl.value.toUpperCase(), 
+                    plantao: plantaoToSave, kmInicial: kmInicialEl.value, nomeLegivel: nomeLegivelEl.value.toUpperCase(), 
+                    o2Portatil: o2PortatilEl.value, o2Fixo: o2FixoEl.value, abastecimento: abastecimentoEl.value,
+                    mes: parseInt(mesSelect.value), ano: parseInt(anoSelect.value), assinaturaImg: assinatura,
+                    currentOcorrenciaId: currentOcorrenciaId
+                }));
+            } catch(e) {
+                console.error("Erro ao salvar no localStorage", e);
+            }
+
+            try { renderizarResumo(); } catch(e) { console.error("Erro no resumo", e); }
+            try { renderizarFichas(); } catch(e) { console.error("Erro nas fichas", e); }
         }
 
         function renderizarResumo() {
@@ -1034,7 +1060,7 @@
 
         // ======================= PERSISTÊNCIA =======================
         function carregarLocalStorage() {
-            let raw = localStorage.getItem('sistemaDeslocamentoHCI_v37') || localStorage.getItem('sistemaDeslocamentoHCI_v36'); 
+            let raw = localStorage.getItem('sistemaDeslocamentoHCI_v38'); 
             if(!raw) { prepararFormulario(); return false; }
             try {
                 let d = JSON.parse(raw); 
@@ -1042,7 +1068,15 @@
                 baseEl.value = d.unidade || 'SÓ SAÚDE'; 
                 ambulanciaEl.value = d.ambulancia || 'MASTER'; 
                 placaEl.value = d.placa || 'TGP5G55'; 
-                plantaoEl.value = d.plantao || 'SD 12hs'; 
+                
+                // Garantir que o plantão não fique vazio
+                const validShifts = ['SD 12hs', 'SN 12hs', 'DN 24hs'];
+                if (validShifts.includes(d.plantao)) {
+                    plantaoEl.value = d.plantao;
+                } else {
+                    plantaoEl.value = 'SD 12hs';
+                }
+
                 kmInicialEl.value = d.kmInicial || ''; 
                 o2PortatilEl.value = d.o2Portatil || '125%'; 
                 o2FixoEl.value = d.o2Fixo || '150%'; 
@@ -1221,7 +1255,7 @@
             el.addEventListener('input', () => salvarERenderizar()); 
         });
         
-        [plantaoEl, mesSelect, anoSelect].forEach(el => { el.addEventListener('change', () => { atualizarLimitesDatas(); salvarERenderizar(); }); });
+        [mesSelect, anoSelect].forEach(el => { el.addEventListener('change', () => { atualizarLimitesDatas(); salvarERenderizar(); }); });
         
         ambulanciaEl.addEventListener('change', () => {
             const veiculoKey = `${ambulanciaEl.value.trim().toUpperCase()} - ${placaEl.value.trim().toUpperCase()}`;
