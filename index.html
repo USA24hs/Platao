@@ -493,3 +493,761 @@
                 const localInput = limparNomeLocal(fLocal.value);
                 if (tipo !== 'base' && !localInput) {
                     fLocal.classList.add('local-alert-input');
+                    return showToast("⚠️ Erro: Preencha o Local / Destino.");
+                }
+
+                // NOVA VALIDAÇÃO: BLOQUEAR CHEGADA NO MESMO LOCAL DE SAÍDA SE O KM MUDOU
+                if (tipo === 'chegada' || tipo === 'base') {
+                    const itemsAtuais = registros.filter(r => r.ocorrenciaId === currentOcorrenciaId);
+                    const lastRecord = itemsAtuais.length > 0 ? itemsAtuais[0] : null;
+                    
+                    if (lastRecord && lastRecord.tipo === 'saida') {
+                        let localSaidaStr = lastRecord.local || '';
+                        let partesSaida = localSaidaStr.split('→');
+                        let origemSaida = partesSaida[0] ? partesSaida[0].trim().toUpperCase() : '';
+
+                        let localChegadaStr = limparNomeLocal(fLocal.value);
+                        let partesChegada = localChegadaStr.split('→');
+                        let destinoChegada = partesChegada[1] ? partesChegada[1].trim().toUpperCase() : '';
+
+                        const kmAtual = parseFloat(fKm.value);
+                        const kmSaida = parseFloat(lastRecord.kmSaida);
+
+                        if (origemSaida && destinoChegada && origemSaida === destinoChegada && kmAtual !== kmSaida) {
+                            fLocal.classList.add('local-alert-input');
+                            return showToast(`⚠️ Erro: O destino (${destinoChegada}) é o mesmo local de onde você saiu. Se você rodou (${kmSaida} -> ${kmAtual}), deve ir para outro local.`);
+                        }
+                    }
+                }
+
+                const lastRecord = getLastRecord();
+                let kmIgual = false;
+                let horaIgual = false;
+                let ultimoKmVal = 0;
+                let ultimaHoraVal = '';
+
+                if (lastRecord && !editingRecordId) {
+                    ultimoKmVal = parseFloat(lastRecord.kmChegada || lastRecord.kmSaida || 0);
+                    ultimaHoraVal = lastRecord.horaChegada || lastRecord.horaSaida || '';
+
+                    const kmAtual = parseFloat(fKm.value);
+                    if (!isNaN(kmAtual) && !isNaN(ultimoKmVal) && kmAtual === ultimoKmVal) kmIgual = true;
+                    if (fHora.value && ultimaHoraVal && fHora.value === ultimaHoraVal) horaIgual = true;
+                }
+
+                if (kmIgual && horaIgual && !editingRecordId) {
+                    pendingActionType = tipo;
+                    let details = [];
+                    details.push(`⏱️ Hora: ${ultimaHoraVal}`);
+                    details.push(`🛞 KM: ${ultimoKmVal}`);
+                    modalAlertDetails.innerHTML = details.join('<br>');
+                    modalKmAlert.classList.add('active');
+                    fKm.classList.add('km-alert-input');
+                    fHora.classList.add('time-alert-input');
+                    return; 
+                }
+
+                fKm.classList.remove('km-alert-input');
+                fHora.classList.remove('time-alert-input');
+                fLocal.classList.remove('local-alert-input');
+                executarAdicionarRegistro(tipo);
+            } catch (error) {
+                console.error("Erro em tentarAdicionarRegistro", error);
+                showToast("⚠️ Erro inesperado. Tente novamente.");
+            }
+        }
+
+        btnModalCorrigir.addEventListener('click', () => {
+            modalKmAlert.classList.remove('active');
+            fHora.focus();
+            fHora.select();
+        });
+
+        btnModalIgnorar.addEventListener('click', () => {
+            modalKmAlert.classList.remove('active');
+            fKm.classList.remove('km-alert-input');
+            fHora.classList.remove('time-alert-input');
+            try { executarAdicionarRegistro(pendingActionType); } catch(e) { console.error(e); }
+        });
+
+        function executarAdicionarRegistro(tipo) {
+            const data = fData.value;
+            const hora = fHora.value;
+            const km = parseFloat(fKm.value);
+            let local = limparNomeLocal(fLocal.value);
+
+            if (!hora || isNaN(km)) return showToast('⚠️ Preencha Hora e KM corretamente.');
+            
+            const veiculoAtual = `${ambulanciaEl.value.trim().toUpperCase()} - ${placaEl.value.trim().toUpperCase()}`;
+            const plantaoAtual = plantaoEl.value || 'SD 12hs';
+
+            let partes = local.split('→');
+            let origem = partes[0] ? partes[0].trim() : '';
+            let destino = partes[1] ? partes[1].trim() : '';
+
+            if (tipo === 'saida') {
+                if (!destino) {
+                    fLocal.classList.add('local-alert-input');
+                    return showToast('⚠️ Preencha o DESTINO para registrar a Saída.');
+                }
+                local = `${origem} → ${destino}`;
+            } else if (tipo === 'chegada') {
+                if (!destino) {
+                     destino = origem || getLocalAtual() || limparNomeLocal(baseEl.value.trim()) || 'ORIGEM';
+                     local = `${destino} → ${destino}`;
+                } else {
+                     local = `${origem} → ${destino}`;
+                }
+            } else if (tipo === 'base') {
+                const base = limparNomeLocal(baseEl.value.trim()) || 'BASE'; 
+                origem = origem || getLocalAtual() || base;
+                local = `${origem} → ${base}`;
+            }
+
+            if (editingRecordId) {
+                const index = registros.findIndex(r => r.id === editingRecordId);
+                if (index !== -1) {
+                    registros[index].tipo = tipo; 
+                    if (tipo === 'chegada' || tipo === 'base') {
+                        registros[index].horaChegada = hora;
+                        registros[index].kmChegada = km.toString();
+                        registros[index].local = local;
+                        showToast('✅ Registro atualizado!');
+                    } else if (tipo === 'saida') {
+                        registros[index].horaSaida = hora;
+                        registros[index].kmSaida = km.toString();
+                        registros[index].local = local;
+                        showToast('✅ Saída atualizada!');
+                    }
+                }
+                resetFormUI();
+                salvarERenderizar();
+                if (window.innerWidth <= 768) mainHeader.classList.add('header-collapsed');
+                return;
+            }
+
+            if (tipo === 'saida') {
+                registros.unshift({
+                    id: Date.now().toString(),
+                    ocorrenciaId: currentOcorrenciaId, 
+                    data: data,
+                    shift: plantaoAtual,
+                    tipo: 'saida',
+                    horaSaida: hora,
+                    kmSaida: km.toString(),
+                    local: local,
+                    horaChegada: '',
+                    kmChegada: '',
+                    veiculo: veiculoAtual
+                });
+                showToast('🚑 Saída registrada!');
+            } 
+            else if (tipo === 'chegada' || tipo === 'base') {
+                const index = registros.findIndex(r => r.veiculo === veiculoAtual && r.ocorrenciaId === currentOcorrenciaId && !r.horaChegada);
+
+                if (index !== -1) {
+                    registros[index].horaChegada = hora;
+                    registros[index].kmChegada = km.toString();
+                    registros[index].tipo = tipo; 
+                    if (tipo === 'base') registros[index].local = local; 
+                    
+                    if (tipo === 'base') {
+                        showToast('🏥 Fim de Plantão na Base! Nova ocorrência iniciada.');
+                        // AQUI ESTÁ A MÁGICA: Gera um novo ID para iniciar a próxima ocorrência
+                        currentOcorrenciaId = Date.now().toString(); 
+                    } else {
+                        showToast('📍 Chegada registrada!');
+                    }
+                } else {
+                    showToast('⚠️ Erro interno: Não há saída em aberto.');
+                    return;
+                }
+            }
+
+            salvarERenderizar();
+            prepararFormulario();
+            if (window.innerWidth <= 768) mainHeader.classList.add('header-collapsed');
+        }
+
+        function deletarFicha(ocorrenciaId) {
+            const grupo = registros.find(r => r.ocorrenciaId === ocorrenciaId);
+            if (!grupo) return;
+
+            if (!isRecordDeletable(grupo.data, grupo.shift)) {
+                return showToast('🔒 Plantão encerrado. Não é possível excluir.');
+            }
+            if (!confirm(`Deseja excluir ESTE deslocamento inteiro?`)) return;
+            
+            registros = registros.filter(r => r.ocorrenciaId !== ocorrenciaId);
+            salvarERenderizar();
+            showToast('🗑️ Deslocamento excluído com sucesso');
+        }
+        window.deletarFicha = deletarFicha;
+
+        function salvarERenderizar() {
+            try {
+                const frotaKms = JSON.parse(localStorage.getItem('frotaKms_hci') || '{}');
+                registros.forEach(r => {
+                    if (r.veiculo) {
+                        if (r.kmChegada) frotaKms[r.veiculo] = r.kmChegada;
+                        else if (r.kmSaida && !frotaKms[r.veiculo]) frotaKms[r.veiculo] = r.kmSaida;
+                    }
+                });
+                localStorage.setItem('frotaKms_hci', JSON.stringify(frotaKms));
+                
+                let assinatura = ''; try { assinatura = canvas.toDataURL(); } catch(e) {}
+                
+                const validShifts = ['SD 12hs', 'SN 12hs', 'DN 24hs'];
+                const plantaoToSave = validShifts.includes(plantaoEl.value) ? plantaoEl.value : 'SD 12hs';
+
+                localStorage.setItem('sistemaDeslocamentoHCI_v47', JSON.stringify({ 
+                    rows: registros, observacao: observacaoEl.value.toUpperCase(), condutor: condutorEl.value.toUpperCase(), 
+                    unidade: baseEl.value.toUpperCase(), ambulancia: ambulanciaEl.value.toUpperCase(), placa: placaEl.value.toUpperCase(), 
+                    plantao: plantaoToSave, kmInicial: kmInicialEl.value, nomeLegivel: nomeLegivelEl.value.toUpperCase(), 
+                    o2Portatil: o2PortatilEl.value, o2Fixo: o2FixoEl.value, abastecimento: abastecimentoEl.value,
+                    mes: parseInt(mesSelect.value), ano: parseInt(anoSelect.value), assinaturaImg: assinatura,
+                    currentOcorrenciaId: currentOcorrenciaId
+                }));
+            } catch(e) { console.error("Erro ao salvar no localStorage", e); }
+
+            try { renderizarResumo(); } catch(e) { console.error("Erro no resumo", e); }
+            try { renderizarFichas(); } catch(e) { console.error("Erro nas fichas", e); }
+        }
+
+        function renderizarResumo() {
+            if(registros.length === 0) {
+                resumoContainer.innerHTML = `
+                    <div class="summary-grid">
+                        <div class="summary-box">
+                            <span>Total de Ocorrências</span>
+                            <strong>0</strong>
+                        </div>
+                        <div class="summary-box">
+                            <span>KM Rodados</span>
+                            <strong style="color: var(--success)">0.0</strong>
+                        </div>
+                    </div>
+                    <div class="req-list">
+                        <div class="req-title">Unidades Solicitantes</div>
+                        <div style="text-align:center; font-size:0.75rem; color:#94a3b8; padding:5px;">PLANTÃO SEM OCORRÊNCIAS</div>
+                    </div>
+                `;
+                return;
+            }
+
+            let totalKm = 0;
+            const gruposMap = new Map();
+            
+            registros.forEach(r => {
+                const key = r.ocorrenciaId || `${r.data}_${r.shift}_${r.id}`; 
+                if (!gruposMap.has(key)) gruposMap.set(key, []);
+                gruposMap.get(key).push(r);
+            });
+
+            let totalOcorrencias = gruposMap.size;
+            let solicitantes = {};
+
+            gruposMap.forEach(items => {
+                const orderedItems = [...items].reverse(); 
+                
+                let kmIni = 0;
+                const first = orderedItems[0];
+                if (first && first.kmSaida) kmIni = parseFloat(first.kmSaida);
+
+                let kmFim = kmIni;
+                for(let i = orderedItems.length - 1; i >= 0; i--) {
+                    if(orderedItems[i].kmChegada) { kmFim = parseFloat(orderedItems[i].kmChegada); break; }
+                    if(orderedItems[i].kmSaida) { kmFim = parseFloat(orderedItems[i].kmSaida); break; }
+                }
+
+                if (kmIni > 0 && kmFim >= kmIni) {
+                    totalKm += (kmFim - kmIni);
+                }
+
+                if (first && first.local) {
+                    const partes = first.local.split('→');
+                    if (partes.length >= 2) {
+                        let destino = partes[1].trim().toUpperCase();
+                        if (destino) {
+                            solicitantes[destino] = (solicitantes[destino] || 0) + 1;
+                        }
+                    }
+                }
+            });
+
+            let solicitantesHTML = '';
+            const sortedSolicitantes = Object.keys(solicitantes).sort((a,b) => solicitantes[b] - solicitantes[a]);
+            
+            sortedSolicitantes.forEach(local => {
+                solicitantesHTML += `
+                    <div class="req-item">
+                        <span>${local}</span>
+                        <span>${solicitantes[local]}</span>
+                    </div>
+                `;
+            });
+
+            if (sortedSolicitantes.length === 0) {
+                solicitantesHTML = '<div style="text-align:center; font-size:0.75rem; color:#94a3b8; padding:5px;">Nenhum destino registrado.</div>';
+            }
+
+            resumoContainer.innerHTML = `
+                <div class="summary-grid">
+                    <div class="summary-box">
+                        <span>Total de Ocorrências</span>
+                        <strong>${totalOcorrencias}</strong>
+                    </div>
+                    <div class="summary-box">
+                        <span>KM Rodados</span>
+                        <strong style="color: var(--success)">${totalKm.toFixed(1)}</strong>
+                    </div>
+                </div>
+                <div class="req-list">
+                    <div class="req-title">Unidades Solicitantes</div>
+                    ${solicitantesHTML}
+                </div>
+            `;
+        }
+
+        function renderizarFichas() {
+            historicoContainer.innerHTML = '';
+            if(registros.length === 0) {
+                historicoContainer.innerHTML = '<p style="font-size:0.8rem; color:#475569; text-align:center; font-weight:bold; padding:10px;">PLANTÃO SEM OCORRÊNCIAS</p>';
+                return;
+            }
+
+            const gruposMap = new Map();
+            registros.forEach(r => {
+                const key = r.ocorrenciaId || `${r.data}_${r.shift}_${r.id}`; 
+                if (!gruposMap.has(key)) {
+                    gruposMap.set(key, { id: key, ocorrenciaId: r.ocorrenciaId || key, data: r.data, shift: r.shift || 'SD 12hs', items: [] });
+                }
+                gruposMap.get(key).items.push(r);
+            });
+
+            gruposMap.forEach(grupo => {
+                const items = [...grupo.items].reverse(); 
+
+                let kmInicialFicha = 0;
+                let kmFinalFicha = 0;
+                let timelineHTML = '';
+
+                items.forEach((r, index) => {
+                    const isFirst = index === 0;
+                    
+                    if (r.horaSaida) {
+                        let localSaida = getLocalDisplay(r.local, false); 
+                        kmInicialFicha = isFirst ? (parseFloat(r.kmSaida) || 0) : kmInicialFicha;
+                        
+                        if (isFirst) {
+                            timelineHTML += `
+                                <div class="timeline-row">
+                                    <div class="timeline-tag inicio">INICIO:</div>
+                                    <div class="timeline-content">
+                                        <span class="local">${localSaida}</span>
+                                        <span class="hora">H: ${r.horaSaida}</span>
+                                        <span class="km">KM: ${r.kmSaida}</span>
+                                    </div>
+                                </div>
+                            `;
+                        } else {
+                            timelineHTML += `
+                                <div class="timeline-row">
+                                    <div class="timeline-tag saida">SAÍDA:</div>
+                                    <div class="timeline-content">
+                                        <span class="local">${localSaida}</span>
+                                        <span class="hora">H: ${r.horaSaida}</span>
+                                        <span class="km">KM: ${r.kmSaida}</span>
+                                    </div>
+                                </div>
+                            `;
+                        }
+                    }
+
+                    if (r.horaChegada) {
+                        let localChegada = getLocalDisplay(r.local, true); 
+                        kmFinalFicha = parseFloat(r.kmChegada) || 0;
+                        
+                        if (r.tipo === 'base') {
+                            timelineHTML += `
+                                <div class="timeline-row">
+                                    <div class="timeline-tag fim">FIM:</div>
+                                    <div class="timeline-content">
+                                        <span class="local">${localChegada}</span>
+                                        <span class="hora">H: ${r.horaChegada}</span>
+                                        <span class="km">KM: ${r.kmChegada}</span>
+                                    </div>
+                                </div>
+                            `;
+                        } else {
+                            timelineHTML += `
+                                <div class="timeline-row">
+                                    <div class="timeline-tag chegada">CHEGADA:</div>
+                                    <div class="timeline-content">
+                                        <span class="local">${localChegada}</span>
+                                        <span class="hora">H: ${r.horaChegada}</span>
+                                        <span class="km">KM: ${r.kmChegada}</span>
+                                    </div>
+                                </div>
+                            `;
+                        }
+                    }
+                });
+
+                let dataInicio = formatDateBR(items[0].data);
+                let dataFim = dataInicio; 
+                for (let i = items.length - 1; i >= 0; i--) {
+                    if (items[i].horaChegada) { dataFim = formatDateBR(items[i].data); break; }
+                }
+                const tituloData = dataInicio === dataFim ? `DATA: ${dataInicio}` : `INÍCIO DATA: ${dataInicio} FIM DATA: ${dataFim}`;
+
+                const kmRodado = kmFinalFicha > 0 ? (kmFinalFicha - kmInicialFicha) : 0;
+                const canDelete = isRecordDeletable(grupo.data, grupo.shift);
+                
+                const btnEdit = `<button class="btn-edit-ficha" onclick="editarOcorrencia('${grupo.ocorrenciaId}')" title="Editar"><i class="fas fa-pen"></i></button>`;
+                const btnDel = canDelete 
+                    ? `<button class="btn-del-ficha" onclick="deletarFicha('${grupo.ocorrenciaId}')" title="Excluir Deslocamento"><i class="fas fa-trash-alt"></i></button>`
+                    : `<button class="btn-del-ficha locked" onclick="deletarFicha('${grupo.ocorrenciaId}')" title="Plantão Encerrado"><i class="fas fa-lock"></i></button>`;
+
+                const cardHTML = `
+                    <div class="ficha-card">
+                        <div class="ficha-header">
+                            <div class="ficha-header-info">
+                                <span><i class="far fa-calendar-alt"></i> ${tituloData} | ${grupo.shift}</span>
+                                <span>${ambulanciaEl.value.toUpperCase()} - ${placaEl.value.toUpperCase()}</span>
+                            </div>
+                            <div class="ficha-actions">
+                                ${btnEdit}
+                                ${btnDel}
+                            </div>
+                        </div>
+                        <div class="ficha-body">
+                            ${timelineHTML}
+                        </div>
+                        <div class="ficha-footer">
+                            <span>${tituloData}</span>
+                            <span>KM ROD: <span style="color:var(--success);">${kmRodado.toFixed(1)}</span></span>
+                        </div>
+                    </div>
+                `;
+                historicoContainer.innerHTML += cardHTML;
+            });
+        }
+
+        function compartilharWhatsApp() {
+            const isNoite = plantaoEl.value.includes('SN');
+            const saudacao = isNoite ? 'Boa noite!' : 'Bom dia!';
+            const agora = new Date();
+            const dataStr = `${String(agora.getDate()).padStart(2,'0')}/${String(agora.getMonth()+1).padStart(2,'0')}/${agora.getFullYear()}`;
+            const horaStr = `${String(agora.getHours()).padStart(2,'0')}:${String(agora.getMinutes()).padStart(2,'0')}`;
+            const formatPct = (val) => { if(!val) return '-'; const v = val.toString().replace('%','').trim(); return `${v}%`; };
+            const plantaoSigla = plantaoEl.value.split(' ')[0];
+
+            let texto = `*${saudacao}*\n\n`;
+            texto += `🙋🏻‍♂️ CONDUTOR: ${condutorEl.value.toUpperCase()}\n`;
+            texto += `🏥 PLANTÃO: ${plantaoSigla} | ${baseEl.value.toUpperCase()}\n`;
+            texto += `🚑 VTR: ${ambulanciaEl.value.toUpperCase()} PLACA: ${placaEl.value.toUpperCase()}\n`;
+            texto += `⛑️ O² PORTÁTIL: ${formatPct(o2PortatilEl.value)} FIXO: ${formatPct(o2FixoEl.value)}\n`;
+            texto += `⛽ ABASTECIMENTO: ${formatPct(abastecimentoEl.value)}\n`;
+            texto += `📅 ${dataStr} 🕖 ${horaStr}\n`;
+            texto += `📝 OBS: ${observacaoEl.value ? observacaoEl.value.toUpperCase() : 'SEM NOVAS AVARIAS'}\n\n`;
+            texto += `🙏🏻Bom plantão a todos!\n`;
+            texto += `-----------------------------------\n`;
+            texto += `*🚑 RELATÓRIO DE DESLOCAMENTO*\n\n`;
+
+            const gruposMap = new Map();
+            registros.forEach(r => {
+                const key = r.ocorrenciaId || `${r.data}_${r.shift}_${r.id}`; 
+                if (!gruposMap.has(key)) gruposMap.set(key, { id: key, data: r.data, shift: r.shift || 'SD 12hs', items: [] });
+                gruposMap.get(key).items.push(r);
+            });
+
+            let totalKmGeral = 0;
+            let solicitantes = {};
+
+            if (gruposMap.size === 0) {
+                texto += `*PLANTÃO SEM OCORRÊNCIAS*\n\n`;
+            } else {
+                gruposMap.forEach(grupo => {
+                    const items = [...grupo.items].reverse();
+                    let kmIni = 0; let kmFim = 0;
+
+                    const first = items[0];
+                    if (first && first.kmSaida) kmIni = parseFloat(first.kmSaida);
+
+                    for(let i = items.length - 1; i >= 0; i--) {
+                        if(items[i].kmChegada) { kmFim = parseFloat(items[i].kmChegada); break; }
+                        if(items[i].kmSaida) { kmFim = parseFloat(items[i].kmSaida); break; }
+                    }
+
+                    if (first && first.local) {
+                        const partes = first.local.split('→');
+                        if (partes.length >= 2) {
+                            let destino = partes[1].trim().toUpperCase();
+                            if (destino) solicitantes[destino] = (solicitantes[destino] || 0) + 1;
+                        }
+                    }
+
+                    items.forEach((r, index) => {
+                        const isFirst = index === 0; 
+
+                        if (r.horaSaida) {
+                            let localSaida = getLocalDisplay(r.local, false);
+                            if (isFirst) texto += `*INICIO:* ${localSaida} H: ${r.horaSaida} KM: ${r.kmSaida}\n`;
+                            else texto += `*SAÍDA:* ${localSaida} H: ${r.horaSaida} KM: ${r.kmSaida}\n`;
+                        }
+                        
+                        if (r.horaChegada) {
+                            let localChegada = getLocalDisplay(r.local, true);
+                            if (r.tipo === 'base') texto += `*FIM:* ${localChegada} H: ${r.horaChegada} KM: ${r.kmChegada}\n`;
+                            else texto += `*CHEGADA:* ${localChegada} H: ${r.horaChegada} KM: ${r.kmChegada}\n`;
+                        }
+                    });
+
+                    const kmRod = kmFim >= kmIni ? (kmFim - kmIni) : 0;
+                    totalKmGeral += kmRod;
+
+                    let dataInicioStr = formatDateBR(items[0].data);
+                    let dataFimStr = dataInicioStr; 
+                    for (let i = items.length - 1; i >= 0; i--) {
+                        if (items[i].horaChegada) { dataFimStr = formatDateBR(items[i].data); break; }
+                    }
+                    const stringData = dataInicioStr === dataFimStr ? `*DATA: ${dataInicioStr}` : `*INÍCIO DATA: ${dataInicioStr} FIM DATA: ${dataFimStr}`;
+                    
+                    texto += `\n${stringData}  KM ROD: ${kmRod.toFixed(1)}*\n`;
+                    texto += `-----------------------------------\n\n`;
+                });
+            }
+
+            texto += `*📊 RESUMO DO PLANTÃO*\n`;
+            texto += `Total de Deslocamentos: ${gruposMap.size}\n`;
+            texto += `Total KM Rodado: ${totalKmGeral.toFixed(1)} km\n\n`;
+            
+            texto += `*🏥 UNIDADES SOLICITANTES:*\n`;
+            const sortedSolicitantes = Object.keys(solicitantes).sort((a,b) => solicitantes[b] - solicitantes[a]);
+            if (sortedSolicitantes.length > 0) {
+                sortedSolicitantes.forEach(local => { texto += `• ${local}: ${solicitantes[local]}\n`; });
+            } else {
+                texto += `Nenhuma\n`;
+            }
+
+            const url = `https://api.whatsapp.com/send?text=${encodeURIComponent(texto)}`;
+            window.open(url, '_blank');
+        }
+
+        function carregarLocalStorage() {
+            let raw = localStorage.getItem('sistemaDeslocamentoHCI_v47'); 
+            if(!raw) { prepararFormulario(); return false; }
+            try {
+                let d = JSON.parse(raw); 
+                condutorEl.value = d.condutor || 'ANDERSON MARTINS'; 
+                baseEl.value = d.unidade || 'SÓ SAÚDE'; 
+                ambulanciaEl.value = d.ambulancia || 'MASTER'; 
+                placaEl.value = d.placa || 'TGP5G55'; 
+                
+                const validShifts = ['SD 12hs', 'SN 12hs', 'DN 24hs'];
+                plantaoEl.value = validShifts.includes(d.plantao) ? d.plantao : 'SD 12hs';
+
+                kmInicialEl.value = d.kmInicial || ''; 
+                o2PortatilEl.value = d.o2Portatil || '125%'; 
+                o2FixoEl.value = d.o2Fixo || '150%'; 
+                abastecimentoEl.value = d.abastecimento || '75%';
+                nomeLegivelEl.value = d.nomeLegivel || 'ANDERSON MARTINS'; 
+                observacaoEl.value = d.observacao || '';
+                
+                if(d.mes) mesSelect.value = d.mes; if(d.ano) anoSelect.value = d.ano;
+                registros = d.rows || [];
+                currentOcorrenciaId = d.currentOcorrenciaId || Date.now().toString(); 
+                
+                if(d.assinaturaImg && d.assinaturaImg !== 'data:,') { let img = new Image(); img.onload = () => ctx.drawImage(img, 0, 0, canvas.width, canvas.height); img.src = d.assinaturaImg; }
+                
+                prepararFormulario();
+                renderizarResumo();
+                renderizarFichas(); 
+                
+                if (window.innerWidth <= 768 && registros.length > 0) mainHeader.classList.add('header-collapsed');
+                return true;
+            } catch(e) { 
+                console.error("Dados corrompidos no localStorage. Limpando...", e);
+                localStorage.removeItem('sistemaDeslocamentoHCI_v47');
+                prepararFormulario(); 
+                return false; 
+            }
+        }
+
+        async function gerarRelatorio() {
+            const btn = document.getElementById('pdfBtn'); btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Gerando...';
+            try {
+                const dataHora = new Date().toLocaleString('pt-BR'); const assinaturaImg = canvas.toDataURL('image/png'); const mesNome2 = nomeMes(parseInt(mesSelect.value)); const ano = anoSelect.value;
+                
+                const gruposMap = new Map();
+                registros.forEach(r => {
+                    const key = r.ocorrenciaId || `${r.data}_${r.shift}_${r.id}`; 
+                    if (!gruposMap.has(key)) gruposMap.set(key, { id: key, data: r.data, shift: r.shift || 'SD 12hs', items: [] });
+                    gruposMap.get(key).items.push(r);
+                });
+
+                let fichasHTML = '';
+
+                if (gruposMap.size === 0) {
+                    fichasHTML = '<div style="text-align:center; font-weight:bold; padding:20px; color:#475569; font-size:12pt;">PLANTÃO SEM OCORRÊNCIAS</div>';
+                } else {
+                    gruposMap.forEach(grupo => {
+                        const items = [...grupo.items].reverse();
+                        let timelineStr = '';
+                        let kmIni = 0; let kmFim = 0;
+
+                        items.forEach((r, index) => {
+                            const isFirst = index === 0; 
+
+                            if (r.horaSaida) {
+                                let localSaida = getLocalDisplay(r.local, false);
+                                kmIni = isFirst ? (parseFloat(r.kmSaida) || 0) : kmIni;
+                                if (isFirst) timelineStr += `<div style="display:flex; justify-content:space-between; font-weight:bold; color:#0e5a77; margin-bottom:4px;"><span>INICIO: ${localSaida}</span><span>H: ${r.horaSaida}</span><span>KM: ${r.kmSaida}</span></div>`;
+                                else timelineStr += `<div style="display:flex; justify-content:space-between; color:#f59e0b; font-weight:bold; margin-bottom:4px;"><span>SAÍDA: ${localSaida}</span><span>H: ${r.horaSaida}</span><span>KM: ${r.kmSaida}</span></div>`;
+                            }
+                            
+                            if (r.horaChegada) {
+                                let localChegada = getLocalDisplay(r.local, true);
+                                kmFim = parseFloat(r.kmChegada) || 0;
+                                if (r.tipo === 'base') timelineStr += `<div style="display:flex; justify-content:space-between; font-weight:bold; color:#dc2626; margin-bottom:4px;"><span>FIM: ${localChegada}</span><span>H: ${r.horaChegada}</span><span>KM: ${r.kmChegada}</span></div>`;
+                                else timelineStr += `<div style="display:flex; justify-content:space-between; color:#15803d; font-weight:bold; margin-bottom:4px;"><span>CHEGADA: ${localChegada}</span><span>H: ${r.horaChegada}</span><span>KM: ${r.kmChegada}</span></div>`;
+                            }
+                        });
+
+                        const kmRod = kmFim > 0 ? (kmFim - kmIni).toFixed(1) : '0.0';
+
+                        let dataInicioStr = formatDateBR(items[0].data);
+                        let dataFimStr = dataInicioStr; 
+                        for (let i = items.length - 1; i >= 0; i--) {
+                            if (items[i].horaChegada) { dataFimStr = formatDateBR(items[i].data); break; }
+                        }
+                        const tituloData = dataInicioStr === dataFimStr ? `DATA: ${dataInicioStr}` : `INÍCIO DATA: ${dataInicioStr} FIM DATA: ${dataFimStr}`;
+                        
+                        fichasHTML += `
+                            <div style="border:1px solid #ccc; padding:10px; margin-bottom:15px; border-radius:8px;">
+                                <div style="background:#f1f5f9; padding:5px; font-weight:bold; font-size:10pt; margin-bottom:10px;">${tituloData} | ${grupo.shift}</div>
+                                <div style="font-size:9pt; line-height:1.8;">${timelineStr}</div>
+                                <div style="border-top:1px dashed #ccc; margin-top:10px; padding-top:5px; display:flex; justify-content:space-between; font-weight:bold; font-size:10pt;">
+                                    <span>${tituloData}</span>
+                                    <span>KM ROD: ${kmRod}</span>
+                                </div>
+                            </div>
+                        `;
+                    });
+                }
+
+                let totalKmPdf = 0;
+                let solicitantesPdf = {};
+                gruposMap.forEach(items => {
+                    const orderedItems = [...items.items].reverse(); 
+                    const first = orderedItems[0];
+                    if (first && first.kmSaida) kmIni = parseFloat(first.kmSaida);
+                    
+                    let kmFim = kmIni;
+                    for(let i = orderedItems.length - 1; i >= 0; i--) {
+                        if(orderedItems[i].kmChegada) { kmFim = parseFloat(orderedItems[i].kmChegada); break; }
+                        if(orderedItems[i].kmSaida) { kmFim = parseFloat(orderedItems[i].kmSaida); break; }
+                    }
+                    if (kmIni > 0 && kmFim >= kmIni) totalKmPdf += (kmFim - kmIni);
+
+                    if (first && first.local) {
+                        const partes = first.local.split('→');
+                        if (partes.length >= 2) {
+                            let destino = partes[1].trim().toUpperCase();
+                            if (destino) solicitantesPdf[destino] = (solicitantesPdf[destino] || 0) + 1;
+                        }
+                    }
+                });
+
+                let resumoPdfHTML = `
+                    <div style="border:1px solid #bae6fd; background:#f0f9ff; padding:15px; border-radius:8px; margin-bottom:20px;">
+                        <h3 style="color:#0369a1; font-size:12pt; margin-bottom:10px;">RESUMO DO PLANTÃO</h3>
+                        <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
+                            <div><strong>Total de Ocorrências:</strong> ${gruposMap.size}</div>
+                            <div><strong>KM Total Rodado:</strong> ${totalKmPdf.toFixed(1)} km</div>
+                        </div>
+                        <div style="border-top:1px dashed #bae6fd; padding-top:10px;">
+                            <strong style="font-size:10pt; color:#0369a1;">UNIDADES SOLICITANTES:</strong><br>
+                            <ul style="font-size:9pt; margin-left:20px; margin-top:5px; color:#334155;">
+                `;
+                
+                const sortedPdf = Object.keys(solicitantesPdf).sort((a,b) => solicitantesPdf[b] - solicitantesPdf[a]);
+                if (sortedPdf.length > 0) {
+                    sortedPdf.forEach(local => { resumoPdfHTML += `<li>${local}: <strong>${solicitantesPdf[local]}</strong></li>`; });
+                } else {
+                    resumoPdfHTML += `<li>Nenhuma</li>`;
+                }
+                
+                resumoPdfHTML += `</ul></div></div>`;
+
+                const obsHTML = observacaoEl.value ? `<div style="padding:10px; border:1px solid #ddd; background:#f9f9f9; margin-top:20px;"><strong>📋 OBSERVAÇÕES:</strong> ${observacaoEl.value.toUpperCase().replace(/\n/g, '<br>')}</div>` : '';
+
+                const relatorioHTML = `
+                    <!DOCTYPE html><html><head><meta charset="UTF-8"><title>Relatório 🚑</title>
+                    <style>* { margin:0; padding:0; box-sizing:border-box; } body { font-family: Arial, sans-serif; background:#fff; padding:20px; color:#202124; } .container { max-width:800px; margin:0 auto; } h1 { font-size:18pt; color:#0e5a77; margin-bottom:5px; } .sub { font-size:10pt; color:#5f6368; margin-bottom:20px; border-bottom:1px solid #dadce0; padding-bottom:10px; } .info-table { width:100%; border-collapse:collapse; margin-bottom:20px; font-size:9pt; } .info-table td { padding:6px 10px; border:1px solid #dadce0; } .info-table td:first-child { background:#f1f3f4; font-weight:600; width:15%; } .footer { margin-top:30px; display:flex; justify-content:space-between; align-items:center; border-top:1px solid #dadce0; padding-top:20px; } .signature { display:flex; gap:30px; align-items:center; } .signature img { max-height:60px; border:1px solid #ccc; background:#fff; } @media print { body { padding:0; margin:0; } .no-print { display:none; } }</style>
+                    </head><body><div class="container">
+                        <h1>📄 Relatório de Deslocamento</h1><div class="sub">Controle de Frota · ${mesNome2} / ${ano}</div>
+                        <table class="info-table">
+                            <tr><td>CONDUTOR</td><td>${condutorEl.value.toUpperCase()}</td><td>PLANTÃO</td><td>${plantaoEl.value.toUpperCase()}</td></tr>
+                            <tr><td>AMBULÂNCIA</td><td>${ambulanciaEl.value.toUpperCase()}</td><td>PLACA</td><td>${placaEl.value.toUpperCase()}</td></tr>
+                            <tr><td>KM INICIAL</td><td>${kmInicialEl.value || '-'}</td><td>BASE</td><td>${baseEl.value.toUpperCase()}</td></tr>
+                            <tr><td>O² PORTÁTIL</td><td>${o2PortatilEl.value || '-'}</td><td>O² FIXO</td><td>${o2FixoEl.value || '-'}</td></tr>
+                            <tr><td>ABASTECIMENTO</td><td>${abastecimentoEl.value || '-'}</td><td>GERADO EM</td><td>${dataHora}</td></tr>
+                        </table>
+                        
+                        ${resumoPdfHTML}
+
+                        ${fichasHTML}
+                        ${obsHTML}
+
+                        <div class="footer"><div class="signature"><div>Assinatura:</div><img src="${assinaturaImg}" alt="Assinatura"></div><div><strong>Condutor:</strong> ${nomeLegivelEl.value.toUpperCase()}</div></div>
+                    </div><div class="no-print" style="text-align:center; margin-top:20px;"><button onclick="window.print()" style="padding:10px 20px; font-size:14px;">🖨️ Imprimir PDF</button> <button onclick="window.close()" style="padding:10px 20px; font-size:14px;">❌ Fechar</button></div></body></html>`;
+                const win = window.open('', '_blank'); win.document.write(relatorioHTML); win.document.close(); win.focus();
+                showToast('✅ PDF Gerado!');
+            } catch(err) { showToast('❌ Erro'); } finally { btn.disabled = false; btn.innerHTML = '<i class="fas fa-file-pdf"></i> Gerar Relatório (PDF)'; }
+        }
+
+        document.getElementById('btnRegSaida').addEventListener('click', () => tentarAdicionarRegistro('saida'));
+        document.getElementById('btnRegChegada').addEventListener('click', () => tentarAdicionarRegistro('chegada'));
+        document.getElementById('btnRegBase').addEventListener('click', () => tentarAdicionarRegistro('base'));
+        document.getElementById('pdfBtn').addEventListener('click', gerarRelatorio);
+        document.getElementById('btnShareWhats').addEventListener('click', compartilharWhatsApp);
+
+        document.getElementById('btnNovaOcorrencia').addEventListener('click', () => {
+            if (editingRecordId) showToast('Edição cancelada. Novo deslocamento iniciado.');
+            else showToast('🆕 Novo deslocamento iniciado');
+            
+            currentOcorrenciaId = Date.now().toString(); 
+            resetFormUI(); 
+            fHora.focus();
+        });
+
+        [condutorEl, baseEl, ambulanciaEl, placaEl, kmInicialEl, nomeLegivelEl, observacaoEl, o2PortatilEl, o2FixoEl, abastecimentoEl].forEach(el => { 
+            el.addEventListener('input', () => salvarERenderizar()); 
+        });
+        
+        [mesSelect, anoSelect].forEach(el => { el.addEventListener('change', () => { atualizarLimitesDatas(); salvarERenderizar(); }); });
+        
+        ambulanciaEl.addEventListener('change', () => {
+            const veiculoKey = `${ambulanciaEl.value.trim().toUpperCase()} - ${placaEl.value.trim().toUpperCase()}`;
+            const frotaKms = JSON.parse(localStorage.getItem('frotaKms_hci') || '{}');
+            if (frotaKms[veiculoKey]) kmInicialEl.value = frotaKms[veiculoKey]; else kmInicialEl.value = '';
+            prepararFormulario();
+        });
+
+        placaEl.addEventListener('change', () => {
+            const veiculoKey = `${ambulanciaEl.value.trim().toUpperCase()} - ${placaEl.value.trim().toUpperCase()}`;
+            const frotaKms = JSON.parse(localStorage.getItem('frotaKms_hci') || '{}');
+            if (frotaKms[veiculoKey]) kmInicialEl.value = frotaKms[veiculoKey]; else kmInicialEl.value = '';
+            prepararFormulario();
+        });
+
+        window.addEventListener('beforeunload', () => salvarERenderizar());
+
+        carregarLocalStorage();
+        atualizarLimitesDatas();
+    });
+</script>
+</body>
+</html>
