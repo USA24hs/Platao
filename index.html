@@ -304,7 +304,7 @@
         fKm.addEventListener('input', () => { fKm.classList.remove('km-alert-input'); });
         fHora.addEventListener('input', () => { fHora.classList.remove('time-alert-input'); });
         
-        // FOCO NO CAMPO LOCAL: seleciona automaticamente a parte do DESTINO para facilitar edição
+        // FOCO NO CAMPO LOCAL: seleciona automaticamente a parte do DESTINO (após a seta)
         fLocal.addEventListener('focus', () => {
             setTimeout(() => {
                 const val = fLocal.value;
@@ -312,10 +312,8 @@
                 if (arrowPos !== -1) {
                     let start = arrowPos + 1;
                     while (start < val.length && val[start] === ' ') start++;
-                    if (start < val.length) {
-                        fLocal.setSelectionRange(start, val.length);
-                        return;
-                    }
+                    fLocal.setSelectionRange(start, val.length);
+                    return;
                 }
                 fLocal.setSelectionRange(val.length, val.length);
             }, 50);
@@ -426,9 +424,9 @@
                 let dest = getLocalDisplay(lastRecordOc.local, true);
                 fLocal.value = `${dest} → ${dest}`; 
             } else if (lastRecordOc.tipo === 'chegada') {
-                // Após CHEGADA: campo mostra DESTINO → DESTINO (auto); condutor edita o 2º destino para a próxima SAÍDA
+                // Após CHEGADA: campo mostra DESTINO → VAZIO (condutor digita o novo destino)
                 let dest = getLocalDisplay(lastRecordOc.local, true);
-                fLocal.value = `${dest} → ${dest}`; 
+                fLocal.value = `${dest} → `; 
             } else if (lastRecordOc.tipo === 'base') {
                 // Após FIM: volta para BASE → (nova ocorrência)
                 fLocal.value = `${base} → `;
@@ -517,7 +515,7 @@
                     return showToast("⚠️ Erro: Preencha o Local / Destino.");
                 }
 
-                // VALIDAÇÃO: BLOQUEAR CHEGADA NO MESMO LOCAL DE SAÍDA SE O KM MUDOU
+                // Validação: bloqueia CHEGADA no mesmo local de saída se KM mudou
                 if (tipo === 'chegada' || tipo === 'base') {
                     const itemsAtuais = registros.filter(r => r.ocorrenciaId === currentOcorrenciaId);
                     const lastRecordOc = itemsAtuais.length > 0 ? itemsAtuais[0] : null;
@@ -608,13 +606,19 @@
 
             // Formatação do campo Local baseada na ação
             if (tipo === 'saida') {
-                if (!destino) {
+                // ===== COMPORTAMENTO "CLIQUE DIRETO" =====
+                // Se o condutor NÃO digitou destino (campo vazio após a seta),
+                // auto-preenche com a origem para permitir "clique direto" em Saída
+                if (!destino && origem) {
+                    destino = origem;
+                    local = `${origem} → ${destino}`;
+                    fLocal.value = local;
+                } else if (!destino) {
                     fLocal.classList.add('local-alert-input');
                     return showToast('⚠️ Preencha o DESTINO para registrar a Saída.');
+                } else {
+                    local = `${origem} → ${destino}`;
                 }
-                // Saída com origem == destino é PERMITIDA (ex.: HTO → HTO após chegada,
-                // representando deslocamento que retorna ao mesmo local ou apenas fechamento de ciclo)
-                local = `${origem} → ${destino}`;
             } else if (tipo === 'chegada') {
                 if (!destino) {
                      destino = origem || getLocalAtual() || limparNomeLocal(baseEl.value.trim()) || 'ORIGEM';
