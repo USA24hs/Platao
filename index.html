@@ -411,13 +411,13 @@
                 // 1. INÍCIO (Sai da Base para o Destino)
                 fLocal.value = `${base} → `;
             } else if (lastRecordOc.tipo === 'saida') {
-                // 2. CHEGADA (Vai para o mesmo destino da saída)
+                // 2. CHEGADA (Prepara o campo com Destino -> Destino para o botão Chegada)
                 let dest = getLocalDisplay(lastRecordOc.local, true);
                 fLocal.value = `${dest} → ${dest}`; 
             } else if (lastRecordOc.tipo === 'chegada') {
-                // 3. SAÍDA (Prepara com HTO -> HTO para o usuário clicar em Saída e depois Base)
+                // 3. SAÍDA (Prepara o campo com Destino -> VAZIO para o usuário digitar o próximo HRL)
                 let dest = getLocalDisplay(lastRecordOc.local, true);
-                fLocal.value = `${dest} → ${dest}`; 
+                fLocal.value = `${dest} → `; 
             } else if (lastRecordOc.tipo === 'base') {
                 // 4. FIM (Volta para a base e reinicia)
                 fLocal.value = `${base} → `;
@@ -487,12 +487,12 @@
                 return "A última ação foi SAÍDA. Você deve registrar uma CHEGADA primeiro.";
             }
             
-            // Impede duas chegadas seguidas (mas permite Base direto para evitar notificação)
+            // Impede duas chegadas seguidas
             if (tipo === 'chegada' && lastType !== 'saida') {
                 return "A última ação foi CHEGADA. Você deve registrar uma SAÍDA primeiro.";
             }
             
-            // Base (Fim) é SEMPRE permitida e não gera notificação
+            // Base (Fim) é SEMPRE permitida e não gera notificação de erro!
             return null;
         }
 
@@ -598,7 +598,7 @@
             let origem = partes[0] ? partes[0].trim() : '';
             let destino = partes[1] ? partes[1].trim() : '';
 
-            // Formatação estrita do Local/Destino baseada na ação
+            // Formatação do campo Local baseada na ação
             if (tipo === 'saida') {
                 if (!destino) {
                     fLocal.classList.add('local-alert-input');
@@ -616,7 +616,7 @@
                 const base = limparNomeLocal(baseEl.value.trim()) || 'BASE'; 
                 origem = origem || getLocalAtual() || base;
                 local = `${origem} → ${base}`;
-                fLocal.value = local; // Força o campo a mostrar HTO -> BASE antes de salvar
+                fLocal.value = local; // Força a barra mostrar a origem -> base
             }
 
             if (editingRecordId) {
@@ -661,6 +661,7 @@
                 const index = registros.findIndex(r => r.veiculo === veiculoAtual && r.ocorrenciaId === currentOcorrenciaId && !r.horaChegada);
 
                 if (index !== -1) {
+                    // Tem saída em aberto
                     registros[index].horaChegada = hora;
                     registros[index].kmChegada = km.toString();
                     registros[index].tipo = tipo; 
@@ -673,8 +674,27 @@
                         showToast('📍 Chegada registrada!');
                     }
                 } else {
-                    showToast('⚠️ Erro interno: Não há saída em aberto.');
-                    return;
+                    // Não tem saída em aberto (clicou em Base direto, por exemplo)
+                    if (tipo === 'base') {
+                        registros.unshift({
+                            id: Date.now().toString(),
+                            ocorrenciaId: currentOcorrenciaId, 
+                            data: data,
+                            shift: plantaoAtual,
+                            tipo: 'base',
+                            horaSaida: '',
+                            kmSaida: '',
+                            local: local,
+                            horaChegada: hora,
+                            kmChegada: km.toString(),
+                            veiculo: veiculoAtual
+                        });
+                        showToast('🏥 Fim de Plantão na Base!');
+                        currentOcorrenciaId = Date.now().toString(); 
+                    } else {
+                        showToast('⚠️ Erro interno: Não há saída em aberto.');
+                        return;
+                    }
                 }
             }
 
@@ -714,7 +734,7 @@
                 const validShifts = ['SD 12hs', 'SN 12hs', 'DN 24hs'];
                 const plantaoToSave = validShifts.includes(plantaoEl.value) ? plantaoEl.value : 'SD 12hs';
 
-                localStorage.setItem('sistemaDeslocamentoHCI_v56', JSON.stringify({ 
+                localStorage.setItem('sistemaDeslocamentoHCI_v57', JSON.stringify({ 
                     rows: registros, observacao: observacaoEl.value.toUpperCase(), condutor: condutorEl.value.toUpperCase(), 
                     unidade: baseEl.value.toUpperCase(), ambulancia: ambulanciaEl.value.toUpperCase(), placa: placaEl.value.toUpperCase(), 
                     plantao: plantaoToSave, kmInicial: kmInicialEl.value, nomeLegivel: nomeLegivelEl.value.toUpperCase(), 
@@ -1050,7 +1070,7 @@
         }
 
         function carregarLocalStorage() {
-            let raw = localStorage.getItem('sistemaDeslocamentoHCI_v56'); 
+            let raw = localStorage.getItem('sistemaDeslocamentoHCI_v57'); 
             if(!raw) { prepararFormulario(); return false; }
             try {
                 let d = JSON.parse(raw); 
@@ -1083,7 +1103,7 @@
                 return true;
             } catch(e) { 
                 console.error("Dados corrompidos no localStorage. Limpando...", e);
-                localStorage.removeItem('sistemaDeslocamentoHCI_v56');
+                localStorage.removeItem('sistemaDeslocamentoHCI_v57');
                 prepararFormulario(); 
                 return false; 
             }
