@@ -395,7 +395,7 @@
             let destino = partes[1] ? partes[1].trim().toUpperCase() : '';
 
             if (isArrival) {
-                return destino || origem; // Se for chegada, pega o Destino. Se estiver vazio, pega a Origem (caso digitaram só o nome).
+                return destino || origem; // Se for chegada, pega o Destino. Se estiver vazio, pega a Origem.
             } else {
                 return origem || destino; // Se for saída, pega a Origem. Se estiver vazio, pega o Destino.
             }
@@ -484,14 +484,14 @@
         // ======================= VALIDAÇÃO DE SEQUÊNCIA =======================
         function validarSequencia(tipo) {
             const itemsAtuais = registros.filter(r => r.ocorrenciaId === currentOcorrenciaId);
-            const lastRecord = itemsAtuais.length > 0 ? itemsAtuais[0] : null; // O mais recente está no índice 0
+            const lastRecord = itemsAtuais.length > 0 ? itemsAtuais[0] : null;
 
             if (!lastRecord) {
                 if (tipo !== 'saida') return "A primeira ação de uma ocorrência deve ser SAÍDA (INÍCIO).";
                 return null;
             }
 
-            const lastType = lastRecord.tipo; // 'saida', 'chegada', 'base'
+            const lastType = lastRecord.tipo;
 
             if (tipo === 'saida' && lastType !== 'chegada') {
                 return "A última ação foi SAÍDA. Você deve registrar uma CHEGADA primeiro.";
@@ -508,22 +508,18 @@
 
         // ======================= INTERCEPTADOR DE ALERTA =======================
         function tentarAdicionarRegistro(tipo) {
-            // 1. Validar sequência lógica (Inicio -> Chegada -> Saída -> Fim)
+            // 1. Validar sequência lógica
             const erroSeq = validarSequencia(tipo);
             if (erroSeq) return showToast(`⚠️ ${erroSeq}`);
 
             // 2. VALIDAÇÃO SUAVE DE LOCAL
             const localInput = limparNomeLocal(fLocal.value);
-            const partes = localInput.split('→');
-            const origemInput = partes[0] ? partes[0].trim() : '';
-            const destinoInput = partes[1] ? partes[1].trim() : '';
-
-            if (tipo !== 'base' && !destinoInput && !origemInput) {
+            if (tipo !== 'base' && !localInput) {
                 fLocal.classList.add('local-alert-input');
                 return showToast("⚠️ Erro: Preencha o Local / Destino.");
             }
 
-            // 3. Verificar KM e Hora (Só bloqueia se AMBOS forem iguais)
+            // 3. Verificar KM e Hora
             const lastRecord = getLastRecord();
             let kmIgual = false;
             let horaIgual = false;
@@ -1038,7 +1034,7 @@
 
         // ======================= PERSISTÊNCIA =======================
         function carregarLocalStorage() {
-            let raw = localStorage.getItem('sistemaDeslocamentoHCI_v37'); 
+            let raw = localStorage.getItem('sistemaDeslocamentoHCI_v37') || localStorage.getItem('sistemaDeslocamentoHCI_v36'); 
             if(!raw) { prepararFormulario(); return false; }
             try {
                 let d = JSON.parse(raw); 
