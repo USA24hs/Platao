@@ -290,7 +290,8 @@
 <div class="toast" id="toast"></div>
 
 <script>
-    (function() {
+    // Garante que o código só rode depois que o HTML for todo carregado
+    window.addEventListener('DOMContentLoaded', () => {
         // ======================= FUNÇÕES AUXILIARES =======================
         const hoje = () => new Date().toISOString().slice(0,10);
         const getHoraAtual = () => { const now = new Date(); return `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`; };
@@ -427,8 +428,9 @@
             return null;
         }
 
+        // FUNÇÃO QUE PREENCHE AUTOMÁTICO (Garantida)
         function prepararFormulario() {
-            // GARANTIA DE PLANTÃO NÃO FICAR EM BRANCO
+            // Força o Plantão a ter um valor válido
             const validShifts = ['SD 12hs', 'SN 12hs', 'DN 24hs'];
             if (!validShifts.includes(plantaoEl.value)) {
                 plantaoEl.value = 'SD 12hs';
@@ -449,7 +451,9 @@
                 fLocal.value = `${localAtual} → `;
             }
 
+            // Preenche o campo Plantão de forma garantida
             fPlantaoInfo.value = `${plantaoEl.value} | ${base}`;
+            
             atualizarLimitesDatas();
             fKm.classList.remove('km-alert-input'); 
             fHora.classList.remove('time-alert-input');
@@ -521,62 +525,57 @@
 
         // ======================= INTERCEPTADOR DE ALERTA =======================
         function tentarAdicionarRegistro(tipo) {
-            try {
-                // 1. Validar sequência lógica
-                const erroSeq = validarSequencia(tipo);
-                if (erroSeq) return showToast(`⚠️ ${erroSeq}`);
+            // 1. Validar sequência lógica
+            const erroSeq = validarSequencia(tipo);
+            if (erroSeq) return showToast(`⚠️ ${erroSeq}`);
 
-                // 2. VALIDAÇÃO SUAVE DE LOCAL
-                const localInput = limparNomeLocal(fLocal.value);
-                if (tipo !== 'base' && !localInput) {
-                    fLocal.classList.add('local-alert-input');
-                    return showToast("⚠️ Erro: Preencha o Local / Destino.");
-                }
-
-                // 3. Verificar KM e Hora
-                const lastRecord = getLastRecord();
-                let kmIgual = false;
-                let horaIgual = false;
-                let ultimoKmVal = 0;
-                let ultimaHoraVal = '';
-
-                if (lastRecord) {
-                    ultimoKmVal = parseFloat(lastRecord.kmChegada || lastRecord.kmSaida || 0);
-                    ultimaHoraVal = lastRecord.horaChegada || lastRecord.horaSaida || '';
-
-                    const kmAtual = parseFloat(fKm.value);
-                    if (!isNaN(kmAtual) && !isNaN(ultimoKmVal) && kmAtual === ultimoKmVal) {
-                        kmIgual = true;
-                    }
-
-                    if (fHora.value && ultimaHoraVal && fHora.value === ultimaHoraVal) {
-                        horaIgual = true;
-                    }
-                }
-
-                if (kmIgual && horaIgual && !editingRecordId) {
-                    pendingActionType = tipo;
-                    
-                    let details = [];
-                    details.push(`⏱️ Hora: ${ultimaHoraVal}`);
-                    details.push(`🛞 KM: ${ultimoKmVal}`);
-                    
-                    modalAlertDetails.innerHTML = details.join('<br>');
-                    modalKmAlert.classList.add('active');
-                    fKm.classList.add('km-alert-input');
-                    fHora.classList.add('time-alert-input');
-                    return; 
-                }
-
-                // Se passou, limpa alertas e executa
-                fKm.classList.remove('km-alert-input');
-                fHora.classList.remove('time-alert-input');
-                fLocal.classList.remove('local-alert-input');
-                executarAdicionarRegistro(tipo);
-            } catch (error) {
-                console.error(error);
-                showToast("⚠️ Erro inesperado ao salvar. Tente novamente.");
+            // 2. VALIDAÇÃO SUAVE DE LOCAL
+            const localInput = limparNomeLocal(fLocal.value);
+            if (tipo !== 'base' && !localInput) {
+                fLocal.classList.add('local-alert-input');
+                return showToast("⚠️ Erro: Preencha o Local / Destino.");
             }
+
+            // 3. Verificar KM e Hora
+            const lastRecord = getLastRecord();
+            let kmIgual = false;
+            let horaIgual = false;
+            let ultimoKmVal = 0;
+            let ultimaHoraVal = '';
+
+            if (lastRecord) {
+                ultimoKmVal = parseFloat(lastRecord.kmChegada || lastRecord.kmSaida || 0);
+                ultimaHoraVal = lastRecord.horaChegada || lastRecord.horaSaida || '';
+
+                const kmAtual = parseFloat(fKm.value);
+                if (!isNaN(kmAtual) && !isNaN(ultimoKmVal) && kmAtual === ultimoKmVal) {
+                    kmIgual = true;
+                }
+
+                if (fHora.value && ultimaHoraVal && fHora.value === ultimaHoraVal) {
+                    horaIgual = true;
+                }
+            }
+
+            if (kmIgual && horaIgual && !editingRecordId) {
+                pendingActionType = tipo;
+                
+                let details = [];
+                details.push(`⏱️ Hora: ${ultimaHoraVal}`);
+                details.push(`🛞 KM: ${ultimoKmVal}`);
+                
+                modalAlertDetails.innerHTML = details.join('<br>');
+                modalKmAlert.classList.add('active');
+                fKm.classList.add('km-alert-input');
+                fHora.classList.add('time-alert-input');
+                return; 
+            }
+
+            // Se passou, limpa alertas e executa
+            fKm.classList.remove('km-alert-input');
+            fHora.classList.remove('time-alert-input');
+            fLocal.classList.remove('local-alert-input');
+            executarAdicionarRegistro(tipo);
         }
 
         // BOTÕES DO MODAL
@@ -605,10 +604,16 @@
             const veiculoAtual = `${ambulanciaEl.value.trim().toUpperCase()} - ${placaEl.value.trim().toUpperCase()}`;
             const plantaoAtual = plantaoEl.value || 'SD 12hs';
 
+            // Conserta a seta (→) se o usuário digitou sem ela
             if (tipo === 'base') {
                 const base = limparNomeLocal(baseEl.value.trim()) || 'BASE'; 
                 const origem = getLocalDisplay(local, false) || getLocalAtual() || 'LOCAL';
                 local = `${origem} → ${base}`;
+            } else {
+                if (!local.includes('→')) {
+                    if (tipo === 'saida') local = `${local} → `;
+                    else local = ` → ${local}`;
+                }
             }
 
             if (editingRecordId) {
@@ -634,7 +639,6 @@
 
             // --- CRIAÇÃO NORMAL ---
             if (tipo === 'saida') {
-                if (!local.includes('→')) local += ' → '; 
                 registros.unshift({
                     id: Date.now().toString(),
                     ocorrenciaId: currentOcorrenciaId, 
@@ -688,35 +692,31 @@
 
         // ======================= RENDERIZAÇÃO =======================
         function salvarERenderizar() {
-            try {
-                const frotaKms = JSON.parse(localStorage.getItem('frotaKms_hci') || '{}');
-                registros.forEach(r => {
-                    if (r.veiculo) {
-                        if (r.kmChegada) frotaKms[r.veiculo] = r.kmChegada;
-                        else if (r.kmSaida && !frotaKms[r.veiculo]) frotaKms[r.veiculo] = r.kmSaida;
-                    }
-                });
-                localStorage.setItem('frotaKms_hci', JSON.stringify(frotaKms));
-                
-                let assinatura = ''; try { assinatura = canvas.toDataURL(); } catch(e) {}
-                
-                const validShifts = ['SD 12hs', 'SN 12hs', 'DN 24hs'];
-                const plantaoToSave = validShifts.includes(plantaoEl.value) ? plantaoEl.value : 'SD 12hs';
+            const frotaKms = JSON.parse(localStorage.getItem('frotaKms_hci') || '{}');
+            registros.forEach(r => {
+                if (r.veiculo) {
+                    if (r.kmChegada) frotaKms[r.veiculo] = r.kmChegada;
+                    else if (r.kmSaida && !frotaKms[r.veiculo]) frotaKms[r.veiculo] = r.kmSaida;
+                }
+            });
+            localStorage.setItem('frotaKms_hci', JSON.stringify(frotaKms));
+            
+            let assinatura = ''; try { assinatura = canvas.toDataURL(); } catch(e) {}
+            
+            const validShifts = ['SD 12hs', 'SN 12hs', 'DN 24hs'];
+            const plantaoToSave = validShifts.includes(plantaoEl.value) ? plantaoEl.value : 'SD 12hs';
 
-                localStorage.setItem('sistemaDeslocamentoHCI_v38', JSON.stringify({ 
-                    rows: registros, observacao: observacaoEl.value.toUpperCase(), condutor: condutorEl.value.toUpperCase(), 
-                    unidade: baseEl.value.toUpperCase(), ambulancia: ambulanciaEl.value.toUpperCase(), placa: placaEl.value.toUpperCase(), 
-                    plantao: plantaoToSave, kmInicial: kmInicialEl.value, nomeLegivel: nomeLegivelEl.value.toUpperCase(), 
-                    o2Portatil: o2PortatilEl.value, o2Fixo: o2FixoEl.value, abastecimento: abastecimentoEl.value,
-                    mes: parseInt(mesSelect.value), ano: parseInt(anoSelect.value), assinaturaImg: assinatura,
-                    currentOcorrenciaId: currentOcorrenciaId
-                }));
-            } catch(e) {
-                console.error("Erro ao salvar no localStorage", e);
-            }
+            localStorage.setItem('sistemaDeslocamentoHCI_v39', JSON.stringify({ 
+                rows: registros, observacao: observacaoEl.value.toUpperCase(), condutor: condutorEl.value.toUpperCase(), 
+                unidade: baseEl.value.toUpperCase(), ambulancia: ambulanciaEl.value.toUpperCase(), placa: placaEl.value.toUpperCase(), 
+                plantao: plantaoToSave, kmInicial: kmInicialEl.value, nomeLegivel: nomeLegivelEl.value.toUpperCase(), 
+                o2Portatil: o2PortatilEl.value, o2Fixo: o2FixoEl.value, abastecimento: abastecimentoEl.value,
+                mes: parseInt(mesSelect.value), ano: parseInt(anoSelect.value), assinaturaImg: assinatura,
+                currentOcorrenciaId: currentOcorrenciaId
+            }));
 
-            try { renderizarResumo(); } catch(e) { console.error("Erro no resumo", e); }
-            try { renderizarFichas(); } catch(e) { console.error("Erro nas fichas", e); }
+            renderizarResumo();
+            renderizarFichas();
         }
 
         function renderizarResumo() {
@@ -1060,7 +1060,7 @@
 
         // ======================= PERSISTÊNCIA =======================
         function carregarLocalStorage() {
-            let raw = localStorage.getItem('sistemaDeslocamentoHCI_v38'); 
+            let raw = localStorage.getItem('sistemaDeslocamentoHCI_v39'); 
             if(!raw) { prepararFormulario(); return false; }
             try {
                 let d = JSON.parse(raw); 
@@ -1275,7 +1275,7 @@
 
         carregarLocalStorage();
         atualizarLimitesDatas();
-    })();
+    });
 </script>
 </body>
 </html>
