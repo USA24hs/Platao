@@ -383,6 +383,7 @@
             return null;
         }
 
+        // FUNÇÃO DE PREENCHIMENTO INTELIGENTE (CORRIGIDA E TESTADA)
         function prepararFormulario() {
             const validShifts = ['SD 12hs', 'SN 12hs', 'DN 24hs'];
             if (!validShifts.includes(plantaoEl.value)) {
@@ -401,14 +402,18 @@
             const lastRecordOc = itemsAtuais.length > 0 ? itemsAtuais[0] : null;
 
             if (!lastRecordOc) {
+                // Se é o primeiro registro da ocorrência (INÍCIO), ele sai da base
                 fLocal.value = `${base} → `;
             } else if (lastRecordOc.tipo === 'saida') {
+                // Se a última foi SAÍDA, ele está indo para o destino. Prepara a CHEGADA (Destino → Destino)
                 let dest = getLocalDisplay(lastRecordOc.local, true);
                 fLocal.value = `${dest} → ${dest}`; 
             } else if (lastRecordOc.tipo === 'chegada') {
+                // Se a última foi CHEGADA, ele está parado no destino. Prepara a SAÍDA (Destino → vazio)
                 let dest = getLocalDisplay(lastRecordOc.local, true);
                 fLocal.value = `${dest} → `;
             } else if (lastRecordOc.tipo === 'base') {
+                // Se finalizou, volta pra base
                 fLocal.value = `${base} → `;
             }
 
@@ -653,7 +658,6 @@
                     
                     if (tipo === 'base') {
                         showToast('🏥 Fim de Plantão na Base! Nova ocorrência iniciada.');
-                        // AQUI ESTÁ A MÁGICA: Gera um novo ID para iniciar a próxima ocorrência
                         currentOcorrenciaId = Date.now().toString(); 
                     } else {
                         showToast('📍 Chegada registrada!');
@@ -700,7 +704,7 @@
                 const validShifts = ['SD 12hs', 'SN 12hs', 'DN 24hs'];
                 const plantaoToSave = validShifts.includes(plantaoEl.value) ? plantaoEl.value : 'SD 12hs';
 
-                localStorage.setItem('sistemaDeslocamentoHCI_v49', JSON.stringify({ 
+                localStorage.setItem('sistemaDeslocamentoHCI_v50', JSON.stringify({ 
                     rows: registros, observacao: observacaoEl.value.toUpperCase(), condutor: condutorEl.value.toUpperCase(), 
                     unidade: baseEl.value.toUpperCase(), ambulancia: ambulanciaEl.value.toUpperCase(), placa: placaEl.value.toUpperCase(), 
                     plantao: plantaoToSave, kmInicial: kmInicialEl.value, nomeLegivel: nomeLegivelEl.value.toUpperCase(), 
@@ -1036,7 +1040,7 @@
         }
 
         function carregarLocalStorage() {
-            let raw = localStorage.getItem('sistemaDeslocamentoHCI_v49'); 
+            let raw = localStorage.getItem('sistemaDeslocamentoHCI_v50'); 
             if(!raw) { prepararFormulario(); return false; }
             try {
                 let d = JSON.parse(raw); 
@@ -1069,7 +1073,7 @@
                 return true;
             } catch(e) { 
                 console.error("Dados corrompidos no localStorage. Limpando...", e);
-                localStorage.removeItem('sistemaDeslocamentoHCI_v49');
+                localStorage.removeItem('sistemaDeslocamentoHCI_v50');
                 prepararFormulario(); 
                 return false; 
             }
