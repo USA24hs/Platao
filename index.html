@@ -56,6 +56,18 @@
         .km-alert-input, .time-alert-input, .local-alert-input { border-color: var(--danger) !important; background: #fef2f2 !important; color: var(--danger) !important; outline: 2px solid var(--danger) !important; animation: pulse-red 1s infinite; }
         @keyframes pulse-red { 0% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.4); } 70% { box-shadow: 0 0 0 6px rgba(220, 38, 38, 0); } 100% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0); } }
 
+        .local-base-highlight { 
+            background: #dcfce7 !important; 
+            border-color: #15803d !important; 
+            color: #15803d !important;
+            outline: 2px solid #15803d !important;
+            animation: pulse-green 0.8s ease-out;
+        }
+        @keyframes pulse-green { 
+            0% { box-shadow: 0 0 0 0 rgba(21, 128, 61, 0.5); } 
+            100% { box-shadow: 0 0 0 8px rgba(21, 128, 61, 0); } 
+        }
+
         .form-actions { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; width: 100%; }
         .form-actions button { border: none; color: #fff; padding: 12px 2px; border-radius: 8px; font-weight: 800; cursor: pointer; font-size: 0.8rem; display: flex; align-items: center; justify-content: center; gap: 4px; transition: 0.2s; font-family: 'Inter'; width: 100%; }
         
@@ -296,6 +308,7 @@
         const btnModalCorrigir = document.getElementById('btnModalCorrigir');
         const btnModalIgnorar = document.getElementById('btnModalIgnorar');
         let pendingActionType = null; 
+        let baseFimPending = false;
 
         let registros = []; 
         let currentOcorrenciaId = Date.now().toString(); 
@@ -304,7 +317,6 @@
         fKm.addEventListener('input', () => { fKm.classList.remove('km-alert-input'); });
         fHora.addEventListener('input', () => { fHora.classList.remove('time-alert-input'); });
         
-        // FOCO NO CAMPO LOCAL: seleciona automaticamente a parte do DESTINO (após a seta)
         fLocal.addEventListener('focus', () => {
             setTimeout(() => {
                 const val = fLocal.value;
@@ -424,9 +436,17 @@
                 let dest = getLocalDisplay(lastRecordOc.local, true);
                 fLocal.value = `${dest} → ${dest}`; 
             } else if (lastRecordOc.tipo === 'chegada') {
-                // Após CHEGADA: campo mostra DESTINO → VAZIO (condutor digita o novo destino)
+                // Após CHEGADA: contador decide se o campo vem vazio ou auto-preenchido
                 let dest = getLocalDisplay(lastRecordOc.local, true);
-                fLocal.value = `${dest} → `; 
+                const chegadasCount = itemsAtuais.filter(r => r.horaChegada).length;
+                
+                if (chegadasCount >= 3) {
+                    // ✅ A PARTIR DA 3ª CHEGADA: campo auto-preenchido X → X (clique direto)
+                    fLocal.value = `${dest} → ${dest}`; 
+                } else {
+                    // 1ª e 2ª chegadas: campo vazio X → (condutor digita o novo destino)
+                    fLocal.value = `${dest} → `; 
+                }
             } else if (lastRecordOc.tipo === 'base') {
                 // Após FIM: volta para BASE → (nova ocorrência)
                 fLocal.value = `${base} → `;
@@ -437,6 +457,7 @@
             fKm.classList.remove('km-alert-input'); 
             fHora.classList.remove('time-alert-input');
             fLocal.classList.remove('local-alert-input');
+            fLocal.classList.remove('local-base-highlight');
         }
 
         function resetFormUI() {
@@ -504,6 +525,8 @@
 
         function tentarAdicionarRegistro(tipo) {
             try {
+                if (tipo === 'base' && baseFimPending) return;
+
                 if (!editingRecordId) {
                     const erroSeq = validarSequencia(tipo);
                     if (erroSeq) return showToast(`⚠️ ${erroSeq}`);
@@ -515,7 +538,6 @@
                     return showToast("⚠️ Erro: Preencha o Local / Destino.");
                 }
 
-                // Validação: bloqueia CHEGADA no mesmo local de saída se KM mudou
                 if (tipo === 'chegada' || tipo === 'base') {
                     const itemsAtuais = registros.filter(r => r.ocorrenciaId === currentOcorrenciaId);
                     const lastRecordOc = itemsAtuais.length > 0 ? itemsAtuais[0] : null;
@@ -604,11 +626,7 @@
             let origem = partes[0] ? partes[0].trim() : '';
             let destino = partes[1] ? partes[1].trim() : '';
 
-            // Formatação do campo Local baseada na ação
             if (tipo === 'saida') {
-                // ===== COMPORTAMENTO "CLIQUE DIRETO" =====
-                // Se o condutor NÃO digitou destino (campo vazio após a seta),
-                // auto-preenche com a origem para permitir "clique direto" em Saída
                 if (!destino && origem) {
                     destino = origem;
                     local = `${origem} → ${destino}`;
@@ -627,10 +645,12 @@
                      local = `${origem} → ${destino}`;
                 }
             } else if (tipo === 'base') {
-                const base = limparNomeLocal(baseEl.value.trim()) || 'BASE'; 
-                origem = origem || getLocalAtual() || base;
+                const base = limparNomeLocal(baseEl.value.trim()) || 'BASE';
+                const ultimaLocalizacao = getLocalAtual();
+                origem = ultimaLocalizacao || origem || base;
                 local = `${origem} → ${base}`;
                 fLocal.value = local;
+                fLocal.classList.add('local-base-highlight');
             }
 
             if (editingRecordId) {
@@ -711,8 +731,17 @@
             }
 
             salvarERenderizar();
-            prepararFormulario();
             if (window.innerWidth <= 768) mainHeader.classList.add('header-collapsed');
+
+            if (tipo === 'base') {
+                baseFimPending = true;
+                setTimeout(() => {
+                    baseFimPending = false;
+                    prepararFormulario();
+                }, 800);
+            } else {
+                prepararFormulario();
+            }
         }
 
         function deletarFicha(ocorrenciaId) {
