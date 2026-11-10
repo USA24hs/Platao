@@ -787,7 +787,7 @@ function buildWhatsAppText(registros,cfg,now){
     });
   }
   texto+="RESUMO DO PLANTÃO\n";
-  texto+="Total de Deslocamento: "+grupos.length+"\n";
+  texto+="Total de Deslocamentos: "+grupos.length+"\n";
   texto+="Total KM Rodado: "+resumo.totalKm.toFixed(1)+" km\n\n";
   texto+="UNIDADES SOLICITANTES:\n";
   if(solicitantes.length>0){ solicitantes.forEach(function(s){ texto+="• "+s.local+": "+s.total+"\n"; }); }
@@ -1008,7 +1008,7 @@ function buildFechamentoMensalHTML(resumoMensal,cfg,mes,ano){
     '</div></div>'+
     '<div class="box"><h3>KM por VTR</h3>'+vtrsHTML+'</div>'+
     '<div class="box"><h3>Unidades Solicitantes</h3>'+solicitantesHTML+'</div>'+
-    '<div class="box" style="background:#fff;border-color:#cfd9e2;"><h3 style="color:#12212b;">Deslocamento do Mês</h3>'+
+    '<div class="box" style="background:#fff;border-color:#cfd9e2;"><h3 style="color:#12212b;">Deslocamentos do Mês</h3>'+
     '<table class="ocorr"><tr><th>Período</th><th>Turno</th><th>VTR</th><th>Trajeto</th><th style="text-align:right;">KM</th></tr>'+
     ocorrenciasHTML+'</table></div>'+
     '<div class="rodape">'+
@@ -1160,7 +1160,7 @@ function buildXlsxFiles(rm,cfg,mes,ano){
       '<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">'+
       '<sheets>'+
       '<sheet name="Resumo" sheetId="1" r:id="rId1"/>'+
-      '<sheet name="Deslocamento" sheetId="2" r:id="rId2"/>'+
+      '<sheet name="Deslocamentos" sheetId="2" r:id="rId2"/>'+
       '</sheets></workbook>'},
     {name:"xl/_rels/workbook.xml.rels", data:'<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'+
       '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'+
@@ -1722,7 +1722,7 @@ function renderMensal(){
     chartSection=
       '<section class="card" aria-label="KM por dia do mês">'+
       '<h2 class="sec-title">KM Rodado por Dia</h2>'+
-      '<p class="chart-sub">'+nomeMes(state.mes)+' / '+state.ano+' — dias com Deslocamento registrados</p>'+
+      '<p class="chart-sub">'+nomeMes(state.mes)+' / '+state.ano+' — dias com deslocamentos registrados</p>'+
       '<div class="chart-wrap">'+
       '<div class="chart">'+cols+'</div>'+
       '<div class="chart-labels">'+rm.porDia.map(function(d){ return '<span>'+d.dia+'</span>'; }).join("")+'</div>'+
