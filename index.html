@@ -126,7 +126,8 @@ html[data-theme="dark"] .f-input.base-ok{border-color:#10b981;background:rgba(2,
 .btn-ghost-sm{height:1.75rem;border:none;background:transparent;color:var(--muted-foreground);font-size:.7rem;font-weight:700;border-radius:.5rem;padding:0 .5rem;cursor:pointer;display:inline-flex;align-items:center;gap:.25rem}
 .btn-ghost-sm:hover{color:var(--foreground);background:var(--muted)}
 
-.hist-list{display:flex;flex-direction:column;gap:.75rem;max-height:560px;overflow-y:auto;padding-right:2px}
+/* ✅ CORREÇÃO DO CORTE NO HISTÓRICO */
+.hist-list{display:flex;flex-direction:column;gap:.75rem;max-height:560px;overflow-y:auto;padding-right:2px;padding-bottom:4px;}
 .ficha{border:1px solid var(--border);border-radius:.75rem;background:var(--card);overflow:hidden;box-shadow:0 1px 3px rgba(2,8,20,.06);animation:cardIn .28s ease both}
 .ficha-head{display:flex;justify-content:space-between;align-items:center;gap:.5rem;background:var(--muted-soft);border-bottom:1px solid var(--border);padding:.5rem .75rem}
 .fh-info{display:flex;flex-direction:column;gap:.15rem;font-size:.72rem;font-weight:700;color:var(--muted-foreground);min-width:0}
@@ -138,9 +139,10 @@ html[data-theme="dark"] .mini-btn.edit{background:rgba(12,74,110,.6);color:#7dd3
 .mini-btn.del{background:#fee2e2;color:#b91c1c}
 html[data-theme="dark"] .mini-btn.del{background:rgba(127,29,29,.55);color:#fca5a5}
 .mini-btn.locked{background:var(--muted);color:var(--muted-foreground);cursor:not-allowed}
-.ficha-body{display:flex;flex-direction:column;gap:.25rem;padding:.6rem .75rem;font-size:.8rem}
-.tl-row{display:flex;align-items:baseline;gap:.5rem}
-.tag{width:70px;flex-shrink:0;font-size:.62rem;font-weight:800;text-transform:uppercase;letter-spacing:.06em}
+
+.ficha-body{display:flex;flex-direction:column;gap:0;padding:.65rem .75rem .8rem;font-size:.8rem}
+.tl-row{display:flex;align-items:center;gap:.5rem;line-height:1.4;padding:3px 0;}
+.tag{width:70px;flex-shrink:0;font-size:.62rem;font-weight:800;text-transform:uppercase;letter-spacing:.06em;}
 .tag-inicio{color:#0e5a77}
 html[data-theme="dark"] .tag-inicio{color:#7dd3fc}
 .tag-saida{color:#d97706}
@@ -149,9 +151,11 @@ html[data-theme="dark"] .tag-saida{color:#fbbf24}
 html[data-theme="dark"] .tag-chegada{color:#34d399}
 .tag-fim{color:#dc2626}
 html[data-theme="dark"] .tag-fim{color:#f87171}
-.tl-loc{flex:1;word-break:break-word;font-weight:600;color:var(--foreground)}
+
+.tl-loc{flex:1;word-break:break-word;font-weight:600;color:var(--foreground);}
 .tl-hora{width:58px;text-align:center;font-weight:700;color:var(--muted-foreground);flex-shrink:0}
 .tl-km{width:70px;text-align:right;font-weight:700;color:var(--muted-foreground);flex-shrink:0}
+
 .ficha-foot{display:flex;justify-content:space-between;align-items:center;border-top:1px dashed var(--border);background:var(--muted-soft);padding:.5rem .75rem;font-size:.8rem;font-weight:800;color:var(--foreground)}
 .km-em{color:#059669}
 html[data-theme="dark"] .km-em{color:#34d399}
@@ -866,7 +870,6 @@ function buildRelatorioPlantaoHTML(registros,cfg,assinaturaImg,mes,ano){
     '</div></body></html>';
 }
 
-/* ✅ CORREÇÃO: Resumo Mensal agora usa o Menor KM Inicial e o Maior KM Final por VTR */
 function computeResumoMensal(registros,mes,ano,cfg){
   cfg = cfg || {};
   var prefix=ano+"-"+pad(mes)+"-";
@@ -893,7 +896,6 @@ function computeResumoMensal(registros,mes,ano,cfg){
     var atual=vtrMap[veic];
     atual.ocorrencias += 1;
 
-    /* Pega o MENOR e o MAIOR KM registrado naquele mês para a VTR */
     g.items.forEach(function(r){
       var kmS = parseFloat(r.kmSaida);
       var kmC = parseFloat(r.kmChegada);
