@@ -127,9 +127,10 @@ html[data-theme="dark"] .f-input.base-ok{border-color:#10b981;background:rgba(2,
 .btn-ghost-sm:hover{color:var(--foreground);background:var(--muted)}
 
 /* ✅ CORREÇÃO DO CORTE NO HISTÓRICO */
-.hist-list{display:flex;flex-direction:column;gap:.75rem;max-height:560px;overflow-y:auto;padding-right:2px;padding-bottom:4px;}
-.ficha{border:1px solid var(--border);border-radius:.75rem;background:var(--card);overflow:hidden;box-shadow:0 1px 3px rgba(2,8,20,.06);animation:cardIn .28s ease both}
-.ficha-head{display:flex;justify-content:space-between;align-items:center;gap:.5rem;background:var(--muted-soft);border-bottom:1px solid var(--border);padding:.5rem .75rem}
+.hist-list{display:flex;flex-direction:column;gap:.75rem;max-height:560px;overflow-y:auto;padding-right:2px;padding-bottom:8px;}
+.ficha{border:1px solid var(--border);border-radius:.75rem;background:var(--card);overflow:visible;box-shadow:0 1px 3px rgba(2,8,20,.06);animation:cardIn .28s ease both;margin-bottom:2px;}
+
+.ficha-head{display:flex;justify-content:space-between;align-items:center;gap:.5rem;background:var(--muted-soft);border-bottom:1px solid var(--border);padding:.5rem .75rem;border-radius:.75rem .75rem 0 0;}
 .fh-info{display:flex;flex-direction:column;gap:.15rem;font-size:.72rem;font-weight:700;color:var(--muted-foreground);min-width:0}
 .fh-vtr{font-size:.66rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:150px}
 .fh-actions{display:flex;gap:.4rem;flex-shrink:0}
@@ -141,7 +142,7 @@ html[data-theme="dark"] .mini-btn.del{background:rgba(127,29,29,.55);color:#fca5
 .mini-btn.locked{background:var(--muted);color:var(--muted-foreground);cursor:not-allowed}
 
 .ficha-body{display:flex;flex-direction:column;gap:0;padding:.65rem .75rem .8rem;font-size:.8rem}
-.tl-row{display:flex;align-items:center;gap:.5rem;line-height:1.4;padding:3px 0;}
+.tl-row{display:flex;align-items:center;gap:.5rem;line-height:1.5;padding:4px 0;min-height:24px;}
 .tag{width:70px;flex-shrink:0;font-size:.62rem;font-weight:800;text-transform:uppercase;letter-spacing:.06em;}
 .tag-inicio{color:#0e5a77}
 html[data-theme="dark"] .tag-inicio{color:#7dd3fc}
@@ -156,7 +157,7 @@ html[data-theme="dark"] .tag-fim{color:#f87171}
 .tl-hora{width:58px;text-align:center;font-weight:700;color:var(--muted-foreground);flex-shrink:0}
 .tl-km{width:70px;text-align:right;font-weight:700;color:var(--muted-foreground);flex-shrink:0}
 
-.ficha-foot{display:flex;justify-content:space-between;align-items:center;border-top:1px dashed var(--border);background:var(--muted-soft);padding:.5rem .75rem;font-size:.8rem;font-weight:800;color:var(--foreground)}
+.ficha-foot{display:flex;justify-content:space-between;align-items:center;border-top:1px dashed var(--border);background:var(--muted-soft);padding:.5rem .75rem;font-size:.8rem;font-weight:800;color:var(--foreground);border-radius:0 0 .75rem .75rem;}
 .km-em{color:#059669}
 html[data-theme="dark"] .km-em{color:#34d399}
 
@@ -1740,257 +1741,4 @@ function renderMensal(){
     '<div class="f-field"><label class="lbl-mini" for="pmAno">Ano</label>'+
     '<input id="pmAno" class="inp-lg no-spinner" type="number" min="2000" max="2100" value="'+state.ano+'"></div>'+
     '</div></section>'+
-    '<section class="stat-grid4" aria-label="Estatísticas do mês">'+
-    '<div class="stat"><span class="stat-label">Ocorrências</span><strong class="stat-value">'+rm.ocorrencias+'</strong></div>'+
-    '<div class="stat" style="animation-delay:.05s"><span class="stat-label">KM Rodado Total</span><strong class="stat-value em">'+rm.totalKm.toFixed(1)+'</strong></div>'+
-    '<div class="stat" style="animation-delay:.1s"><span class="stat-label">Dias c/ Saída</span><strong class="stat-value">'+rm.dias+'</strong></div>'+
-    '<div class="stat" style="animation-delay:.15s"><span class="stat-label">VTRs Utilizadas</span><strong class="stat-value">'+rm.vtrs.length+'</strong></div>'+
-    '</section>'+
-    chartSection+
-    '<section class="card" aria-label="KM por VTR"><h2 class="sec-title">🚚 KM por VTR</h2>'+vtrSection+'</section>'+
-    '<section class="card" aria-label="Unidades solicitantes do mês"><h2 class="sec-title">🎯 Unidades Solicitantes do Mês</h2>'+solSection+'</section>'+
-    '<div class="export-grid" aria-label="Exportar fechamento">'+
-    '<button class="btn btn-excel" id="btnExcel">📊 Exportar Excel (.xlsx)</button>'+
-    '<button class="btn btn-pdf2" id="btnPdfMensal">📄 Relatório PDF (imprimir)</button>'+
-    '</div>';
-
-  $("pmMes").addEventListener("change",function(e){
-    handleMesAnoChange(Number(e.target.value),state.ano);
-  });
-  $("pmAno").addEventListener("input",function(e){
-    var v=parseInt(e.target.value,10);
-    handleMesAnoChange(state.mes,Number.isNaN(v)?new Date().getFullYear():v);
-  });
-  $("btnExcel").addEventListener("click",exportarExcel);
-  $("btnPdfMensal").addEventListener("click",gerarPdfMensal);
-}
-
-var CANVAS_HEIGHT=120;
-var signCanvas=null, signCtx=null, signDesenho=false, signCarregouInicial=false;
-
-function setupCanvas(){
-  signCanvas=$("signCanvas");
-  if(!signCanvas || !signCanvas.getContext) return;
-  signCtx=signCanvas.getContext("2d");
-  function configurarEstilo(){
-    signCtx.strokeStyle="#0f2027";
-    signCtx.lineWidth=2.2;
-    signCtx.lineCap="round";
-    signCtx.lineJoin="round";
-  }
-  function redesenhar(imgData){
-    if(!imgData || imgData==="data:," || imgData.length<100) return;
-    var img=new Image();
-    img.onload=function(){ signCtx.drawImage(img,0,0,signCanvas.width,signCanvas.height); };
-    img.src=imgData;
-  }
-  function resize(){
-    var w=signCanvas.clientWidth||320;
-    var anterior=signCanvas.width>0?signCanvas.toDataURL():"";
-    signCanvas.width=w;
-    signCanvas.height=CANVAS_HEIGHT;
-    signCtx.fillStyle="#ffffff";
-    signCtx.fillRect(0,0,w,CANVAS_HEIGHT);
-    configurarEstilo();
-    redesenhar(anterior);
-  }
-  function getCoords(e){
-    var rect=signCanvas.getBoundingClientRect();
-    var sx=signCanvas.width/rect.width;
-    var sy=signCanvas.height/rect.height;
-    return {
-      x:Math.min(Math.max(0,(e.clientX-rect.left)*sx),signCanvas.width),
-      y:Math.min(Math.max(0,(e.clientY-rect.top)*sy),signCanvas.height)
-    };
-  }
-  function finalizar(){
-    if(!signDesenho) return;
-    signDesenho=false;
-    state.assinaturaImg=signCanvas.toDataURL("image/png");
-    save();
-  }
-  resize();
-  window.addEventListener("resize",resize);
-  if(!signCarregouInicial){
-    signCarregouInicial=true;
-    redesenhar(state.assinaturaImg);
-  }
-  signCanvas.addEventListener("pointerdown",function(e){
-    e.preventDefault();
-    if(signCanvas.setPointerCapture){ try{ signCanvas.setPointerCapture(e.pointerId); }catch(err){} }
-    signDesenho=true;
-    var c=getCoords(e);
-    signCtx.beginPath();
-    signCtx.moveTo(c.x,c.y);
-    signCtx.lineTo(c.x,c.y);
-    signCtx.stroke();
-  });
-  signCanvas.addEventListener("pointermove",function(e){
-    if(!signDesenho) return;
-    e.preventDefault();
-    var c=getCoords(e);
-    signCtx.lineTo(c.x,c.y);
-    signCtx.stroke();
-    signCtx.beginPath();
-    signCtx.moveTo(c.x,c.y);
-  });
-  signCanvas.addEventListener("pointerup",finalizar);
-  signCanvas.addEventListener("pointerleave",finalizar);
-  $("btnLimpar").addEventListener("click",function(){
-    signCtx.fillStyle="#ffffff";
-    signCtx.fillRect(0,0,signCanvas.width,signCanvas.height);
-    state.assinaturaImg=signCanvas.toDataURL("image/png");
-    save();
-  });
-}
-
-function handleLocalFocus(){
-  var el=$("fLocal");
-  setTimeout(function(){
-    var val=el.value;
-    var arrowPos=val.indexOf("→");
-    if(arrowPos!==-1){
-      var start=arrowPos+1;
-      while(start<val.length && val[start]===" ") start++;
-      try{ el.setSelectionRange(start,val.length); }catch(e){}
-      return;
-    }
-    try{ el.setSelectionRange(val.length,val.length); }catch(e){}
-  },50);
-}
-
-function buildHeaderGrid(){
-  $("cfgGrid").innerHTML=CAMPOS.map(function(c){
-    var control;
-    if(c.select){
-      control='<select id="cfg-'+c.field+'">'+c.select.map(function(o){
-        return '<option value="'+escapeHtml(o)+'"'+(o===state.config[c.field]?" selected":"")+'>'+escapeHtml(o)+'</option>';
-      }).join("")+'</select>';
-    }else{
-      control='<input id="cfg-'+c.field+'"'+(c.type?' type="'+c.type+'"':' type="text"')+
-        (c.type==="number"?' inputmode="decimal"':'')+
-        ' value="'+escapeHtml(state.config[c.field])+'">';
-    }
-    return '<div class="hh-field"><label for="cfg-'+c.field+'">'+c.icon+' '+escapeHtml(c.label)+'</label>'+control+'</div>';
-  }).join("");
-
-  CAMPOS.forEach(function(c){
-    var el=$("cfg-"+c.field);
-    el.addEventListener("input",function(e){ handleConfigChange(c.field,e.target.value); });
-    el.addEventListener("blur",function(){ handleCampoBlur(c.field); });
-  });
-  $("selMes").innerHTML=MESES.map(function(m,i){
-    return '<option value="'+(i+1)+'"'+((i+1)===state.mes?" selected":"")+'>'+m.substring(0,3).toUpperCase()+'</option>';
-  }).join("");
-  $("inpAno").value=state.ano;
-}
-
-function wireEvents(){
-  $("selMes").addEventListener("change",function(e){
-    handleMesAnoChange(Number(e.target.value),state.ano);
-  });
-  $("inpAno").addEventListener("input",function(e){
-    var v=parseInt(e.target.value,10);
-    handleMesAnoChange(state.mes,Number.isNaN(v)?new Date().getFullYear():v);
-  });
-  $("btnTheme").addEventListener("click",function(){
-    var el=document.documentElement;
-    var now=el.dataset.theme==="dark"?"light":"dark";
-    el.dataset.theme=now;
-    try{ localStorage.setItem("vtr-theme",now); }catch(e){}
-    $("btnTheme").textContent=now==="dark"?"☀️":"🌙";
-  });
-  $("btnCollapse").addEventListener("click",function(){
-    setCollapsed(!headerCollapsed);
-  });
-  $("tabPlantao").addEventListener("click",function(){ switchTab("plantao"); });
-  $("tabMensal").addEventListener("click",function(){ switchTab("mensal"); });
-
-  $("fData").addEventListener("input",function(e){ form.data=e.target.value; });
-  $("fHora").addEventListener("input",function(e){ form.hora=e.target.value; setAlert("hora",false); });
-  $("fKm").addEventListener("input",function(e){ form.km=e.target.value; setAlert("km",false); });
-  $("fLocal").addEventListener("input",function(e){ form.local=e.target.value; setAlert("local",false); setBaseOk(false); });
-  $("fLocal").addEventListener("focus",handleLocalFocus);
-  $("btnNovo").addEventListener("click",handleNovoDeslocamento);
-  $("btnSaida").addEventListener("click",function(){ handleRegistrar("saida"); });
-  $("btnChegada").addEventListener("click",function(){ handleRegistrar("chegada"); });
-  $("btnBase").addEventListener("click",function(){ handleRegistrar("base"); });
-
-  $("histList").addEventListener("click",function(e){
-    var btn=e.target.closest("[data-action]");
-    if(!btn) return;
-    if(btn.disabled) return;
-    if(btn.dataset.action==="editar") handleEditar(btn.dataset.id);
-    if(btn.dataset.action==="excluir") handleExcluir(btn.dataset.id);
-  });
-  $("btnWhats").addEventListener("click",handleCompartilhar);
-
-  $("obsTxt").value=state.config.observacao;
-  $("obsTxt").addEventListener("input",function(e){ state.config.observacao=e.target.value; save(); });
-  $("nomeLegivel").value=state.config.nomeLegivel;
-  $("nomeLegivel").addEventListener("input",function(e){ state.config.nomeLegivel=e.target.value; save(); });
-
-  $("btnPDF").addEventListener("click",handleGerarPDF);
-
-  $("btnCorrigir").addEventListener("click",corrigirAlerta);
-  $("btnIgnorar").addEventListener("click",ignorarAlerta);
-  $("ovAlerta").addEventListener("click",function(e){ if(e.target===this) corrigirAlerta(); });
-  $("btnCancelarExc").addEventListener("click",function(){ $("ovExcluir").hidden=true; confirmExcluir={open:false,id:""}; });
-  $("btnConfirmarExc").addEventListener("click",confirmarExclusao);
-  $("ovExcluir").addEventListener("click",function(e){ if(e.target===this){ this.hidden=true; confirmExcluir={open:false,id:""}; } });
-
-  document.addEventListener("keydown",function(e){
-    if(e.key==="Escape"){
-      if(!$("ovAlerta").hidden) corrigirAlerta();
-      if(!$("ovExcluir").hidden){ $("ovExcluir").hidden=true; confirmExcluir={open:false,id:""}; }
-    }
-  });
-}
-
-function switchTab(t){
-  tab=t;
-  $("tabPlantao").classList.toggle("active",t==="plantao");
-  $("tabMensal").classList.toggle("active",t==="mensal");
-  $("tabPlantao").setAttribute("aria-selected",String(t==="plantao"));
-  $("tabMensal").setAttribute("aria-selected",String(t==="mensal"));
-  $("panePlantao").hidden=(t!=="plantao");
-  $("paneMensal").hidden=(t!=="mensal");
-  if(t==="mensal") renderMensal();
-}
-
-function init(){
-  var store=loadStore();
-  state.registros=store.registros;
-  state.config=store.config;
-  state.assinaturaImg=store.assinaturaImg;
-  state.currentOcorrenciaId=store.currentOcorrenciaId;
-  state.mes=store.mes;
-  state.ano=store.ano;
-  updateFrotaKms(store.registros);
-
-  if(!state.config.kmInicial.trim()){
-    state.config.kmInicial=kmInicialSugerido(state.config);
-  }
-
-  buildHeaderGrid();
-  wireEvents();
-  updateFormBadges();
-  setCollapsed(window.innerWidth<=768 && store.registros.length>0);
-  $("btnTheme").textContent=(document.documentElement.dataset.theme==="dark")?"☀️":"🌙";
-  setEditingVisual(false);
-
-  preparar(state.registros,state.config,state.currentOcorrenciaId,state.mes,state.ano);
-  renderHistorico();
-  renderResumo();
-  renderMensal();
-  setupCanvas();
-  loaded=true;
-}
-
-if(typeof window!=="undefined" && typeof document!=="undefined"){
-  if(document.readyState==="loading") document.addEventListener("DOMContentLoaded",init);
-  else init();
-}
-</script>
-</body>
-</html>
+    '<section
