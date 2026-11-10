@@ -114,7 +114,7 @@ html[data-theme="dark"] .f-label{color:#34d399}
 .f-input:focus{box-shadow:0 0 0 2px #10b981}
 html[data-theme="dark"] .f-input{border-color:rgba(6,78,59,.65);background:#0f172a;color:#f1f5f9}
 
-/* ✅ NOVO ESTILO: Campo Plantão (Fundo cinza e bloqueado) */
+/* ✅ Campo Plantão (Fundo cinza e bloqueado) */
 .f-input.readonly-field{background-color:#e2e8f0;color:#475569;border-color:#cbd5e1;cursor:not-allowed}
 html[data-theme="dark"] .f-input.readonly-field{background-color:#1e293b;color:#94a3b8;border-color:#334155}
 
@@ -373,7 +373,7 @@ html[data-theme="dark"] .dlg-box{border-color:rgba(127,29,29,.6);background:rgba
           <input class="f-input no-spinner" id="fKm" type="number" step="0.1" inputmode="decimal" placeholder="0.0">
         </div>
         
-        <!-- ✅ CORREÇÃO AQUI: NOVO CAMPO PLANTÃO AO LADO DO KM -->
+        <!-- ✅ CAMPO PLANTÃO AO LADO DO KM -->
         <div class="f-field">
           <label class="f-label" for="fPlantao">📋 Plantão</label>
           <input class="f-input readonly-field" id="fPlantao" type="text" readonly tabindex="-1">
@@ -471,6 +471,7 @@ var DEFAULT_CONFIG = {
   placa: "TGP5G55",
   plantao: "SD 12hs",
   kmInicial: "",
+  cartao: "", /* ✅ NOVO CAMPO AQUI */
   o2Portatil: "125%",
   o2Fixo: "150%",
   abastecimento: "75%",
@@ -704,6 +705,7 @@ function migrarLegado(raw){
       placa: d.placa||DEFAULT_CONFIG.placa,
       plantao: d.plantao||DEFAULT_CONFIG.plantao,
       kmInicial: d.kmInicial||"",
+      cartao: d.cartao||DEFAULT_CONFIG.cartao, /* ✅ NOVO CAMPO AQUI */
       o2Portatil: d.o2Portatil||DEFAULT_CONFIG.o2Portatil,
       o2Fixo: d.o2Fixo||DEFAULT_CONFIG.o2Fixo,
       abastecimento: d.abastecimento||DEFAULT_CONFIG.abastecimento,
@@ -769,6 +771,7 @@ function buildWhatsAppText(registros,cfg,now){
   texto+="CONDUTOR: "+cfg.condutor.toUpperCase()+"\n";
   texto+="PLANTÃO: "+plantaoSigla+" | "+cfg.unidade.toUpperCase()+"\n";
   texto+="VTR: "+cfg.ambulancia.toUpperCase()+" PLACA: "+cfg.placa.toUpperCase()+"\n";
+  texto+="CARTÃO: "+(cfg.cartao?cfg.cartao.toUpperCase():"-")+"\n"; /* ✅ ADICIONADO NO WHATSAPP */
   texto+="O2 PORTÁTIL: "+formatPct(cfg.o2Portatil)+" FIXO: "+formatPct(cfg.o2Fixo)+"\n";
   texto+="ABASTECIMENTO: "+formatPct(cfg.abastecimento)+"\n";
   texto+=dataStr+" "+horaStr+"\n";
@@ -895,7 +898,8 @@ function buildRelatorioPlantaoHTML(registros,cfg,assinaturaImg,mes,ano){
     '<tr><td class="k">Ambulância</td><td>'+escapeHtml(cfg.ambulancia.toUpperCase())+'</td><td class="k">Placa</td><td>'+escapeHtml(cfg.placa.toUpperCase())+'</td></tr>'+
     '<tr><td class="k">KM Inicial</td><td>'+escapeHtml(cfg.kmInicial||"-")+'</td><td class="k">Base</td><td>'+escapeHtml(cfg.unidade.toUpperCase())+'</td></tr>'+
     '<tr><td class="k">O2 Portátil</td><td>'+escapeHtml(formatPct(cfg.o2Portatil))+'</td><td class="k">O2 Fixo</td><td>'+escapeHtml(formatPct(cfg.o2Fixo))+'</td></tr>'+
-    '<tr><td class="k">Abastecim.</td><td>'+escapeHtml(formatPct(cfg.abastecimento))+'</td><td class="k">Gerado em</td><td>'+dataHoraAgoraBR()+'</td></tr>'+
+    '<tr><td class="k">Abastecim.</td><td>'+escapeHtml(formatPct(cfg.abastecimento))+'</td><td class="k">Cartão</td><td>'+escapeHtml(cfg.cartao||"-")+'</td></tr>'+ /* ✅ ADICIONADO NO PDF */
+    '<tr><td class="k">Gerado em</td><td colspan="3">'+dataHoraAgoraBR()+'</td></tr>'+
     '</table>'+
     '<div class="box"><h3>Resumo do Plantão</h3><div class="stats">'+
     '<div><span>Total de Ocorrências</span><strong>'+grupos.length+'</strong></div>'+
@@ -1205,6 +1209,7 @@ var pendenteTipo=null;
 var confirmExcluir={ open:false, id:"" };
 var loaded=false;
 
+/* ✅ CAMPO CARTÃO ADICIONADO AQUI PARA APARECER NO CABEÇALHO */
 var CAMPOS=[
   { field:"unidade",       label:"Base",          icon:"🏠" },
   { field:"condutor",      label:"Condutor",      icon:"👤" },
@@ -1214,7 +1219,8 @@ var CAMPOS=[
   { field:"kmInicial",     label:"KM Inicial",    icon:"🛞", type:"number" },
   { field:"o2Portatil",    label:"O₂ Portátil",   icon:"💨" },
   { field:"o2Fixo",        label:"O₂ Fixo",       icon:"💨" },
-  { field:"abastecimento", label:"Abastecimento", icon:"⛽" }
+  { field:"abastecimento", label:"Abastecimento", icon:"⛽" },
+  { field:"cartao",        label:"Cartão",        icon:"💳" } /* ✅ NOVO CAMPO AQUI */
 ];
 
 function toast(msg,type){
@@ -1257,7 +1263,7 @@ function updateFormBadges(){
     '<span class="badge">📍 '+escapeHtml(base)+'</span>'+
     '<span class="badge">🚑 '+escapeHtml(vtr)+'</span>';
 
-  // ✅ CORREÇÃO AQUI: Alimenta o novo campo visual do Plantão ao lado do KM
+  // ✅ Alimenta o campo visual do Plantão ao lado do KM
   var fPlantaoEl = $("fPlantao");
   if(fPlantaoEl) {
     fPlantaoEl.value = (plantao + " | " + base).toUpperCase();
