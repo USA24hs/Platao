@@ -113,6 +113,11 @@ html[data-theme="dark"] .f-label{color:#34d399}
 .f-input{height:2.75rem;border-radius:.75rem;border:1px solid #a7f3d0;background:#fff;color:#1e293b;font-size:.95rem;font-weight:600;padding:0 .75rem;width:100%;outline:none;transition:border-color .2s,box-shadow .2s}
 .f-input:focus{box-shadow:0 0 0 2px #10b981}
 html[data-theme="dark"] .f-input{border-color:rgba(6,78,59,.65);background:#0f172a;color:#f1f5f9}
+
+/* ✅ NOVO ESTILO: Campo Plantão (Fundo cinza e bloqueado) */
+.f-input.readonly-field{background-color:#e2e8f0;color:#475569;border-color:#cbd5e1;cursor:not-allowed}
+html[data-theme="dark"] .f-input.readonly-field{background-color:#1e293b;color:#94a3b8;border-color:#334155}
+
 .f-input.field-upper{text-transform:uppercase}
 .f-input.alert{border-color:#f87171;background:#fef2f2;color:#dc2626;animation:pulse-red-ring 1.1s infinite}
 html[data-theme="dark"] .f-input.alert{border-color:#f87171;background:rgba(127,29,29,.35);color:#f87171}
@@ -367,6 +372,13 @@ html[data-theme="dark"] .dlg-box{border-color:rgba(127,29,29,.6);background:rgba
           <label class="f-label" for="fKm">🛞 KM (Odômetro)</label>
           <input class="f-input no-spinner" id="fKm" type="number" step="0.1" inputmode="decimal" placeholder="0.0">
         </div>
+        
+        <!-- ✅ CORREÇÃO AQUI: NOVO CAMPO PLANTÃO AO LADO DO KM -->
+        <div class="f-field">
+          <label class="f-label" for="fPlantao">📋 Plantão</label>
+          <input class="f-input readonly-field" id="fPlantao" type="text" readonly tabindex="-1">
+        </div>
+
         <div class="f-field full">
           <label class="f-label" for="fLocal">📍 Local / Destino (Origem → Destino)</label>
           <input class="f-input field-upper" id="fLocal" type="text" placeholder="DIGITE O DESTINO AQUI" autocomplete="off">
@@ -1244,6 +1256,12 @@ function updateFormBadges(){
     '<span class="badge">⏰ '+escapeHtml(plantao)+'</span>'+
     '<span class="badge">📍 '+escapeHtml(base)+'</span>'+
     '<span class="badge">🚑 '+escapeHtml(vtr)+'</span>';
+
+  // ✅ CORREÇÃO AQUI: Alimenta o novo campo visual do Plantão ao lado do KM
+  var fPlantaoEl = $("fPlantao");
+  if(fPlantaoEl) {
+    fPlantaoEl.value = (plantao + " | " + base).toUpperCase();
+  }
 }
 function updateDataBounds(){
   $("fData").min=state.ano+"-"+pad(state.mes)+"-01";
