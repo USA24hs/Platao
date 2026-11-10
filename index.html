@@ -1,1342 +1,1994 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=yes">
-    <title>Sistema de Deslocamento</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        :root { --primary: #0e5a77; --primary-dark: #0a3d4f; --bg-body: #f1f5f9; --card-bg: #ffffff; --border: #e2e8f0; --success: #15803d; --danger: #ef4444; --base: #dc2626; --info: #3b82f6; --whatsapp: #25D366; --warning: #b45309; }
-        
-        body { background: var(--bg-body); font-family: 'Inter', sans-serif; padding: 0.5rem; padding-bottom: calc(70px + env(safe-area-inset-bottom)); overflow-x: hidden; }
-        .report-container { max-width: 800px; margin: 0 auto; background: var(--card-bg); border-radius: 16px; box-shadow: 0 4px 15px -5px rgba(0,0,0,0.08); overflow: hidden; border: 1px solid var(--border); }
-        input[type="text"], textarea { text-transform: uppercase; }
-        
-        .header { background: linear-gradient(135deg, var(--primary-dark), var(--primary)); padding: 0.8rem 1rem; color: #fff; transition: all 0.3s ease; }
-        .header-top { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 0.75rem; padding-bottom: 0.75rem; border-bottom: 1px solid rgba(255,255,255,0.15); transition: all 0.3s ease; }
-        .header-top h1 { font-size: 1.15rem; font-weight: 800; display: flex; align-items: center; gap: 6px; }
-        .toggle-header-btn { background: rgba(255,255,255,0.15); border: none; color: white; width: 30px; height: 30px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 0.85rem; transition: 0.3s; }
-        
-        .header-collapsed .toggle-header-btn i { transform: rotate(180deg); }
-        .header-collapsed .info-grid { display: none; }
-        .header-collapsed .header-top { margin-bottom: 0; padding-bottom: 0; border-bottom: none; }
-        .header-collapsed { padding: 0.6rem 1rem; }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<meta name="theme-color" content="#0e5a77">
+<title>Sistema de Deslocamento VTR</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%9A%91%3C/text%3E%3C/svg%3E">
+<script>
+(function(){try{var t=localStorage.getItem("vtr-theme");if(t==="dark"||(!t&&window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches))document.documentElement.dataset.theme="dark";}catch(e){}})();
+</script>
+<style>
+:root{
+  --radius:0.75rem;
+  --background:#eef2f7; --foreground:#0f2027;
+  --card:#ffffff; --card-foreground:#0f2027;
+  --primary:#0e5a77; --primary-foreground:#ffffff;
+  --secondary:#e2e8f0; --secondary-foreground:#0f2027;
+  --muted:#eef2f7; --muted-foreground:#5a6b78;
+  --accent:#dcedf3; --accent-foreground:#0e5a77;
+  --destructive:#dc2626; --border:#dbe3ea; --input:#cfd9e2; --ring:#0e5a77;
+  --muted-soft:rgba(238,242,247,.6);
+}
+html[data-theme="dark"]{
+  --background:#0b1120; --foreground:#e6edf3;
+  --card:#101a2d; --card-foreground:#e6edf3;
+  --primary:#2b8cae; --primary-foreground:#ffffff;
+  --secondary:#1c2a40; --secondary-foreground:#e6edf3;
+  --muted:#16223a; --muted-foreground:#8fa3b8;
+  --accent:#12314a; --accent-foreground:#7fc5e0;
+  --destructive:#f87171; --border:#1e2d47; --input:#243568; --ring:#2b8cae;
+  --muted-soft:rgba(22,34,58,.6);
+  color-scheme:dark;
+}
+[hidden]{display:none!important}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  min-height:100vh; display:flex; flex-direction:column;
+  font-family:'Inter','Segoe UI',system-ui,-apple-system,Roboto,Arial,sans-serif;
+  background:var(--background); color:var(--foreground);
+  -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility;
+  transition:background .25s ease,color .25s ease;
+  animation:pageIn .3s ease;
+}
+button{font-family:inherit}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:2px solid var(--ring);outline-offset:2px}
+main{flex:1;width:100%;max-width:768px;margin:0 auto;padding:16px 12px;display:flex;flex-direction:column;gap:16px}
+@keyframes pageIn{from{opacity:0}to{opacity:1}}
 
-        .month-selector { background: rgba(255,255,255,0.1); backdrop-filter: blur(4px); border-radius: 8px; padding: 4px 8px; display: flex; align-items: center; gap: 6px; font-size: 0.8rem; font-weight: 600; }
-        .month-selector select, .month-selector input { background: #fff; border: none; padding: 2px 6px; border-radius: 6px; font-weight: 700; color: var(--primary-dark); font-family: 'Inter', sans-serif; font-size: 0.8rem; }
-        
-        .info-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 0.5rem; margin-top: 0.5rem; transition: 0.3s; }
-        .info-item { background: rgba(255,255,255,0.08); border-radius: 8px; padding: 6px 10px; }
-        .info-item label { font-size: 0.6rem; text-transform: uppercase; opacity: 0.8; display: block; margin-bottom: 2px; letter-spacing: 0.5px; }
-        .info-item input, .info-item select { background: rgba(255,255,255,0.95); border: none; padding: 6px 8px; border-radius: 6px; font-weight: 700; color: var(--primary-dark); width: 100%; font-family: 'Inter', sans-serif; font-size: 0.85rem; }
-        
-        .content { padding: 0.8rem; overflow-x: hidden; }
-        .card { background: var(--card-bg); border-radius: 12px; padding: 0.8rem; margin-bottom: 0.8rem; border: 1px solid var(--border); width: 100%; overflow: hidden; }
-        
-        .card-title { font-size: 0.95rem; font-weight: 700; margin-bottom: 0.75rem; color: var(--primary-dark); display: flex; align-items: center; justify-content: space-between; gap: 6px; }
-        .title-text { display: flex; align-items: center; gap: 6px; }
-        
-        .btn-add-ocorrencia { background: var(--success); color: white; border: none; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 0.9rem; transition: 0.2s; box-shadow: 0 2px 4px rgba(21,128,61,0.3); }
-        .btn-add-ocorrencia:hover { background: #166534; transform: scale(1.05); }
+.app-header{
+  border-radius:1rem; color:#fff; overflow:hidden;
+  background:linear-gradient(135deg,#0a3d4f 0%,#0e5a77 55%,#117399 100%);
+  border:1px solid rgba(4,30,41,.25);
+  box-shadow:0 10px 30px -12px rgba(13,74,97,.45);
+}
+.hh-top{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:.5rem;padding:.75rem 1rem;border-bottom:1px solid rgba(255,255,255,.15)}
+.hh-title{margin:0;font-size:1.02rem;font-weight:800;letter-spacing:-.01em;display:flex;align-items:center;gap:.5rem}
+@media (min-width:640px){.hh-title{font-size:1.12rem}}
+.hh-title .vtr{color:#fca5a5}
+.hh-tools{display:flex;align-items:center;gap:.4rem}
+.periodo{display:flex;align-items:center;gap:.35rem;background:rgba(255,255,255,.12);border-radius:.75rem;padding:.3rem .5rem;font-size:.75rem;font-weight:700}
+.periodo select{border:none;height:1.75rem;border-radius:.45rem;padding:0 .3rem;font-weight:700;font-size:.75rem;color:#0a3d4f;background:#fff;cursor:pointer}
+.periodo input{border:none;height:1.75rem;width:3.7rem;border-radius:.45rem;padding:0 .4rem;font-weight:700;font-size:.75rem;color:#0a3d4f;background:#fff}
+.icon-btn{width:2rem;height:2rem;border-radius:999px;border:none;background:rgba(255,255,255,.12);color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:.95rem;line-height:1;transition:background .2s}
+.icon-btn:hover{background:rgba(255,255,255,.28)}
+.hh-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:.5rem;padding:.75rem}
+@media (min-width:640px){.hh-grid{grid-template-columns:repeat(3,1fr)}}
+@media (min-width:1280px){.hh-grid{grid-template-columns:repeat(5,1fr)}}
+.hh-field{background:rgba(255,255,255,.07);border-radius:.75rem;padding:.4rem .55rem;transition:background .2s}
+.hh-field:focus-within{background:rgba(255,255,255,.16)}
+.hh-field label{display:flex;align-items:center;gap:.25rem;font-size:.6rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:rgba(255,255,255,.62);margin-bottom:.2rem}
+.hh-field input,.hh-field select{width:100%;height:2rem;border:none;border-radius:.5rem;padding:0 .5rem;font-size:.8rem;font-weight:700;color:#0a3d4f;background:#fff}
 
-        .btn-whatsapp { background: var(--whatsapp); color: white; border: none; border-radius: 20px; padding: 4px 10px; display: flex; align-items: center; justify-content: center; gap: 4px; cursor: pointer; font-size: 0.75rem; font-weight: 700; transition: 0.2s; box-shadow: 0 2px 4px rgba(37,211,102,0.3); }
-        .btn-whatsapp:hover { background: #128C7E; transform: scale(1.02); }
-        
-        .form-card { background: #f0fdf4; border: 1px solid #bbf7d0; }
-        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 10px; width: 100%; }
-        .form-item { display: flex; flex-direction: column; min-width: 0; }
-        .form-item.full { grid-column: 1 / -1; }
-        .form-item label { font-size: 0.65rem; font-weight: 700; color: #166534; text-transform: uppercase; margin-bottom: 2px; }
-        
-        .form-item input { width: 100%; min-width: 0; padding: 8px; border-radius: 8px; border: 1px solid #86efac; font-family: 'Inter'; font-size: 0.95rem; font-weight: 600; color: #064e3b; background: #fff; box-sizing: border-box; transition: 0.3s; }
-        .form-item input:focus { outline: 2px solid #15803d; border-color: transparent; }
-        
-        .km-alert-input, .time-alert-input, .local-alert-input { border-color: var(--danger) !important; background: #fef2f2 !important; color: var(--danger) !important; outline: 2px solid var(--danger) !important; animation: pulse-red 1s infinite; }
-        @keyframes pulse-red { 0% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.4); } 70% { box-shadow: 0 0 0 6px rgba(220, 38, 38, 0); } 100% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0); } }
+.tabs{display:flex;gap:.25rem;background:var(--muted);border-radius:.75rem;padding:.25rem;height:2.75rem;box-shadow:inset 0 1px 2px rgba(0,0,0,.06)}
+.tab-btn{flex:1;border:none;background:transparent;border-radius:.55rem;font-size:.8rem;font-weight:700;color:var(--muted-foreground);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:.4rem;transition:all .2s}
+.tab-btn.active{background:var(--card);color:var(--foreground);box-shadow:0 2px 8px -2px rgba(0,0,0,.25)}
+.tab-pane{display:flex;flex-direction:column;gap:16px}
 
-        .local-base-highlight { 
-            background: #dcfce7 !important; 
-            border-color: #15803d !important; 
-            color: #15803d !important;
-            outline: 2px solid #15803d !important;
-            animation: pulse-green 0.8s ease-out;
-        }
-        @keyframes pulse-green { 
-            0% { box-shadow: 0 0 0 0 rgba(21, 128, 61, 0.5); } 
-            100% { box-shadow: 0 0 0 8px rgba(21, 128, 61, 0); } 
-        }
+.card{background:var(--card);border:1px solid var(--border);border-radius:1rem;padding:1rem;box-shadow:0 1px 3px rgba(2,8,20,.06)}
+.sec-title{margin:0 0 .75rem;font-size:.95rem;font-weight:800;letter-spacing:-.01em;color:var(--primary);display:flex;align-items:center;gap:.5rem}
+.card-head-row{display:flex;align-items:center;justify-content:space-between;gap:.5rem;margin-bottom:.75rem}
+.card-head-row .sec-title{margin:0}
+.empty{padding:2rem .5rem;text-align:center;font-size:.85rem;font-weight:700;color:var(--muted-foreground)}
 
-        .form-actions { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; width: 100%; }
-        .form-actions button { border: none; color: #fff; padding: 12px 2px; border-radius: 8px; font-weight: 800; cursor: pointer; font-size: 0.8rem; display: flex; align-items: center; justify-content: center; gap: 4px; transition: 0.2s; font-family: 'Inter'; width: 100%; }
-        
-        .btn-form-saida { background: var(--primary); }
-        .btn-form-chegada { background: var(--success); }
-        .btn-form-base { background: var(--base); }
+.form-section{border-radius:1rem;padding:1rem;border:1px solid #a7f3d0;background:linear-gradient(180deg,rgba(236,253,245,.8),var(--card));box-shadow:0 1px 3px rgba(2,44,34,.06)}
+html[data-theme="dark"] .form-section{border-color:rgba(6,78,59,.45);background:linear-gradient(180deg,rgba(2,44,34,.35),var(--card))}
+.fs-head{display:flex;align-items:center;justify-content:space-between;gap:.5rem;margin-bottom:.7rem}
+.fs-title{margin:0;font-size:.95rem;font-weight:800;letter-spacing:-.01em;color:#047857;display:flex;align-items:center;gap:.5rem}
+html[data-theme="dark"] .fs-title{color:#34d399}
+.fs-title.editing{color:#d97706}
+html[data-theme="dark"] .fs-title.editing{color:#fbbf24}
+.badges{display:flex;flex-wrap:wrap;gap:.4rem;margin-bottom:.75rem}
+.badge{display:inline-flex;align-items:center;gap:.3rem;font-size:.7rem;font-weight:700;color:#334155;background:rgba(255,255,255,.85);border:1px solid var(--border);border-radius:999px;padding:.2rem .6rem}
+html[data-theme="dark"] .badge{background:#1e293b;color:#e2e8f0;border-color:#334155}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:.65rem}
+.f-field{display:flex;flex-direction:column;gap:.25rem}
+.f-field.full{grid-column:1/-1}
+.f-label{font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#047857;display:flex;align-items:center;gap:.3rem}
+html[data-theme="dark"] .f-label{color:#34d399}
+.f-input{height:2.75rem;border-radius:.75rem;border:1px solid #a7f3d0;background:#fff;color:#1e293b;font-size:.95rem;font-weight:600;padding:0 .75rem;width:100%;outline:none;transition:border-color .2s,box-shadow .2s}
+.f-input:focus{box-shadow:0 0 0 2px #10b981}
+html[data-theme="dark"] .f-input{border-color:rgba(6,78,59,.65);background:#0f172a;color:#f1f5f9}
+.f-input.field-upper{text-transform:uppercase}
+.f-input.alert{border-color:#f87171;background:#fef2f2;color:#dc2626;animation:pulse-red-ring 1.1s infinite}
+html[data-theme="dark"] .f-input.alert{border-color:#f87171;background:rgba(127,29,29,.35);color:#f87171}
+.f-input.base-ok{border-color:#10b981;background:#ecfdf5;color:#047857;animation:pulse-green-ring .9s ease-out}
+html[data-theme="dark"] .f-input.base-ok{border-color:#10b981;background:rgba(2,44,34,.5);color:#34d399}
+.actions{display:grid;grid-template-columns:repeat(3,1fr);gap:.5rem;margin-top:.85rem}
+.btn{border:none;border-radius:.75rem;font-weight:800;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:.45rem;transition:filter .2s,transform .1s;font-family:inherit;color:var(--primary-foreground);background:var(--secondary);color:var(--secondary-foreground)}
+.btn:hover{filter:brightness(.92)}
+.btn:active{transform:translateY(1px)}
+.btn:disabled{opacity:.55;cursor:not-allowed}
+.btn-saida{height:3rem;background:#0e5a77;color:#fff;font-size:.8rem;text-transform:uppercase;letter-spacing:.03em;box-shadow:0 4px 12px -4px rgba(14,90,119,.55)}
+.btn-chegada{height:3rem;background:#059669;color:#fff;font-size:.8rem;text-transform:uppercase;letter-spacing:.03em;box-shadow:0 4px 12px -4px rgba(5,150,105,.55)}
+.btn-base{height:3rem;background:#dc2626;color:#fff;font-size:.8rem;text-transform:uppercase;letter-spacing:.03em;box-shadow:0 4px 12px -4px rgba(220,38,38,.55)}
+.btn-plus{width:2rem;height:2rem;border-radius:999px;background:#059669;color:#fff;font-size:1rem;box-shadow:0 3px 8px -2px rgba(5,150,105,.5)}
+.btn-pdf{height:3rem;width:100%;background:linear-gradient(90deg,#dc2626,#b91c1c);color:#fff;font-size:.85rem;box-shadow:0 6px 16px -6px rgba(220,38,38,.5)}
+.btn-excel{height:3rem;background:#059669;color:#fff;font-size:.85rem;box-shadow:0 6px 16px -6px rgba(5,150,105,.5)}
+.btn-pdf2{height:3rem;background:linear-gradient(90deg,#dc2626,#b91c1c);color:#fff;font-size:.85rem;box-shadow:0 6px 16px -6px rgba(220,38,38,.5)}
+.btn-red{height:2.75rem;background:#dc2626;color:#fff;font-size:.85rem}
+.btn-gray{height:2.75rem;background:var(--secondary);color:var(--secondary-foreground);font-size:.85rem}
+.btn-whatsapp{height:2rem;border-radius:999px;padding:0 .85rem;font-size:.72rem;font-weight:800;color:#fff;background:#25D366;box-shadow:0 3px 8px -2px rgba(37,211,102,.5)}
+.btn-whatsapp:hover{filter:brightness(.9)}
+.btn-ghost-sm{height:1.75rem;border:none;background:transparent;color:var(--muted-foreground);font-size:.7rem;font-weight:700;border-radius:.5rem;padding:0 .5rem;cursor:pointer;display:inline-flex;align-items:center;gap:.25rem}
+.btn-ghost-sm:hover{color:var(--foreground);background:var(--muted)}
 
-        .ficha-card { background: #fff; border: 1px solid #cbd5e1; border-radius: 10px; margin-bottom: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.02); overflow: hidden; }
-        .ficha-header { background: #f8fafc; padding: 8px 12px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; }
-        .ficha-header-info { font-size: 0.75rem; color: #475569; font-weight: 600; display: flex; flex-direction: column; gap: 2px; }
-        .ficha-actions { display: flex; gap: 6px; }
-        
-        .btn-edit-ficha { background: #e0f2fe; color: #0284c7; border: none; cursor: pointer; padding: 6px 10px; border-radius: 6px; font-size: 0.9rem; transition: 0.2s; display: flex; align-items: center; justify-content: center; }
-        .btn-del-ficha { background: #fee2e2; color: #b91c1c; border: none; cursor: pointer; padding: 6px 10px; border-radius: 6px; font-size: 0.9rem; transition: 0.2s; display: flex; align-items: center; justify-content: center; }
-        .btn-del-ficha.locked { background: #e2e8f0; color: #64748b; cursor: not-allowed; }
-        
-        .ficha-body { padding: 10px 12px; display: flex; flex-direction: column; gap: 8px; font-family: 'Inter', sans-serif; font-size: 0.8rem; }
-        .timeline-row { display: flex; align-items: center; gap: 6px; line-height: 1.3; }
-        .timeline-tag { width: 70px; flex-shrink: 0; font-size: 0.7rem; font-weight: 800; letter-spacing: 0.5px; text-transform: uppercase; }
-        
-        .timeline-tag.inicio { color: var(--primary); }
-        .timeline-tag.chegada { color: var(--success); }
-        .timeline-tag.saida { color: #f59e0b; }
-        .timeline-tag.fim { color: var(--danger); }
-        
-        .timeline-content { flex-grow: 1; display: flex; justify-content: space-between; align-items: center; text-transform: uppercase; color: #1e293b; font-weight: 500; }
-        .timeline-content .local { flex: 1; padding-right: 8px; }
-        .timeline-content .hora { width: 75px; text-align: center; color: #334155; font-weight: 600; }
-        .timeline-content .km { width: 85px; text-align: right; color: #334155; font-weight: 600; }
+.hist-list{display:flex;flex-direction:column;gap:.75rem;max-height:560px;overflow-y:auto;padding-right:2px}
+.ficha{border:1px solid var(--border);border-radius:.75rem;background:var(--card);overflow:hidden;box-shadow:0 1px 3px rgba(2,8,20,.06);animation:cardIn .28s ease both}
+.ficha-head{display:flex;justify-content:space-between;align-items:center;gap:.5rem;background:var(--muted-soft);border-bottom:1px solid var(--border);padding:.5rem .75rem}
+.fh-info{display:flex;flex-direction:column;gap:.15rem;font-size:.72rem;font-weight:700;color:var(--muted-foreground);min-width:0}
+.fh-vtr{font-size:.66rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:150px}
+.fh-actions{display:flex;gap:.4rem;flex-shrink:0}
+.mini-btn{width:2rem;height:2rem;border:none;border-radius:.55rem;font-size:.85rem;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:filter .2s}
+.mini-btn.edit{background:#e0f2fe;color:#0369a1}
+html[data-theme="dark"] .mini-btn.edit{background:rgba(12,74,110,.6);color:#7dd3fc}
+.mini-btn.del{background:#fee2e2;color:#b91c1c}
+html[data-theme="dark"] .mini-btn.del{background:rgba(127,29,29,.55);color:#fca5a5}
+.mini-btn.locked{background:var(--muted);color:var(--muted-foreground);cursor:not-allowed}
+.ficha-body{display:flex;flex-direction:column;gap:.25rem;padding:.6rem .75rem;font-size:.8rem}
+.tl-row{display:flex;align-items:baseline;gap:.5rem}
+.tag{width:70px;flex-shrink:0;font-size:.62rem;font-weight:800;text-transform:uppercase;letter-spacing:.06em}
+.tag-inicio{color:#0e5a77}
+html[data-theme="dark"] .tag-inicio{color:#7dd3fc}
+.tag-saida{color:#d97706}
+html[data-theme="dark"] .tag-saida{color:#fbbf24}
+.tag-chegada{color:#059669}
+html[data-theme="dark"] .tag-chegada{color:#34d399}
+.tag-fim{color:#dc2626}
+html[data-theme="dark"] .tag-fim{color:#f87171}
+.tl-loc{flex:1;word-break:break-word;font-weight:600;color:var(--foreground)}
+.tl-hora{width:58px;text-align:center;font-weight:700;color:var(--muted-foreground);flex-shrink:0}
+.tl-km{width:70px;text-align:right;font-weight:700;color:var(--muted-foreground);flex-shrink:0}
+.ficha-foot{display:flex;justify-content:space-between;align-items:center;border-top:1px dashed var(--border);background:var(--muted-soft);padding:.5rem .75rem;font-size:.8rem;font-weight:800;color:var(--foreground)}
+.km-em{color:#059669}
+html[data-theme="dark"] .km-em{color:#34d399}
 
-        .ficha-footer { background: #f8fafc; padding: 8px 12px; border-top: 1px dashed #cbd5e1; display: flex; justify-content: space-between; font-size: 0.8rem; font-weight: 700; color: #1e293b; }
+.obs-grid{display:grid;grid-template-columns:1fr;gap:16px}
+@media (min-width:1024px){.obs-grid{grid-template-columns:1fr 1fr}}
+.textarea{width:100%;min-height:96px;resize:vertical;border:1px solid var(--input);border-radius:.75rem;background:color-mix(in srgb,var(--muted) 50%,var(--card));color:var(--foreground);font-size:.8rem;font-weight:500;padding:.6rem;outline:none;font-family:inherit}
+.textarea:focus{box-shadow:0 0 0 2px var(--ring)}
+.textarea.field-upper{text-transform:uppercase}
+.sign-canvas{width:100%;height:120px;border:1.5px dashed var(--input);border-radius:.75rem;background:#fff;touch-action:none;cursor:crosshair;display:block}
+.obs-head-row{display:flex;align-items:center;justify-content:space-between;gap:.5rem;margin-bottom:.5rem}
+.obs-head-row .sec-title{margin:0}
+.nome-field{display:flex;flex-direction:column;gap:.25rem;margin-top:.5rem}
+.lbl-mini{font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted-foreground)}
+.inp-lg{height:2.75rem;border-radius:.75rem;border:1px solid var(--input);background:var(--card);color:var(--foreground);font-size:.95rem;font-weight:700;padding:0 .75rem;width:100%;outline:none}
+.inp-lg:focus{box-shadow:0 0 0 2px var(--ring)}
+.sel-lg{height:2.75rem;border-radius:.75rem;border:1px solid var(--input);background:var(--card);color:var(--foreground);font-size:.95rem;font-weight:700;padding:0 .5rem;width:100%;outline:none;cursor:pointer}
 
-        .summary-card { background: #f0f9ff; border-color: #bae6fd; }
-        .summary-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
-        .summary-box { background: #fff; border: 1px solid #cbd5e1; border-radius: 8px; padding: 10px; text-align: center; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
-        .summary-box span { display: block; font-size: 0.65rem; color: #64748b; text-transform: uppercase; margin-bottom: 4px; font-weight: 700; }
-        .summary-box strong { font-size: 1.2rem; color: var(--primary-dark); }
-        .req-list { background: #fff; border: 1px solid #cbd5e1; border-radius: 8px; padding: 8px 12px; }
-        .req-title { font-size: 0.7rem; font-weight: 800; color: var(--primary-dark); text-transform: uppercase; margin-bottom: 6px; border-bottom: 1px dashed #e2e8f0; padding-bottom: 4px; }
-        .req-item { display: flex; justify-content: space-between; font-size: 0.8rem; padding: 4px 0; border-bottom: 1px dashed #f1f5f9; color: #334155; font-weight: 600; text-transform: uppercase; }
-        .req-item:last-child { border-bottom: none; }
-        .req-item span:last-child { color: var(--primary); font-weight: 800; }
+.resumo{border:1px solid #bae6fd;background:rgba(224,242,254,.7);border-radius:1rem;padding:1rem}
+html[data-theme="dark"] .resumo{border-color:rgba(12,74,110,.45);background:rgba(8,47,73,.3)}
+.resumo-title{margin:0 0 .75rem;font-size:.95rem;font-weight:800;letter-spacing:-.01em;color:#0369a1;display:flex;align-items:center;gap:.5rem}
+html[data-theme="dark"] .resumo-title{color:#7dd3fc}
+.stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:.65rem;margin-bottom:.75rem}
+.stat-grid4{display:grid;grid-template-columns:repeat(2,1fr);gap:.75rem}
+@media (min-width:1024px){.stat-grid4{grid-template-columns:repeat(4,1fr)}}
+.stat{background:var(--card);border:1px solid var(--border);border-radius:.75rem;padding:.75rem .5rem;text-align:center;box-shadow:0 1px 3px rgba(2,8,20,.06);animation:popIn .25s ease both}
+.stat-label{display:block;font-size:.62rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted-foreground);margin-bottom:.25rem}
+.stat-value{font-size:1.5rem;font-weight:800;color:var(--primary);font-variant-numeric:tabular-nums}
+.stat-value.em{color:#059669}
+html[data-theme="dark"] .stat-value.em{color:#34d399}
+.stat-card-list{background:var(--card);border:1px solid var(--border);border-radius:.75rem;padding:.75rem;box-shadow:0 1px 3px rgba(2,8,20,.06)}
+.sol-title{margin:0 0 .5rem;padding-bottom:.4rem;border-bottom:1px dashed var(--border);font-size:.68rem;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:var(--primary)}
+.sol-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column}
+.sol-list li{display:flex;align-items:center;justify-content:space-between;gap:.75rem;border-bottom:1px dashed var(--border);padding:.4rem 0;font-size:.8rem;font-weight:600}
+.sol-list li:last-child{border-bottom:none}
+.sol-list li strong{color:var(--primary);flex-shrink:0}
+.sol-rank{display:flex;align-items:center;gap:.5rem;min-width:0}
+.sol-list li .sol-rank span:last-child{word-break:break-word}
+.rank{display:inline-flex;width:1.5rem;height:1.5rem;align-items:center;justify-content:center;border-radius:999px;font-size:.68rem;font-weight:800;color:#fff;background:color-mix(in srgb,var(--muted-foreground) 55%,var(--card));flex-shrink:0}
+.rank.first{background:var(--primary)}
+.sol-mes{list-style:none;margin:0;padding:0;display:flex;flex-direction:column}
+.sol-mes li{display:flex;align-items:center;justify-content:space-between;gap:.75rem;border-bottom:1px dashed var(--border);padding:.5rem 0;font-size:.8rem;font-weight:600}
+.sol-mes li:last-child{border-bottom:none}
+.sol-mes li strong{color:var(--primary);flex-shrink:0}
 
-        .two-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 0.8rem; }
-        .obs-box textarea { width: 100%; padding: 8px; border-radius: 8px; border: 1px solid var(--border); font-family: 'Inter'; font-size: 0.8rem; resize: vertical; background: #f8fafc; }
-        .sign-box { background: #f8fafc; border-radius: 12px; padding: 0.8rem; border: 1px solid var(--border); }
-        canvas { border: 1px dashed #cbd5e1; border-radius: 8px; width: 100%; height: 90px; background: #fff; touch-action: none; cursor: crosshair; }
-        .sign-actions { display: flex; justify-content: flex-end; margin-top: 2px; }
-        .btn-clear { background: none; border: none; color: #64748b; font-size: 0.65rem; cursor: pointer; }
-        .legible-name input { width: 100%; padding: 8px; border-radius: 8px; border: 1px solid var(--border); margin-top: 6px; font-size: 0.85rem; }
-        
-        .btn-pdf { background: linear-gradient(135deg, #dc2626, #b91c1c); color: #fff; border: none; padding: 12px 20px; border-radius: 10px; font-weight: 800; cursor: pointer; font-size: 0.95rem; display: flex; align-items: center; gap: 8px; justify-content: center; width: 100%; font-family: 'Inter'; transition: 0.2s; margin-top: 0.5rem; }
+.periodo2{display:grid;grid-template-columns:repeat(2,1fr);gap:.75rem;max-width:384px}
+.chart-wrap{display:flex;flex-direction:column}
+.chart-sub{margin:0 0 .75rem;font-size:.72rem;font-weight:600;color:var(--muted-foreground)}
+.chart{display:flex;align-items:flex-end;gap:6px;height:200px;border-bottom:1px solid var(--border);padding:18px 4px 0}
+.chart-col{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;min-width:10px;max-width:44px;height:100%;cursor:default}
+.bar{width:100%;border-radius:6px 6px 0 0;background:#0e5a77;transition:filter .2s}
+.chart-col:nth-child(even) .bar{background:#117399}
+.chart-col:hover .bar{filter:brightness(1.18)}
+.bar-val{font-size:.58rem;font-weight:700;color:var(--muted-foreground);margin-bottom:2px;white-space:nowrap}
+.chart-labels{display:flex;gap:6px;padding-top:4px}
+.chart-labels span{flex:1;min-width:10px;max-width:44px;text-align:center;font-size:.62rem;font-weight:600;color:var(--muted-foreground)}
+.table-wrap{overflow-x:auto}
 
-        .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 12000; display: none; align-items: center; justify-content: center; padding: 20px; backdrop-filter: blur(2px); }
-        .modal-overlay.active { display: flex; }
-        .modal-box { background: #fff; border-radius: 16px; width: 100%; max-width: 400px; overflow: hidden; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.3); animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
-        @keyframes popIn { 0% { transform: scale(0.8); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
-        .modal-header { background: #fef2f2; padding: 15px; border-bottom: 1px solid #fecaca; display: flex; align-items: center; gap: 10px; }
-        .modal-header i { font-size: 1.5rem; color: var(--danger); }
-        .modal-header h3 { color: var(--danger); font-size: 1rem; font-weight: 800; }
-        .modal-body { padding: 20px 15px; color: #334155; font-size: 0.9rem; text-align: center; line-height: 1.5; }
-        .modal-body strong { color: var(--danger); }
-        .modal-actions { padding: 0 15px 15px 15px; display: flex; flex-direction: column; gap: 8px; }
-        .btn-modal { border: none; padding: 12px; border-radius: 8px; font-weight: 700; font-size: 0.85rem; cursor: pointer; transition: 0.2s; width: 100%; font-family: 'Inter'; }
-        .btn-modal-cancel { background: #f1f5f9; color: #475569; }
-        .btn-modal-confirm { background: var(--danger); color: #fff; box-shadow: 0 4px 6px rgba(220,38,38,0.2); }
+.mob{display:inline}
+.desk{display:none}
+@media (min-width:640px){
+  .mob{display:none}
+  .desk{display:inline}
+}
 
-        @media (max-width: 768px) {
-            body { padding: 0; background: #fff; }
-            .report-container { border-radius: 0; border: none; box-shadow: none; }
-            .header { padding: 0.6rem 0.8rem; border-bottom-left-radius: 16px; border-bottom-right-radius: 16px; }
-            .header-top h1 { font-size: 1rem; }
-            .header-top { margin-bottom: 0.5rem; padding-bottom: 0.5rem; }
-            .info-grid { grid-template-columns: 1fr 1fr; gap: 4px; margin-top: 4px; }
-            .info-item { padding: 4px 6px; border-radius: 6px; }
-            .info-item label { font-size: 0.55rem; margin-bottom: 1px; }
-            .info-item input, .info-item select { padding: 4px 6px; font-size: 0.8rem; border-radius: 4px; }
+@media (max-width: 639px){
+  .vtr-table{font-size:.72rem;}
+  .vtr-table th{padding:.45rem .35rem;font-size:.58rem;}
+  .vtr-table td{padding:.5rem .35rem;font-size:.72rem;}
+  .td-vtr{max-width:none;}
+  .table-wrap{padding-bottom:2px;}
 
-            .content { padding: 0.5rem; }
-            .card { padding: 0.6rem; margin-bottom: 0.5rem; border-radius: 10px; }
-            .two-cols { grid-template-columns: 1fr; gap: 0.5rem; }
-            .form-grid { gap: 6px; }
-            .form-item label { font-size: 0.6rem; }
-            .form-item input { font-size: 16px !important; padding: 6px; }
-            .form-actions button { font-size: 0.75rem; padding: 10px 2px; }
-            .form-actions button i { font-size: 0.85rem; }
+  .vtr-table .col-km-ini,
+  .vtr-table .col-km-fim{display:none;}
 
-            .timeline-content .hora { width: 70px; }
-            .timeline-content .km { width: 75px; }
-            .ficha-body { font-size: 0.75rem; gap: 6px; padding: 8px; }
-            .timeline-tag { width: 60px; font-size: 0.65rem; }
+  .vtr-table .td-em{font-size:.95rem;font-weight:800;}
 
-            .btn-pdf { padding: 10px; font-size: 0.85rem; }
-        }
-        
-        .toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(100px); background: #0f172a; color: #fff; padding: 10px 20px; border-radius: 30px; font-size: 0.8rem; transition: 0.3s; z-index: 11000; opacity: 0; pointer-events: none; max-width: 90vw; text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.15); }
-        .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
-    </style>
+  .btn-saida,.btn-chegada,.btn-base{min-height:3rem;}
+  .mini-btn{width:2.25rem;height:2.25rem;}
+
+  .chart{height:160px;}
+  .bar-val{font-size:.55rem;}
+
+  .hh-top{padding:.6rem .75rem;}
+  .hh-grid{padding:.55rem;gap:.4rem;}
+  .badges{margin-bottom:.55rem;}
+  .badge{font-size:.65rem;padding:.18rem .5rem;}
+}
+
+.vtr-table{width:100%;border-collapse:collapse;font-size:.78rem}
+.vtr-table th{background:var(--muted-soft);border-bottom:1px solid var(--border);padding:.5rem;text-align:left;font-size:.62rem;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:var(--muted-foreground);white-space:nowrap}
+.vtr-table th.c{text-align:center}
+.vtr-table th.r{text-align:right}
+.vtr-table td{border-bottom:1px solid var(--border);padding:.55rem .5rem;font-weight:600;vertical-align:middle}
+.vtr-table tr:last-child td{border-bottom:none}
+.td-vtr{max-width:104px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:700}
+@media (min-width:640px){.td-vtr{max-width:220px;white-space:normal;word-break:break-word}.vtr-table,.vtr-table td{font-size:.8rem}}
+.td-c{text-align:center}
+.td-r{text-align:right;font-variant-numeric:tabular-nums}
+.td-em{color:#059669;font-weight:800}
+html[data-theme="dark"] .td-em{color:#34d399}
+.export-grid{display:grid;grid-template-columns:1fr;gap:.65rem}
+@media (min-width:640px){.export-grid{grid-template-columns:1fr 1fr}}
+
+.app-footer{margin-top:auto;border-top:1px solid var(--border);background:var(--muted-soft);text-align:center;padding:.75rem 1rem;font-size:.68rem;font-weight:600;color:var(--muted-foreground)}
+
+.overlay{position:fixed;inset:0;background:rgba(2,6,23,.55);backdrop-filter:blur(2px);display:flex;align-items:center;justify-content:center;z-index:80;padding:1rem;animation:fadeIn .2s ease}
+.modal{background:var(--card);color:var(--foreground);border:1px solid var(--border);border-radius:1rem;max-width:24rem;width:100%;padding:1.25rem;box-shadow:0 20px 50px -12px rgba(0,0,0,.45);animation:modalIn .25s ease}
+.modal h3{margin:0 0 .35rem;font-size:1rem;font-weight:800}
+.modal p{margin:0;font-size:.8rem;line-height:1.5;color:var(--muted-foreground)}
+.dlg-head{display:flex;align-items:center;gap:.75rem;margin-bottom:1rem}
+.dlg-icon{width:2.75rem;height:2.75rem;border-radius:999px;background:#fee2e2;display:flex;align-items:center;justify-content:center;font-size:1.3rem;flex-shrink:0}
+html[data-theme="dark"] .dlg-icon{background:rgba(127,29,29,.5)}
+.dlg-head h3{color:#dc2626;margin:0 0 .2rem}
+html[data-theme="dark"] .dlg-head h3{color:#f87171}
+.dlg-box{border:1px solid #fecaca;background:#fef2f2;border-radius:.75rem;padding:.75rem 1rem;text-align:center;font-weight:800;line-height:1.6;color:#b91c1c;margin-bottom:1rem}
+html[data-theme="dark"] .dlg-box{border-color:rgba(127,29,29,.6);background:rgba(127,29,29,.3);color:#fca5a5}
+.dlg-actions{display:flex;flex-direction:column;gap:.5rem}
+.dlg-actions .btn{width:100%}
+
+#toasts{position:fixed;bottom:1rem;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;gap:.5rem;z-index:100;width:min(92vw,26rem)}
+.toast{background:var(--card);color:var(--foreground);border:1px solid var(--border);border-radius:.75rem;padding:.7rem 1rem;font-size:.8rem;font-weight:600;box-shadow:0 10px 30px -8px rgba(2,8,20,.35);display:flex;gap:.5rem;align-items:center;animation:toastIn .25s ease}
+.toast.success{border-color:#34d399;background:linear-gradient(0deg,rgba(16,185,129,.09),rgba(16,185,129,.09)),var(--card)}
+.toast.warning{border-color:#fbbf24;background:linear-gradient(0deg,rgba(251,191,36,.1),rgba(251,191,36,.1)),var(--card)}
+.toast.error{border-color:#f87171;background:linear-gradient(0deg,rgba(248,113,113,.1),rgba(248,113,113,.1)),var(--card)}
+.toast.out{opacity:0;transform:translateY(6px);transition:all .3s}
+
+.no-spinner{-moz-appearance:textfield}
+.no-spinner::-webkit-outer-spin-button,.no-spinner::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+.scroll-thin{scrollbar-width:thin;scrollbar-color:var(--input) transparent}
+.scroll-thin::-webkit-scrollbar{width:6px;height:6px}
+.scroll-thin::-webkit-scrollbar-thumb{background:var(--input);border-radius:999px}
+@keyframes pulse-red-ring{0%{box-shadow:0 0 0 0 rgba(220,38,38,.45)}70%{box-shadow:0 0 0 7px rgba(220,38,38,0)}100%{box-shadow:0 0 0 0 rgba(220,38,38,0)}}
+@keyframes pulse-green-ring{0%{box-shadow:0 0 0 0 rgba(21,128,61,.5)}100%{box-shadow:0 0 0 10px rgba(21,128,61,0)}}
+@keyframes cardIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+@keyframes popIn{from{opacity:0;transform:scale(.96)}to{opacity:1;transform:none}}
+@keyframes toastIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes modalIn{from{opacity:0;transform:scale(.95) translateY(8px)}to{opacity:1;transform:none}}
+</style>
 </head>
 <body>
-<div class="report-container">
-    <div class="header" id="mainHeader">
-        <div class="header-top">
-            <h1><i class="fas fa-ambulance"></i> Deslocamento</h1>
-            <div style="display:flex; align-items:center; gap:6px;">
-                <div class="month-selector"><i class="far fa-calendar-alt"></i><select id="mesSelect"></select><input type="number" id="anoSelect" style="width:55px;" value="2026"></div>
-                <button id="toggleHeaderBtn" class="toggle-header-btn"><i class="fas fa-chevron-up"></i></button>
-            </div>
+<main>
+  <header class="app-header">
+    <div class="hh-top">
+      <h1 class="hh-title">🚑 Sistema de Deslocamento <span class="vtr">VTR</span></h1>
+      <div class="hh-tools">
+        <div class="periodo" role="group" aria-label="Selecionar mês e ano">
+          📅
+          <select id="selMes" aria-label="Mês"></select>
+          <input id="inpAno" type="number" min="2000" max="2100" aria-label="Ano">
         </div>
-        <div class="info-grid">
-            <div class="info-item"><label>🏥 Base</label><input type="text" id="BaseHeader" value="SÓ SAÚDE"></div>
-            <div class="info-item"><label>👨‍⚕️ Condutor</label><input type="text" id="condutorHeader" value="Anderson Martins"></div>
-            <div class="info-item"><label>⏱️ Plantão</label><select id="plantaoHeader"><option value="SD 12hs">SD 12hs (07h-19h)</option><option value="SN 12hs">SN 12hs (19h-07h)</option><option value="DN 24hs">DN 24hs</option></select></div>
-            <div class="info-item"><label>🚑 Ambulância</label><input type="text" id="ambulanciaHeader" value="MASTER"></div>
-            <div class="info-item"><label>🔖 Placa</label><input type="text" id="placaHeader" value="TGP5G55"></div>
-            <div class="info-item"><label>🔢 Km Inicial</label><input type="number" id="kmInicialHeader" value="34585" step="0.1"></div>
-            <div class="info-item"><label>⛑️ O² Portátil</label><input type="text" id="o2PortatilHeader" value="125%"></div>
-            <div class="info-item"><label>🫁 O² Fixo</label><input type="text" id="o2FixoHeader" value="150%"></div>
-            <div class="info-item"><label>⛽ Abastecimento</label><input type="text" id="abastecimentoHeader" value="75%"></div>
-        </div>
+        <button class="icon-btn" id="btnTheme" title="Alternar tema claro/escuro" aria-label="Alternar tema claro/escuro">🌙</button>
+        <button class="icon-btn" id="btnCollapse" aria-label="Expandir cabeçalho" aria-expanded="true" title="Expandir dados do plantão">▲</button>
+      </div>
     </div>
-    
-    <div class="content">
-        <div class="card form-card">
-            <div class="card-title">
-                <div class="title-text" id="titleLancamento" style="color: #166534;"><i class="fas fa-edit"></i> Novo Deslocamento</div>
-                <button id="btnNovaOcorrencia" class="btn-add-ocorrencia" title="Iniciar novo deslocamento / Cancelar Edição"><i class="fas fa-plus"></i></button>
-            </div>
-            <div class="form-grid">
-                <div class="form-item">
-                    <label>Data</label>
-                    <input type="date" id="fData">
-                </div>
-                <div class="form-item">
-                    <label>Hora</label>
-                    <input type="time" id="fHora">
-                </div>
-                <div class="form-item">
-                    <label>KM (Odômetro)</label>
-                    <input type="number" id="fKm" step="0.1" placeholder="0.0">
-                </div>
-                <div class="form-item">
-                    <label>Plantão</label>
-                    <input type="text" id="fPlantaoInfo" readonly style="background:#e2e8f0; color:#64748b; border-color:#cbd5e1;">
-                </div>
-                <div class="form-item full">
-                    <label>Local / Destino (Origem → Destino)</label>
-                    <input type="text" id="fLocal" placeholder="DIGITE O DESTINO AQUI">
-                </div>
-            </div>
-            
-            <div class="form-actions">
-                <button class="btn-form-saida" id="btnRegSaida"><i class="fas fa-sign-out-alt"></i> Saída</button>
-                <button class="btn-form-chegada" id="btnRegChegada"><i class="fas fa-map-marker-alt"></i> Chegada</button>
-                <button class="btn-form-base" id="btnRegBase"><i class="fas fa-home"></i> Base (Fim)</button>
-            </div>
-        </div>
+    <div class="hh-grid" id="cfgGrid"></div>
+  </header>
 
-        <div class="card">
-            <div class="card-title">
-                <div class="title-text"><i class="fas fa-list-ol"></i> Histórico de Ocorrências</div>
-                <button id="btnShareWhats" class="btn-whatsapp" title="Compartilhar no WhatsApp"><i class="fab fa-whatsapp"></i> Enviar</button>
-            </div>
-            <div id="historicoContainer"></div>
-        </div>
-        
-        <div class="two-cols">
-            <div class="obs-box card"><div class="card-title"><i class="fas fa-clipboard-list"></i> Observações</div><textarea id="observacao" rows="2" placeholder="INTERCORRÊNCIAS..."></textarea></div>
-            <div class="sign-box"><div class="card-title"><i class="fas fa-signature"></i> Assinatura</div><canvas id="signCanvas" width="400" height="90" style="width:100%;height:90px;"></canvas><div class="sign-actions"><button class="btn-clear" id="clearCanvasBtn"><i class="fas fa-eraser"></i> Limpar</button></div><div class="legible-name"><input type="text" id="nomeLegivel" placeholder="Nome completo" value="Anderson Martins"></div></div>
-        </div>
+  <div class="tabs" role="tablist" aria-label="Abas do sistema">
+    <button class="tab-btn active" id="tabPlantao" role="tab" aria-selected="true">📋 Plantão</button>
+    <button class="tab-btn" id="tabMensal" role="tab" aria-selected="false">📊 Painel Mensal</button>
+  </div>
 
-        <!-- ✅ RESUMO MOVIDO PARA BAIXO DAS OBSERVAÇÕES -->
-        <div class="card summary-card">
-            <div class="card-title">
-                <div class="title-text" style="color: #0369a1;"><i class="fas fa-chart-pie"></i> Resumo do Plantão</div>
-            </div>
-            <div id="resumoContainer"></div>
-        </div>
+  <div id="panePlantao" class="tab-pane">
 
-        <button class="btn-pdf" id="pdfBtn"><i class="fas fa-file-pdf"></i> Gerar Relatório (PDF)</button>
+    <section class="form-section" aria-label="Registrar deslocamento">
+      <div class="fs-head">
+        <h2 class="fs-title" id="fsTitle">➕ Novo Deslocamento</h2>
+        <button class="btn btn-plus" id="btnNovo" aria-label="Iniciar novo deslocamento ou cancelar edição" title="Iniciar novo deslocamento / cancelar edição">➕</button>
+      </div>
+      <div class="badges" id="formBadges"></div>
+      <div class="form-grid">
+        <div class="f-field">
+          <label class="f-label" for="fData">📅 Data</label>
+          <input class="f-input" id="fData" type="date">
+        </div>
+        <div class="f-field">
+          <label class="f-label" for="fHora">⏰ Hora</label>
+          <input class="f-input" id="fHora" type="time">
+        </div>
+        <div class="f-field">
+          <label class="f-label" for="fKm">🛞 KM (Odômetro)</label>
+          <input class="f-input no-spinner" id="fKm" type="number" step="0.1" inputmode="decimal" placeholder="0.0">
+        </div>
+        <div class="f-field full">
+          <label class="f-label" for="fLocal">📍 Local / Destino (Origem → Destino)</label>
+          <input class="f-input field-upper" id="fLocal" type="text" placeholder="DIGITE O DESTINO AQUI" autocomplete="off">
+        </div>
+      </div>
+      <div class="actions">
+        <button class="btn btn-saida" id="btnSaida">🚑 Saída</button>
+        <button class="btn btn-chegada" id="btnChegada">📍 Chegada</button>
+        <button class="btn btn-base" id="btnBase">🏥 Base (Fim)</button>
+      </div>
+    </section>
+
+    <section class="card" aria-label="Histórico de ocorrências">
+      <div class="card-head-row">
+        <h2 class="sec-title">📅 Histórico de Ocorrências</h2>
+        <button class="btn btn-whatsapp" id="btnWhats" aria-label="Compartilhar relatório no WhatsApp" title="Compartilhar no WhatsApp">💬 Enviar</button>
+      </div>
+      <div class="hist-list scroll-thin" id="histList"></div>
+    </section>
+
+    <div class="obs-grid">
+      <section class="card" aria-label="Observações">
+        <h2 class="sec-title">📋 Observações</h2>
+        <textarea class="textarea field-upper" id="obsTxt" rows="4" placeholder="INTERCORRÊNCIAS..." aria-label="Observações do plantão"></textarea>
+      </section>
+      <section class="card" aria-label="Assinatura">
+        <div class="obs-head-row">
+          <h2 class="sec-title">✍️ Assinatura</h2>
+          <button class="btn-ghost-sm" id="btnLimpar" aria-label="Limpar assinatura">🧽 Limpar</button>
+        </div>
+        <canvas class="sign-canvas" id="signCanvas" height="120" aria-label="Área de assinatura — desenhe com o dedo ou mouse"></canvas>
+        <div class="nome-field">
+          <label class="lbl-mini" for="nomeLegivel">Nome completo</label>
+          <input class="inp-lg field-upper" id="nomeLegivel" type="text" placeholder="Nome completo">
+        </div>
+      </section>
     </div>
+
+    <section class="resumo" aria-label="Resumo do plantão" id="resumoCard"></section>
+
+    <button class="btn btn-pdf" id="btnPDF">📄 Gerar Relatório (PDF)</button>
+  </div>
+
+  <div id="paneMensal" class="tab-pane" hidden></div>
+</main>
+
+<footer class="app-footer">💾 Sistema de Deslocamento VTR — dados salvos localmente neste dispositivo</footer>
+
+<div class="overlay" id="ovAlerta" hidden>
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="alertaTitle">
+    <div class="dlg-head">
+      <div class="dlg-icon">⚠️</div>
+      <div>
+        <h3 id="alertaTitle">Atenção: KM e hora não alterados!</h3>
+        <p>Os campos estão com os mesmos valores do último registro. Você esqueceu de atualizar?</p>
+      </div>
+    </div>
+    <div class="dlg-box" id="alertaValores"></div>
+    <div class="dlg-actions">
+      <button class="btn btn-red" id="btnCorrigir">✏️ Corrigir agora</button>
+      <button class="btn btn-gray" id="btnIgnorar">💾 Não mudou, salvar assim mesmo</button>
+    </div>
+  </div>
 </div>
 
-<div class="modal-overlay" id="modalKmAlert">
-    <div class="modal-box">
-        <div class="modal-header">
-            <i class="fas fa-exclamation-triangle"></i>
-            <h3>Atenção: KM e Hora não alterados!</h3>
-        </div>
-        <div class="modal-body">
-            Os campos estão com os mesmos valores do último registro:<br>
-            <div id="modalAlertDetails" style="margin-top: 10px; font-weight: bold; font-size: 1.1rem; color: var(--danger); line-height: 1.4;"></div>
-            <br>Você esqueceu de atualizar?
-        </div>
-        <div class="modal-actions">
-            <button class="btn-modal btn-modal-confirm" id="btnModalCorrigir"><i class="fas fa-pen"></i> Corrigir Agora</button>
-            <button class="btn-modal btn-modal-cancel" id="btnModalIgnorar">Não mudou, salvar assim mesmo</button>
-        </div>
+<div class="overlay" id="ovExcluir" hidden>
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="excTitle">
+    <h3 id="excTitle">Excluir este deslocamento inteiro?</h3>
+    <p>A ocorrência será removida do histórico do mês. Esta ação não pode ser desfeita.</p>
+    <div class="dlg-actions">
+      <button class="btn btn-gray" id="btnCancelarExc">Cancelar</button>
+      <button class="btn btn-red" id="btnConfirmarExc">Excluir</button>
     </div>
+  </div>
 </div>
 
-<div class="toast" id="toast"></div>
-
+<div id="toasts" aria-live="polite"></div>
 <script>
-    document.addEventListener('DOMContentLoaded', () => {
-        const hoje = () => new Date().toISOString().slice(0,10);
-        const getHoraAtual = () => { const now = new Date(); return `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`; };
-        const formatDateBR = (s) => s ? s.split('-').reverse().join('/') : '';
-        const nomeMes = (m) => ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'][m-1];
-        const diasNoMes = (m,a) => new Date(a, m, 0).getDate();
-        const showToast = (msg) => { const t = document.getElementById('toast'); t.textContent = msg; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 4000); };
-
-        const historicoContainer = document.getElementById('historicoContainer');
-        const resumoContainer = document.getElementById('resumoContainer');
-        const observacaoEl = document.getElementById('observacao');
-        const condutorEl = document.getElementById('condutorHeader');
-        const baseEl = document.getElementById('BaseHeader'); 
-        const ambulanciaEl = document.getElementById('ambulanciaHeader');
-        const placaEl = document.getElementById('placaHeader');
-        const plantaoEl = document.getElementById('plantaoHeader');
-        const kmInicialEl = document.getElementById('kmInicialHeader');
-        const o2PortatilEl = document.getElementById('o2PortatilHeader');
-        const o2FixoEl = document.getElementById('o2FixoHeader');
-        const abastecimentoEl = document.getElementById('abastecimentoHeader');
-        const nomeLegivelEl = document.getElementById('nomeLegivel');
-        const mesSelect = document.getElementById('mesSelect');
-        const anoSelect = document.getElementById('anoSelect');
-        const mainHeader = document.getElementById('mainHeader');
-        
-        const fData = document.getElementById('fData');
-        const fHora = document.getElementById('fHora');
-        const fKm = document.getElementById('fKm');
-        const fLocal = document.getElementById('fLocal');
-        const fPlantaoInfo = document.getElementById('fPlantaoInfo');
-        const titleLancamento = document.getElementById('titleLancamento');
-
-        const modalKmAlert = document.getElementById('modalKmAlert');
-        const modalAlertDetails = document.getElementById('modalAlertDetails');
-        const btnModalCorrigir = document.getElementById('btnModalCorrigir');
-        const btnModalIgnorar = document.getElementById('btnModalIgnorar');
-        let pendingActionType = null; 
-        let baseFimPending = false;
-
-        let registros = []; 
-        let currentOcorrenciaId = Date.now().toString(); 
-        let editingRecordId = null;
-
-        fKm.addEventListener('input', () => { fKm.classList.remove('km-alert-input'); });
-        fHora.addEventListener('input', () => { fHora.classList.remove('time-alert-input'); });
-        
-        fLocal.addEventListener('focus', () => {
-            setTimeout(() => {
-                const val = fLocal.value;
-                const arrowPos = val.indexOf('→');
-                if (arrowPos !== -1) {
-                    let start = arrowPos + 1;
-                    while (start < val.length && val[start] === ' ') start++;
-                    fLocal.setSelectionRange(start, val.length);
-                    return;
-                }
-                fLocal.setSelectionRange(val.length, val.length);
-            }, 50);
-        });
-        fLocal.addEventListener('input', () => { fLocal.classList.remove('local-alert-input'); });
-
-        for(let m = 1; m <= 12; m++) { let opt = document.createElement('option'); opt.value = m; opt.textContent = nomeMes(m).substring(0,3); mesSelect.appendChild(opt); }
-        const hojeData = new Date(); mesSelect.value = hojeData.getMonth() + 1; anoSelect.value = hojeData.getFullYear();
-
-        function getPeriodo() { let m = parseInt(mesSelect.value); let a = parseInt(anoSelect.value); return { mes: m, ano: a, min: `${a}-${String(m).padStart(2,'0')}-01`, max: `${a}-${String(m).padStart(2,'0')}-${diasNoMes(m,a)}` }; }
-        function atualizarLimitesDatas() { const p = getPeriodo(); fData.min = p.min; fData.max = p.max; }
-
-        function isRecordDeletable(dataStr, shiftStr) {
-            if (!dataStr) return true; 
-            try {
-                const [year, month, day] = dataStr.split('-');
-                let endHour = 19; let endDayOffset = 0;
-                if (shiftStr === 'SN 12hs') { endHour = 7; endDayOffset = 1; } 
-                else if (shiftStr === 'DN 24hs') { endHour = 7; endDayOffset = 1; }
-                const endTime = new Date(year, parseInt(month) - 1, parseInt(day) + endDayOffset, endHour, 0, 0);
-                endTime.setHours(endTime.getHours() + 1);
-                return new Date() < endTime;
-            } catch(e) { return true; }
-        }
-
-        function checkAndCollapseHeader() {
-            if (window.innerWidth > 768) return;
-            if (baseEl.value.trim() && condutorEl.value.trim() && ambulanciaEl.value.trim() && placaEl.value.trim() && kmInicialEl.value.trim()) {
-                mainHeader.classList.add('header-collapsed');
-            }
-        }
-        [baseEl, condutorEl, ambulanciaEl, placaEl, kmInicialEl, plantaoEl, o2PortatilEl, o2FixoEl, abastecimentoEl].forEach(el => {
-            el.addEventListener('blur', checkAndCollapseHeader);
-            el.addEventListener('change', checkAndCollapseHeader);
-        });
-        document.getElementById('toggleHeaderBtn').addEventListener('click', () => { mainHeader.classList.toggle('header-collapsed'); });
-
-        const canvas = document.getElementById('signCanvas'); const ctx = canvas.getContext('2d'); let desenhando = false;
-        function redimencionarCanvas() { const w = canvas.clientWidth; const h = 90; canvas.width = w; canvas.height = h; ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, w, h); ctx.strokeStyle = '#1e293b'; ctx.lineWidth = 2; ctx.lineCap = 'round'; }
-        window.addEventListener('resize', () => redimencionarCanvas());
-        function getCoords(e) { const rect = canvas.getBoundingClientRect(); const sx = canvas.width / rect.width; const sy = canvas.height / rect.height; let cx, cy; if(e.touches) { cx = e.touches[0].clientX; cy = e.touches[0].clientY; } else { cx = e.clientX; cy = e.clientY; } return { x: Math.min(Math.max(0, (cx - rect.left) * sx), canvas.width), y: Math.min(Math.max(0, (cy - rect.top) * sy), canvas.height) }; }
-        function iniciarDesenho(e) { desenhando = true; const {x,y} = getCoords(e); ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x, y); ctx.stroke(); e.preventDefault(); }
-        function desenhar(e) { if(!desenhando) return; const {x,y} = getCoords(e); ctx.lineTo(x, y); ctx.stroke(); ctx.beginPath(); ctx.moveTo(x, y); e.preventDefault(); }
-        function pararDesenho() { desenhando = false; ctx.beginPath(); saveToLocal(); }
-        canvas.addEventListener('mousedown', iniciarDesenho); canvas.addEventListener('mousemove', desenhar); canvas.addEventListener('mouseup', pararDesenho); canvas.addEventListener('touchstart', iniciarDesenho, {passive: false}); canvas.addEventListener('touchmove', desenhar, {passive: false}); canvas.addEventListener('touchend', pararDesenho);
-        document.getElementById('clearCanvasBtn').addEventListener('click', () => { ctx.clearRect(0, 0, canvas.width, canvas.height); ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, canvas.width, canvas.height); saveToLocal(); });
-        redimencionarCanvas();
-
-        function limparNomeLocal(str) { return str ? str.replace(/🏥/g, '').trim().toUpperCase() : ''; }
-
-        function getLocalDisplay(localStr, isArrival) {
-            if (!localStr) return '';
-            const partes = localStr.split('→');
-            let origem = partes[0] ? partes[0].trim().toUpperCase() : '';
-            let destino = partes[1] ? partes[1].trim().toUpperCase() : '';
-            return isArrival ? (destino || origem) : (origem || destino);
-        }
-
-        function getLastRecord() {
-            const veiculoAtual = `${ambulanciaEl.value.trim().toUpperCase()} - ${placaEl.value.trim().toUpperCase()}`;
-            return registros.find(r => r.veiculo === veiculoAtual);
-        }
-
-        function getUltimoKmChegada() { 
-            const veiculoAtual = `${ambulanciaEl.value.trim().toUpperCase()} - ${placaEl.value.trim().toUpperCase()}`;
-            for(let i = 0; i < registros.length; i++) { 
-                if (registros[i].veiculo !== veiculoAtual) continue; 
-                if(registros[i].kmChegada) return registros[i].kmChegada; 
-                if(registros[i].kmSaida) return registros[i].kmSaida; 
-            } 
-            return kmInicialEl.value || ''; 
-        }
-
-        function getLocalAtual() {
-            const veiculoAtual = `${ambulanciaEl.value.trim().toUpperCase()} - ${placaEl.value.trim().toUpperCase()}`;
-            for (let i = 0; i < registros.length; i++) {
-                if (registros[i].veiculo !== veiculoAtual) continue;
-                const local = registros[i].local || '';
-                if (!local) continue;
-                return getLocalDisplay(local, true); 
-            }
-            return null;
-        }
-
-        function prepararFormulario() {
-            const validShifts = ['SD 12hs', 'SN 12hs', 'DN 24hs'];
-            if (!validShifts.includes(plantaoEl.value)) {
-                plantaoEl.value = 'SD 12hs';
-            }
-
-            fData.value = hoje();
-            fHora.value = getHoraAtual();
-            
-            let kmRef = getUltimoKmChegada();
-            if (kmRef) fKm.value = kmRef;
-            
-            const base = limparNomeLocal(baseEl.value.trim()) || 'BASE'; 
-            
-            const itemsAtuais = registros.filter(r => r.ocorrenciaId === currentOcorrenciaId);
-            const lastRecordOc = itemsAtuais.length > 0 ? itemsAtuais[0] : null;
-
-            if (!lastRecordOc) {
-                fLocal.value = `${base} → `;
-            } else if (lastRecordOc.tipo === 'saida') {
-                let dest = getLocalDisplay(lastRecordOc.local, true);
-                fLocal.value = `${dest} → ${dest}`; 
-            } else if (lastRecordOc.tipo === 'chegada') {
-                let dest = getLocalDisplay(lastRecordOc.local, true);
-                const chegadasCount = itemsAtuais.filter(r => r.horaChegada).length;
-                
-                if (chegadasCount >= 3) {
-                    fLocal.value = `${dest} → ${dest}`; 
-                } else {
-                    fLocal.value = `${dest} → `; 
-                }
-            } else if (lastRecordOc.tipo === 'base') {
-                fLocal.value = `${base} → `;
-            }
-
-            fPlantaoInfo.value = `${plantaoEl.value} | ${base}`;
-            atualizarLimitesDatas();
-            fKm.classList.remove('km-alert-input'); 
-            fHora.classList.remove('time-alert-input');
-            fLocal.classList.remove('local-alert-input');
-            fLocal.classList.remove('local-base-highlight');
-        }
-
-        function resetFormUI() {
-            titleLancamento.innerHTML = '<i class="fas fa-edit"></i> Novo Deslocamento';
-            titleLancamento.style.color = '#166534';
-            editingRecordId = null;
-            prepararFormulario();
-        }
-
-        [plantaoEl, baseEl].forEach(el => {
-            el.addEventListener('change', () => {
-                const base = limparNomeLocal(baseEl.value.trim()) || 'BASE';
-                fPlantaoInfo.value = `${plantaoEl.value} | ${base}`;
-            });
-            el.addEventListener('input', () => {
-                const base = limparNomeLocal(baseEl.value.trim()) || 'BASE';
-                fPlantaoInfo.value = `${plantaoEl.value || 'SD 12hs'} | ${base}`;
-            });
-        });
-
-        // ======================= ✅ AUTO-ATUALIZAR BASE NO CAMPO LOCAL =======================
-        // Quando a Base for alterada no cabeçalho, o campo Local/Destino é atualizado automaticamente
-        baseEl.addEventListener('change', () => {
-            const novaBase = limparNomeLocal(baseEl.value.trim()) || 'BASE';
-            
-            // Verifica em que estágio está a ocorrência atual
-            const itemsAtuais = registros.filter(r => r.ocorrenciaId === currentOcorrenciaId);
-            const lastRecordOc = itemsAtuais.length > 0 ? itemsAtuais[0] : null;
-            
-            // Só auto-atualiza se estivermos no início (sem registros) ou se acabou de finalizar (base)
-            if (!lastRecordOc || lastRecordOc.tipo === 'base') {
-                // Preserva o destino se o condutor já digitou algo
-                const partes = fLocal.value.split('→');
-                const dest = partes[1] ? partes[1].trim() : '';
-                fLocal.value = dest ? `${novaBase} → ${dest}` : `${novaBase} → `;
-                fLocal.classList.remove('local-alert-input');
-            }
-        });
-
-        function editarOcorrencia(ocorrenciaId) {
-            const lastRecord = registros.find(r => r.ocorrenciaId === ocorrenciaId);
-            if (!lastRecord) return;
-
-            if (!isRecordDeletable(lastRecord.data, lastRecord.shift)) {
-                return showToast('🔒 Plantão encerrado. Não é possível editar.');
-            }
-
-            editingRecordId = lastRecord.id;
-
-            fData.value = lastRecord.data;
-            fHora.value = lastRecord.horaChegada || lastRecord.horaSaida;
-            fKm.value = lastRecord.kmChegada || lastRecord.kmSaida;
-            fLocal.value = lastRecord.local;
-
-            titleLancamento.innerHTML = '<i class="fas fa-pen"></i> Editando Deslocamento';
-            titleLancamento.style.color = '#b45309';
-
-            showToast('✏️ Editando o último registro. Altere e salve.');
-            document.querySelector('.form-card').scrollIntoView({ behavior: 'smooth' });
-        }
-        window.editarOcorrencia = editarOcorrencia;
-
-        function validarSequencia(tipo) {
-            const itemsAtuais = registros.filter(r => r.ocorrenciaId === currentOcorrenciaId);
-            const lastRecordOc = itemsAtuais.length > 0 ? itemsAtuais[0] : null;
-
-            if (!lastRecordOc) {
-                if (tipo !== 'saida') return "A primeira ação de uma ocorrência deve ser SAÍDA (INÍCIO).";
-                return null;
-            }
-
-            const lastType = lastRecordOc.tipo;
-
-            if (tipo === 'saida' && lastType !== 'chegada') {
-                return "A última ação foi SAÍDA. Você deve registrar uma CHEGADA primeiro.";
-            }
-            
-            if (tipo === 'chegada' && lastType !== 'saida') {
-                return "A última ação foi CHEGADA. Você deve registrar uma SAÍDA primeiro.";
-            }
-            
-            return null;
-        }
-
-        function tentarAdicionarRegistro(tipo) {
-            try {
-                if (tipo === 'base' && baseFimPending) return;
-
-                if (!editingRecordId) {
-                    const erroSeq = validarSequencia(tipo);
-                    if (erroSeq) return showToast(`⚠️ ${erroSeq}`);
-                }
-
-                const localInput = limparNomeLocal(fLocal.value);
-                if (tipo !== 'base' && !localInput) {
-                    fLocal.classList.add('local-alert-input');
-                    return showToast("⚠️ Erro: Preencha o Local / Destino.");
-                }
-
-                if (tipo === 'chegada' || tipo === 'base') {
-                    const itemsAtuais = registros.filter(r => r.ocorrenciaId === currentOcorrenciaId);
-                    const lastRecordOc = itemsAtuais.length > 0 ? itemsAtuais[0] : null;
-                    
-                    if (lastRecordOc && lastRecordOc.tipo === 'saida') {
-                        let localSaidaStr = lastRecordOc.local || '';
-                        let partesSaida = localSaidaStr.split('→');
-                        let origemSaida = partesSaida[0] ? partesSaida[0].trim().toUpperCase() : '';
-
-                        let localChegadaStr = limparNomeLocal(fLocal.value);
-                        let partesChegada = localChegadaStr.split('→');
-                        let destinoChegada = partesChegada[1] ? partesChegada[1].trim().toUpperCase() : '';
-
-                        const kmAtual = parseFloat(fKm.value);
-                        const kmSaida = parseFloat(lastRecordOc.kmSaida);
-
-                        if (origemSaida && destinoChegada && origemSaida === destinoChegada && kmAtual !== kmSaida) {
-                            fLocal.classList.add('local-alert-input');
-                            return showToast(`⚠️ Erro: O destino (${destinoChegada}) é o mesmo local de onde você saiu. Se você rodou (${kmSaida} -> ${kmAtual}), deve ir para outro local.`);
-                        }
-                    }
-                }
-
-                const lastRecord = getLastRecord();
-                let kmIgual = false;
-                let horaIgual = false;
-                let ultimoKmVal = 0;
-                let ultimaHoraVal = '';
-
-                if (lastRecord && !editingRecordId) {
-                    ultimoKmVal = parseFloat(lastRecord.kmChegada || lastRecord.kmSaida || 0);
-                    ultimaHoraVal = lastRecord.horaChegada || lastRecord.horaSaida || '';
-
-                    const kmAtual = parseFloat(fKm.value);
-                    if (!isNaN(kmAtual) && !isNaN(ultimoKmVal) && kmAtual === ultimoKmVal) kmIgual = true;
-                    if (fHora.value && ultimaHoraVal && fHora.value === ultimaHoraVal) horaIgual = true;
-                }
-
-                if (kmIgual && horaIgual && !editingRecordId) {
-                    pendingActionType = tipo;
-                    let details = [];
-                    details.push(`⏱️ Hora: ${ultimaHoraVal}`);
-                    details.push(`🛞 KM: ${ultimoKmVal}`);
-                    modalAlertDetails.innerHTML = details.join('<br>');
-                    modalKmAlert.classList.add('active');
-                    fKm.classList.add('km-alert-input');
-                    fHora.classList.add('time-alert-input');
-                    return; 
-                }
-
-                fKm.classList.remove('km-alert-input');
-                fHora.classList.remove('time-alert-input');
-                fLocal.classList.remove('local-alert-input');
-                executarAdicionarRegistro(tipo);
-            } catch (error) {
-                console.error("Erro em tentarAdicionarRegistro", error);
-                showToast("⚠️ Erro inesperado. Tente novamente.");
-            }
-        }
-
-        btnModalCorrigir.addEventListener('click', () => {
-            modalKmAlert.classList.remove('active');
-            fHora.focus();
-            fHora.select();
-        });
-
-        btnModalIgnorar.addEventListener('click', () => {
-            modalKmAlert.classList.remove('active');
-            fKm.classList.remove('km-alert-input');
-            fHora.classList.remove('time-alert-input');
-            try { executarAdicionarRegistro(pendingActionType); } catch(e) { console.error(e); }
-        });
-
-        function executarAdicionarRegistro(tipo) {
-            const data = fData.value;
-            const hora = fHora.value;
-            const km = parseFloat(fKm.value);
-            let local = limparNomeLocal(fLocal.value);
-
-            if (!hora || isNaN(km)) return showToast('⚠️ Preencha Hora e KM corretamente.');
-            
-            const veiculoAtual = `${ambulanciaEl.value.trim().toUpperCase()} - ${placaEl.value.trim().toUpperCase()}`;
-            const plantaoAtual = plantaoEl.value || 'SD 12hs';
-
-            let partes = local.split('→');
-            let origem = partes[0] ? partes[0].trim() : '';
-            let destino = partes[1] ? partes[1].trim() : '';
-
-            if (tipo === 'saida') {
-                if (!destino && origem) {
-                    destino = origem;
-                    local = `${origem} → ${destino}`;
-                    fLocal.value = local;
-                } else if (!destino) {
-                    fLocal.classList.add('local-alert-input');
-                    return showToast('⚠️ Preencha o DESTINO para registrar a Saída.');
-                } else {
-                    local = `${origem} → ${destino}`;
-                }
-            } else if (tipo === 'chegada') {
-                if (!destino) {
-                     destino = origem || getLocalAtual() || limparNomeLocal(baseEl.value.trim()) || 'ORIGEM';
-                     local = `${destino} → ${destino}`;
-                } else {
-                     local = `${origem} → ${destino}`;
-                }
-            } else if (tipo === 'base') {
-                const base = limparNomeLocal(baseEl.value.trim()) || 'BASE';
-                const ultimaLocalizacao = getLocalAtual();
-                origem = ultimaLocalizacao || origem || base;
-                local = `${origem} → ${base}`;
-                fLocal.value = local;
-                fLocal.classList.add('local-base-highlight');
-            }
-
-            if (editingRecordId) {
-                const index = registros.findIndex(r => r.id === editingRecordId);
-                if (index !== -1) {
-                    registros[index].tipo = tipo; 
-                    if (tipo === 'chegada' || tipo === 'base') {
-                        registros[index].horaChegada = hora;
-                        registros[index].kmChegada = km.toString();
-                        registros[index].local = local;
-                        showToast('✅ Registro atualizado!');
-                    } else if (tipo === 'saida') {
-                        registros[index].horaSaida = hora;
-                        registros[index].kmSaida = km.toString();
-                        registros[index].local = local;
-                        showToast('✅ Saída atualizada!');
-                    }
-                }
-                resetFormUI();
-                salvarERenderizar();
-                if (window.innerWidth <= 768) mainHeader.classList.add('header-collapsed');
-                return;
-            }
-
-            if (tipo === 'saida') {
-                registros.unshift({
-                    id: Date.now().toString(),
-                    ocorrenciaId: currentOcorrenciaId, 
-                    data: data,
-                    shift: plantaoAtual,
-                    tipo: 'saida',
-                    horaSaida: hora,
-                    kmSaida: km.toString(),
-                    local: local,
-                    horaChegada: '',
-                    kmChegada: '',
-                    veiculo: veiculoAtual
-                });
-                showToast('🚑 Saída registrada!');
-            } 
-            else if (tipo === 'chegada' || tipo === 'base') {
-                const index = registros.findIndex(r => r.veiculo === veiculoAtual && r.ocorrenciaId === currentOcorrenciaId && !r.horaChegada);
-
-                if (index !== -1) {
-                    registros[index].horaChegada = hora;
-                    registros[index].kmChegada = km.toString();
-                    registros[index].tipo = tipo; 
-                    if (tipo === 'base') registros[index].local = local; 
-                    
-                    if (tipo === 'base') {
-                        showToast('🏥 Fim de Plantão na Base!');
-                        currentOcorrenciaId = Date.now().toString(); 
-                    } else {
-                        showToast('📍 Chegada registrada!');
-                    }
-                } else {
-                    if (tipo === 'base') {
-                        registros.unshift({
-                            id: Date.now().toString(),
-                            ocorrenciaId: currentOcorrenciaId, 
-                            data: data,
-                            shift: plantaoAtual,
-                            tipo: 'base',
-                            horaSaida: '',
-                            kmSaida: '',
-                            local: local,
-                            horaChegada: hora,
-                            kmChegada: km.toString(),
-                            veiculo: veiculoAtual
-                        });
-                        showToast('🏥 Fim de Plantão na Base!');
-                        currentOcorrenciaId = Date.now().toString(); 
-                    } else {
-                        showToast('⚠️ Erro interno: Não há saída em aberto.');
-                        return;
-                    }
-                }
-            }
-
-            salvarERenderizar();
-            if (window.innerWidth <= 768) mainHeader.classList.add('header-collapsed');
-
-            if (tipo === 'base') {
-                baseFimPending = true;
-                setTimeout(() => {
-                    baseFimPending = false;
-                    prepararFormulario();
-                }, 800);
-            } else {
-                prepararFormulario();
-            }
-        }
-
-        function deletarFicha(ocorrenciaId) {
-            const grupo = registros.find(r => r.ocorrenciaId === ocorrenciaId);
-            if (!grupo) return;
-
-            if (!isRecordDeletable(grupo.data, grupo.shift)) {
-                return showToast('🔒 Plantão encerrado. Não é possível excluir.');
-            }
-            if (!confirm(`Deseja excluir ESTE deslocamento inteiro?`)) return;
-            
-            registros = registros.filter(r => r.ocorrenciaId !== ocorrenciaId);
-            salvarERenderizar();
-            showToast('🗑️ Deslocamento excluído com sucesso');
-        }
-        window.deletarFicha = deletarFicha;
-
-        function salvarERenderizar() {
-            try {
-                const frotaKms = JSON.parse(localStorage.getItem('frotaKms_hci') || '{}');
-                registros.forEach(r => {
-                    if (r.veiculo) {
-                        if (r.kmChegada) frotaKms[r.veiculo] = r.kmChegada;
-                        else if (r.kmSaida && !frotaKms[r.veiculo]) frotaKms[r.veiculo] = r.kmSaida;
-                    }
-                });
-                localStorage.setItem('frotaKms_hci', JSON.stringify(frotaKms));
-                
-                let assinatura = ''; try { assinatura = canvas.toDataURL(); } catch(e) {}
-                
-                const validShifts = ['SD 12hs', 'SN 12hs', 'DN 24hs'];
-                const plantaoToSave = validShifts.includes(plantaoEl.value) ? plantaoEl.value : 'SD 12hs';
-
-                localStorage.setItem('sistemaDeslocamentoHCI_v57', JSON.stringify({ 
-                    rows: registros, observacao: observacaoEl.value.toUpperCase(), condutor: condutorEl.value.toUpperCase(), 
-                    unidade: baseEl.value.toUpperCase(), ambulancia: ambulanciaEl.value.toUpperCase(), placa: placaEl.value.toUpperCase(), 
-                    plantao: plantaoToSave, kmInicial: kmInicialEl.value, nomeLegivel: nomeLegivelEl.value.toUpperCase(), 
-                    o2Portatil: o2PortatilEl.value, o2Fixo: o2FixoEl.value, abastecimento: abastecimentoEl.value,
-                    mes: parseInt(mesSelect.value), ano: parseInt(anoSelect.value), assinaturaImg: assinatura,
-                    currentOcorrenciaId: currentOcorrenciaId
-                }));
-            } catch(e) { console.error("Erro ao salvar no localStorage", e); }
-
-            try { renderizarResumo(); } catch(e) { console.error("Erro no resumo", e); }
-            try { renderizarFichas(); } catch(e) { console.error("Erro nas fichas", e); }
-        }
-
-        function renderizarResumo() {
-            if(registros.length === 0) {
-                resumoContainer.innerHTML = `
-                    <div class="summary-grid">
-                        <div class="summary-box">
-                            <span>Total de Ocorrências</span>
-                            <strong>0</strong>
-                        </div>
-                        <div class="summary-box">
-                            <span>KM Rodados</span>
-                            <strong style="color: var(--success)">0.0</strong>
-                        </div>
-                    </div>
-                    <div class="req-list">
-                        <div class="req-title">Unidades Solicitantes</div>
-                        <div style="text-align:center; font-size:0.75rem; color:#94a3b8; padding:5px;">PLANTÃO SEM OCORRÊNCIAS</div>
-                    </div>
-                `;
-                return;
-            }
-
-            let totalKm = 0;
-            const gruposMap = new Map();
-            
-            registros.forEach(r => {
-                const key = r.ocorrenciaId || `${r.data}_${r.shift}_${r.id}`; 
-                if (!gruposMap.has(key)) gruposMap.set(key, []);
-                gruposMap.get(key).push(r);
-            });
-
-            let totalOcorrencias = gruposMap.size;
-            let solicitantes = {};
-
-            gruposMap.forEach(items => {
-                const orderedItems = [...items].reverse(); 
-                
-                let kmIni = 0;
-                const first = orderedItems[0];
-                if (first && first.kmSaida) kmIni = parseFloat(first.kmSaida);
-
-                let kmFim = kmIni;
-                for(let i = orderedItems.length - 1; i >= 0; i--) {
-                    if(orderedItems[i].kmChegada) { kmFim = parseFloat(orderedItems[i].kmChegada); break; }
-                    if(orderedItems[i].kmSaida) { kmFim = parseFloat(orderedItems[i].kmSaida); break; }
-                }
-
-                if (kmIni > 0 && kmFim >= kmIni) {
-                    totalKm += (kmFim - kmIni);
-                }
-
-                if (first && first.local) {
-                    const partes = first.local.split('→');
-                    if (partes.length >= 2) {
-                        let destino = partes[1].trim().toUpperCase();
-                        if (destino) {
-                            solicitantes[destino] = (solicitantes[destino] || 0) + 1;
-                        }
-                    }
-                }
-            });
-
-            let solicitantesHTML = '';
-            const sortedSolicitantes = Object.keys(solicitantes).sort((a,b) => solicitantes[b] - solicitantes[a]);
-            
-            sortedSolicitantes.forEach(local => {
-                solicitantesHTML += `
-                    <div class="req-item">
-                        <span>${local}</span>
-                        <span>${solicitantes[local]}</span>
-                    </div>
-                `;
-            });
-
-            if (sortedSolicitantes.length === 0) {
-                solicitantesHTML = '<div style="text-align:center; font-size:0.75rem; color:#94a3b8; padding:5px;">Nenhum destino registrado.</div>';
-            }
-
-            resumoContainer.innerHTML = `
-                <div class="summary-grid">
-                    <div class="summary-box">
-                        <span>Total de Ocorrências</span>
-                        <strong>${totalOcorrencias}</strong>
-                    </div>
-                    <div class="summary-box">
-                        <span>KM Rodados</span>
-                        <strong style="color: var(--success)">${totalKm.toFixed(1)}</strong>
-                    </div>
-                </div>
-                <div class="req-list">
-                    <div class="req-title">Unidades Solicitantes</div>
-                    ${solicitantesHTML}
-                </div>
-            `;
-        }
-
-        function renderizarFichas() {
-            historicoContainer.innerHTML = '';
-            if(registros.length === 0) {
-                historicoContainer.innerHTML = '<p style="font-size:0.8rem; color:#475569; text-align:center; font-weight:bold; padding:10px;">PLANTÃO SEM OCORRÊNCIAS</p>';
-                return;
-            }
-
-            const gruposMap = new Map();
-            registros.forEach(r => {
-                const key = r.ocorrenciaId || `${r.data}_${r.shift}_${r.id}`; 
-                if (!gruposMap.has(key)) {
-                    gruposMap.set(key, { id: key, ocorrenciaId: r.ocorrenciaId || key, data: r.data, shift: r.shift || 'SD 12hs', items: [] });
-                }
-                gruposMap.get(key).items.push(r);
-            });
-
-            gruposMap.forEach(grupo => {
-                const items = [...grupo.items].reverse(); 
-
-                let kmInicialFicha = 0;
-                let kmFinalFicha = 0;
-                let timelineHTML = '';
-
-                items.forEach((r, index) => {
-                    const isFirst = index === 0;
-                    
-                    if (r.horaSaida) {
-                        let localSaida = getLocalDisplay(r.local, false);
-                        kmInicialFicha = isFirst ? (parseFloat(r.kmSaida) || 0) : kmInicialFicha;
-                        
-                        if (isFirst) {
-                            timelineHTML += `
-                                <div class="timeline-row">
-                                    <div class="timeline-tag inicio">INICIO:</div>
-                                    <div class="timeline-content">
-                                        <span class="local">${localSaida}</span>
-                                        <span class="hora">H: ${r.horaSaida}</span>
-                                        <span class="km">KM: ${r.kmSaida}</span>
-                                    </div>
-                                </div>
-                            `;
-                        } else {
-                            timelineHTML += `
-                                <div class="timeline-row">
-                                    <div class="timeline-tag saida">SAÍDA:</div>
-                                    <div class="timeline-content">
-                                        <span class="local">${localSaida}</span>
-                                        <span class="hora">H: ${r.horaSaida}</span>
-                                        <span class="km">KM: ${r.kmSaida}</span>
-                                    </div>
-                                </div>
-                            `;
-                        }
-                    }
-
-                    if (r.horaChegada) {
-                        let localChegada = getLocalDisplay(r.local, true);
-                        kmFinalFicha = parseFloat(r.kmChegada) || 0;
-                        
-                        if (r.tipo === 'base') {
-                            timelineHTML += `
-                                <div class="timeline-row">
-                                    <div class="timeline-tag fim">FIM:</div>
-                                    <div class="timeline-content">
-                                        <span class="local">${localChegada}</span>
-                                        <span class="hora">H: ${r.horaChegada}</span>
-                                        <span class="km">KM: ${r.kmChegada}</span>
-                                    </div>
-                                </div>
-                            `;
-                        } else {
-                            timelineHTML += `
-                                <div class="timeline-row">
-                                    <div class="timeline-tag chegada">CHEGADA:</div>
-                                    <div class="timeline-content">
-                                        <span class="local">${localChegada}</span>
-                                        <span class="hora">H: ${r.horaChegada}</span>
-                                        <span class="km">KM: ${r.kmChegada}</span>
-                                    </div>
-                                </div>
-                            `;
-                        }
-                    }
-                });
-
-                let dataInicio = formatDateBR(items[0].data);
-                let dataFim = dataInicio; 
-                for (let i = items.length - 1; i >= 0; i--) {
-                    if (items[i].horaChegada) { dataFim = formatDateBR(items[i].data); break; }
-                }
-                const tituloData = dataInicio === dataFim ? `DATA: ${dataInicio}` : `INÍCIO DATA: ${dataInicio} FIM DATA: ${dataFim}`;
-
-                const kmRodado = kmFinalFicha > 0 ? (kmFinalFicha - kmInicialFicha) : 0;
-                const canDelete = isRecordDeletable(grupo.data, grupo.shift);
-                
-                const btnEdit = `<button class="btn-edit-ficha" onclick="editarOcorrencia('${grupo.ocorrenciaId}')" title="Editar"><i class="fas fa-pen"></i></button>`;
-                const btnDel = canDelete 
-                    ? `<button class="btn-del-ficha" onclick="deletarFicha('${grupo.ocorrenciaId}')" title="Excluir Deslocamento"><i class="fas fa-trash-alt"></i></button>`
-                    : `<button class="btn-del-ficha locked" onclick="deletarFicha('${grupo.ocorrenciaId}')" title="Plantão Encerrado"><i class="fas fa-lock"></i></button>`;
-
-                const cardHTML = `
-                    <div class="ficha-card">
-                        <div class="ficha-header">
-                            <div class="ficha-header-info">
-                                <span><i class="far fa-calendar-alt"></i> ${tituloData} | ${grupo.shift}</span>
-                                <span>${ambulanciaEl.value.toUpperCase()} - ${placaEl.value.toUpperCase()}</span>
-                            </div>
-                            <div class="ficha-actions">
-                                ${btnEdit}
-                                ${btnDel}
-                            </div>
-                        </div>
-                        <div class="ficha-body">
-                            ${timelineHTML}
-                        </div>
-                        <div class="ficha-footer">
-                            <span>${tituloData}</span>
-                            <span>KM ROD: <span style="color:var(--success);">${kmRodado.toFixed(1)}</span></span>
-                        </div>
-                    </div>
-                `;
-                historicoContainer.innerHTML += cardHTML;
-            });
-        }
-
-        function compartilharWhatsApp() {
-            const isNoite = plantaoEl.value.includes('SN');
-            const saudacao = isNoite ? 'Boa noite!' : 'Bom dia!';
-            const agora = new Date();
-            const dataStr = `${String(agora.getDate()).padStart(2,'0')}/${String(agora.getMonth()+1).padStart(2,'0')}/${agora.getFullYear()}`;
-            const horaStr = `${String(agora.getHours()).padStart(2,'0')}:${String(agora.getMinutes()).padStart(2,'0')}`;
-            const formatPct = (val) => { if(!val) return '-'; const v = val.toString().replace('%','').trim(); return `${v}%`; };
-            const plantaoSigla = plantaoEl.value.split(' ')[0];
-
-            let texto = `*${saudacao}*\n\n`;
-            texto += `🙋🏻‍♂️ CONDUTOR: ${condutorEl.value.toUpperCase()}\n`;
-            texto += `🏥 PLANTÃO: ${plantaoSigla} | ${baseEl.value.toUpperCase()}\n`;
-            texto += `🚑 VTR: ${ambulanciaEl.value.toUpperCase()} PLACA: ${placaEl.value.toUpperCase()}\n`;
-            texto += `⛑️ O² PORTÁTIL: ${formatPct(o2PortatilEl.value)} FIXO: ${formatPct(o2FixoEl.value)}\n`;
-            texto += `⛽ ABASTECIMENTO: ${formatPct(abastecimentoEl.value)}\n`;
-            texto += `📅 ${dataStr} 🕖 ${horaStr}\n`;
-            texto += `📝 OBS: ${observacaoEl.value ? observacaoEl.value.toUpperCase() : 'SEM NOVAS AVARIAS'}\n\n`;
-            texto += `🙏🏻Bom plantão a todos!\n`;
-            texto += `-----------------------------------\n`;
-            texto += `*🚑 RELATÓRIO DE DESLOCAMENTO*\n\n`;
-
-            const gruposMap = new Map();
-            registros.forEach(r => {
-                const key = r.ocorrenciaId || `${r.data}_${r.shift}_${r.id}`; 
-                if (!gruposMap.has(key)) gruposMap.set(key, { id: key, data: r.data, shift: r.shift || 'SD 12hs', items: [] });
-                gruposMap.get(key).items.push(r);
-            });
-
-            let totalKmGeral = 0;
-            let solicitantes = {};
-
-            if (gruposMap.size === 0) {
-                texto += `*PLANTÃO SEM OCORRÊNCIAS*\n\n`;
-            } else {
-                gruposMap.forEach(grupo => {
-                    const items = [...grupo.items].reverse();
-                    let kmIni = 0; let kmFim = 0;
-
-                    const first = items[0];
-                    if (first && first.kmSaida) kmIni = parseFloat(first.kmSaida);
-
-                    for(let i = items.length - 1; i >= 0; i--) {
-                        if(items[i].kmChegada) { kmFim = parseFloat(items[i].kmChegada); break; }
-                        if(items[i].kmSaida) { kmFim = parseFloat(items[i].kmSaida); break; }
-                    }
-
-                    if (first && first.local) {
-                        const partes = first.local.split('→');
-                        if (partes.length >= 2) {
-                            let destino = partes[1].trim().toUpperCase();
-                            if (destino) solicitantes[destino] = (solicitantes[destino] || 0) + 1;
-                        }
-                    }
-
-                    items.forEach((r, index) => {
-                        const isFirst = index === 0; 
-
-                        if (r.horaSaida) {
-                            let localSaida = getLocalDisplay(r.local, false);
-                            if (isFirst) texto += `*INICIO:* ${localSaida} H: ${r.horaSaida} KM: ${r.kmSaida}\n`;
-                            else texto += `*SAÍDA:* ${localSaida} H: ${r.horaSaida} KM: ${r.kmSaida}\n`;
-                        }
-                        
-                        if (r.horaChegada) {
-                            let localChegada = getLocalDisplay(r.local, true);
-                            if (r.tipo === 'base') texto += `*FIM:* ${localChegada} H: ${r.horaChegada} KM: ${r.kmChegada}\n`;
-                            else texto += `*CHEGADA:* ${localChegada} H: ${r.horaChegada} KM: ${r.kmChegada}\n`;
-                        }
-                    });
-
-                    const kmRod = kmFim >= kmIni ? (kmFim - kmIni) : 0;
-                    totalKmGeral += kmRod;
-
-                    let dataInicioStr = formatDateBR(items[0].data);
-                    let dataFimStr = dataInicioStr; 
-                    for (let i = items.length - 1; i >= 0; i--) {
-                        if (items[i].horaChegada) { dataFimStr = formatDateBR(items[i].data); break; }
-                    }
-                    const stringData = dataInicioStr === dataFimStr ? `*DATA: ${dataInicioStr}` : `*INÍCIO DATA: ${dataInicioStr} FIM DATA: ${dataFimStr}`;
-                    
-                    texto += `\n${stringData}  KM ROD: ${kmRod.toFixed(1)}*\n`;
-                    texto += `-----------------------------------\n\n`;
-                });
-            }
-
-            texto += `*📊 RESUMO DO PLANTÃO*\n`;
-            texto += `Total de Deslocamentos: ${gruposMap.size}\n`;
-            texto += `Total KM Rodado: ${totalKmGeral.toFixed(1)} km\n\n`;
-            
-            texto += `*🏥 UNIDADES SOLICITANTES:*\n`;
-            const sortedSolicitantes = Object.keys(solicitantes).sort((a,b) => solicitantes[b] - solicitantes[a]);
-            if (sortedSolicitantes.length > 0) {
-                sortedSolicitantes.forEach(local => { texto += `• ${local}: ${solicitantes[local]}\n`; });
-            } else {
-                texto += `Nenhuma\n`;
-            }
-
-            const url = `https://api.whatsapp.com/send?text=${encodeURIComponent(texto)}`;
-            window.open(url, '_blank');
-        }
-
-        function carregarLocalStorage() {
-            let raw = localStorage.getItem('sistemaDeslocamentoHCI_v57'); 
-            if(!raw) { prepararFormulario(); return false; }
-            try {
-                let d = JSON.parse(raw); 
-                condutorEl.value = d.condutor || 'ANDERSON MARTINS'; 
-                baseEl.value = d.unidade || 'SÓ SAÚDE'; 
-                ambulanciaEl.value = d.ambulancia || 'MASTER'; 
-                placaEl.value = d.placa || 'TGP5G55'; 
-                
-                const validShifts = ['SD 12hs', 'SN 12hs', 'DN 24hs'];
-                plantaoEl.value = validShifts.includes(d.plantao) ? d.plantao : 'SD 12hs';
-
-                kmInicialEl.value = d.kmInicial || ''; 
-                o2PortatilEl.value = d.o2Portatil || '125%'; 
-                o2FixoEl.value = d.o2Fixo || '150%'; 
-                abastecimentoEl.value = d.abastecimento || '75%';
-                nomeLegivelEl.value = d.nomeLegivel || 'ANDERSON MARTINS'; 
-                observacaoEl.value = d.observacao || '';
-                
-                if(d.mes) mesSelect.value = d.mes; if(d.ano) anoSelect.value = d.ano;
-                registros = d.rows || [];
-                currentOcorrenciaId = d.currentOcorrenciaId || Date.now().toString(); 
-                
-                if(d.assinaturaImg && d.assinaturaImg !== 'data:,') { let img = new Image(); img.onload = () => ctx.drawImage(img, 0, 0, canvas.width, canvas.height); img.src = d.assinaturaImg; }
-                
-                prepararFormulario();
-                renderizarResumo();
-                renderizarFichas(); 
-                
-                if (window.innerWidth <= 768 && registros.length > 0) mainHeader.classList.add('header-collapsed');
-                return true;
-            } catch(e) { 
-                console.error("Dados corrompidos no localStorage. Limpando...", e);
-                localStorage.removeItem('sistemaDeslocamentoHCI_v57');
-                prepararFormulario(); 
-                return false; 
-            }
-        }
-
-        async function gerarRelatorio() {
-            const btn = document.getElementById('pdfBtn'); btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Gerando...';
-            try {
-                const dataHora = new Date().toLocaleString('pt-BR'); const assinaturaImg = canvas.toDataURL('image/png'); const mesNome2 = nomeMes(parseInt(mesSelect.value)); const ano = anoSelect.value;
-                
-                const gruposMap = new Map();
-                registros.forEach(r => {
-                    const key = r.ocorrenciaId || `${r.data}_${r.shift}_${r.id}`; 
-                    if (!gruposMap.has(key)) gruposMap.set(key, { id: key, data: r.data, shift: r.shift || 'SD 12hs', items: [] });
-                    gruposMap.get(key).items.push(r);
-                });
-
-                let fichasHTML = '';
-
-                if (gruposMap.size === 0) {
-                    fichasHTML = '<div style="text-align:center; font-weight:bold; padding:20px; color:#475569; font-size:12pt;">PLANTÃO SEM OCORRÊNCIAS</div>';
-                } else {
-                    gruposMap.forEach(grupo => {
-                        const items = [...grupo.items].reverse();
-                        let timelineStr = '';
-                        let kmIni = 0; let kmFim = 0;
-
-                        items.forEach((r, index) => {
-                            const isFirst = index === 0; 
-
-                            if (r.horaSaida) {
-                                let localSaida = getLocalDisplay(r.local, false);
-                                kmIni = isFirst ? (parseFloat(r.kmSaida) || 0) : kmIni;
-                                if (isFirst) timelineStr += `<div style="display:flex; justify-content:space-between; font-weight:bold; color:#0e5a77; margin-bottom:4px;"><span>INICIO: ${localSaida}</span><span>H: ${r.horaSaida}</span><span>KM: ${r.kmSaida}</span></div>`;
-                                else timelineStr += `<div style="display:flex; justify-content:space-between; color:#f59e0b; font-weight:bold; margin-bottom:4px;"><span>SAÍDA: ${localSaida}</span><span>H: ${r.horaSaida}</span><span>KM: ${r.kmSaida}</span></div>`;
-                            }
-                            
-                            if (r.horaChegada) {
-                                let localChegada = getLocalDisplay(r.local, true);
-                                kmFim = parseFloat(r.kmChegada) || 0;
-                                if (r.tipo === 'base') timelineStr += `<div style="display:flex; justify-content:space-between; font-weight:bold; color:#dc2626; margin-bottom:4px;"><span>FIM: ${localChegada}</span><span>H: ${r.horaChegada}</span><span>KM: ${r.kmChegada}</span></div>`;
-                                else timelineStr += `<div style="display:flex; justify-content:space-between; color:#15803d; font-weight:bold; margin-bottom:4px;"><span>CHEGADA: ${localChegada}</span><span>H: ${r.horaChegada}</span><span>KM: ${r.kmChegada}</span></div>`;
-                            }
-                        });
-
-                        const kmRod = kmFim > 0 ? (kmFim - kmIni).toFixed(1) : '0.0';
-
-                        let dataInicioStr = formatDateBR(items[0].data);
-                        let dataFimStr = dataInicioStr; 
-                        for (let i = items.length - 1; i >= 0; i--) {
-                            if (items[i].horaChegada) { dataFimStr = formatDateBR(items[i].data); break; }
-                        }
-                        const tituloData = dataInicioStr === dataFimStr ? `DATA: ${dataInicioStr}` : `INÍCIO DATA: ${dataInicioStr} FIM DATA: ${dataFimStr}`;
-                        
-                        fichasHTML += `
-                            <div style="border:1px solid #ccc; padding:10px; margin-bottom:15px; border-radius:8px;">
-                                <div style="background:#f1f5f9; padding:5px; font-weight:bold; font-size:10pt; margin-bottom:10px;">${tituloData} | ${grupo.shift}</div>
-                                <div style="font-size:9pt; line-height:1.8;">${timelineStr}</div>
-                                <div style="border-top:1px dashed #ccc; margin-top:10px; padding-top:5px; display:flex; justify-content:space-between; font-weight:bold; font-size:10pt;">
-                                    <span>${tituloData}</span>
-                                    <span>KM ROD: ${kmRod}</span>
-                                </div>
-                            </div>
-                        `;
-                    });
-                }
-
-                let totalKmPdf = 0;
-                let solicitantesPdf = {};
-                gruposMap.forEach(items => {
-                    const orderedItems = [...items.items].reverse(); 
-                    const first = orderedItems[0];
-                    let kmIni = 0;
-                    if (first && first.kmSaida) kmIni = parseFloat(first.kmSaida);
-                    
-                    let kmFim = kmIni;
-                    for(let i = orderedItems.length - 1; i >= 0; i--) {
-                        if(orderedItems[i].kmChegada) { kmFim = parseFloat(orderedItems[i].kmChegada); break; }
-                        if(orderedItems[i].kmSaida) { kmFim = parseFloat(orderedItems[i].kmSaida); break; }
-                    }
-                    if (kmIni > 0 && kmFim >= kmIni) totalKmPdf += (kmFim - kmIni);
-
-                    if (first && first.local) {
-                        const partes = first.local.split('→');
-                        if (partes.length >= 2) {
-                            let destino = partes[1].trim().toUpperCase();
-                            if (destino) solicitantesPdf[destino] = (solicitantesPdf[destino] || 0) + 1;
-                        }
-                    }
-                });
-
-                let resumoPdfHTML = `
-                    <div style="border:1px solid #bae6fd; background:#f0f9ff; padding:15px; border-radius:8px; margin-bottom:20px;">
-                        <h3 style="color:#0369a1; font-size:12pt; margin-bottom:10px;">RESUMO DO PLANTÃO</h3>
-                        <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
-                            <div><strong>Total de Ocorrências:</strong> ${gruposMap.size}</div>
-                            <div><strong>KM Total Rodado:</strong> ${totalKmPdf.toFixed(1)} km</div>
-                        </div>
-                        <div style="border-top:1px dashed #bae6fd; padding-top:10px;">
-                            <strong style="font-size:10pt; color:#0369a1;">UNIDADES SOLICITANTES:</strong><br>
-                            <ul style="font-size:9pt; margin-left:20px; margin-top:5px; color:#334155;">
-                `;
-                
-                const sortedPdf = Object.keys(solicitantesPdf).sort((a,b) => solicitantesPdf[b] - solicitantesPdf[a]);
-                if (sortedPdf.length > 0) {
-                    sortedPdf.forEach(local => { resumoPdfHTML += `<li>${local}: <strong>${solicitantesPdf[local]}</strong></li>`; });
-                } else {
-                    resumoPdfHTML += `<li>Nenhuma</li>`;
-                }
-                
-                resumoPdfHTML += `</ul></div></div>`;
-
-                const obsHTML = observacaoEl.value ? `<div style="padding:10px; border:1px solid #ddd; background:#f9f9f9; margin-top:20px;"><strong>📋 OBSERVAÇÕES:</strong> ${observacaoEl.value.toUpperCase().replace(/\n/g, '<br>')}</div>` : '';
-
-                const relatorioHTML = `
-                    <!DOCTYPE html><html><head><meta charset="UTF-8"><title>Relatório 🚑</title>
-                    <style>* { margin:0; padding:0; box-sizing:border-box; } body { font-family: Arial, sans-serif; background:#fff; padding:20px; color:#202124; } .container { max-width:800px; margin:0 auto; } h1 { font-size:18pt; color:#0e5a77; margin-bottom:5px; } .sub { font-size:10pt; color:#5f6368; margin-bottom:20px; border-bottom:1px solid #dadce0; padding-bottom:10px; } .info-table { width:100%; border-collapse:collapse; margin-bottom:20px; font-size:9pt; } .info-table td { padding:6px 10px; border:1px solid #dadce0; } .info-table td:first-child { background:#f1f3f4; font-weight:600; width:15%; } .footer { margin-top:30px; display:flex; justify-content:space-between; align-items:center; border-top:1px solid #dadce0; padding-top:20px; } .signature { display:flex; gap:30px; align-items:center; } .signature img { max-height:60px; border:1px solid #ccc; background:#fff; } @media print { body { padding:0; margin:0; } .no-print { display:none; } }</style>
-                    </head><body><div class="container">
-                        <h1>📄 Relatório de Deslocamento</h1><div class="sub">Controle de Frota · ${mesNome2} / ${ano}</div>
-                        <table class="info-table">
-                            <tr><td>CONDUTOR</td><td>${condutorEl.value.toUpperCase()}</td><td>PLANTÃO</td><td>${plantaoEl.value.toUpperCase()}</td></tr>
-                            <tr><td>AMBULÂNCIA</td><td>${ambulanciaEl.value.toUpperCase()}</td><td>PLACA</td><td>${placaEl.value.toUpperCase()}</td></tr>
-                            <tr><td>KM INICIAL</td><td>${kmInicialEl.value || '-'}</td><td>BASE</td><td>${baseEl.value.toUpperCase()}</td></tr>
-                            <tr><td>O² PORTÁTIL</td><td>${o2PortatilEl.value || '-'}</td><td>O² FIXO</td><td>${o2FixoEl.value || '-'}</td></tr>
-                            <tr><td>ABASTECIMENTO</td><td>${abastecimentoEl.value || '-'}</td><td>GERADO EM</td><td>${dataHora}</td></tr>
-                        </table>
-                        
-                        ${resumoPdfHTML}
-
-                        ${fichasHTML}
-                        ${obsHTML}
-
-                        <div class="footer"><div class="signature"><div>Assinatura:</div><img src="${assinaturaImg}" alt="Assinatura"></div><div><strong>Condutor:</strong> ${nomeLegivelEl.value.toUpperCase()}</div></div>
-                    </div><div class="no-print" style="text-align:center; margin-top:20px;"><button onclick="window.print()" style="padding:10px 20px; font-size:14px;">🖨️ Imprimir PDF</button> <button onclick="window.close()" style="padding:10px 20px; font-size:14px;">❌ Fechar</button></div></body></html>`;
-                const win = window.open('', '_blank'); win.document.write(relatorioHTML); win.document.close(); win.focus();
-                showToast('✅ PDF Gerado!');
-            } catch(err) { showToast('❌ Erro'); } finally { btn.disabled = false; btn.innerHTML = '<i class="fas fa-file-pdf"></i> Gerar Relatório (PDF)'; }
-        }
-
-        document.getElementById('btnRegSaida').addEventListener('click', () => tentarAdicionarRegistro('saida'));
-        document.getElementById('btnRegChegada').addEventListener('click', () => tentarAdicionarRegistro('chegada'));
-        document.getElementById('btnRegBase').addEventListener('click', () => tentarAdicionarRegistro('base'));
-        document.getElementById('pdfBtn').addEventListener('click', gerarRelatorio);
-        document.getElementById('btnShareWhats').addEventListener('click', compartilharWhatsApp);
-
-        document.getElementById('btnNovaOcorrencia').addEventListener('click', () => {
-            if (editingRecordId) showToast('Edição cancelada. Novo deslocamento iniciado.');
-            else showToast('🆕 Novo deslocamento iniciado');
-            
-            currentOcorrenciaId = Date.now().toString(); 
-            resetFormUI(); 
-            fHora.focus();
-        });
-
-        [condutorEl, baseEl, ambulanciaEl, placaEl, kmInicialEl, nomeLegivelEl, observacaoEl, o2PortatilEl, o2FixoEl, abastecimentoEl].forEach(el => { 
-            el.addEventListener('input', () => salvarERenderizar()); 
-        });
-        
-        [mesSelect, anoSelect].forEach(el => { el.addEventListener('change', () => { atualizarLimitesDatas(); salvarERenderizar(); }); });
-        
-        ambulanciaEl.addEventListener('change', () => {
-            const veiculoKey = `${ambulanciaEl.value.trim().toUpperCase()} - ${placaEl.value.trim().toUpperCase()}`;
-            const frotaKms = JSON.parse(localStorage.getItem('frotaKms_hci') || '{}');
-            if (frotaKms[veiculoKey]) kmInicialEl.value = frotaKms[veiculoKey]; else kmInicialEl.value = '';
-            prepararFormulario();
-        });
-
-        placaEl.addEventListener('change', () => {
-            const veiculoKey = `${ambulanciaEl.value.trim().toUpperCase()} - ${placaEl.value.trim().toUpperCase()}`;
-            const frotaKms = JSON.parse(localStorage.getItem('frotaKms_hci') || '{}');
-            if (frotaKms[veiculoKey]) kmInicialEl.value = frotaKms[veiculoKey]; else kmInicialEl.value = '';
-            prepararFormulario();
-        });
-
-        window.addEventListener('beforeunload', () => salvarERenderizar());
-
-        carregarLocalStorage();
-        atualizarLimitesDatas();
+"use strict";
+var PLANTOES = ["SD 12hs", "SN 12hs", "DN 24hs"];
+var MESES = ["Janeiro","Fevereiro","Março","Abril","Maio","Junho","Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"];
+var STORAGE_KEY = "sistemaDeslocamentoVTR_v2";
+var LEGACY_KEY  = "sistemaDeslocamentoHCI_v57";
+var FROTA_KEY   = "frotaKms_hci";
+
+var DEFAULT_CONFIG = {
+  condutor: "Anderson Martins",
+  unidade: "SÓ SAÚDE",
+  ambulancia: "MASTER",
+  placa: "TGP5G55",
+  plantao: "SD 12hs",
+  kmInicial: "",
+  o2Portatil: "125%",
+  o2Fixo: "150%",
+  abastecimento: "75%",
+  nomeLegivel: "Anderson Martins",
+  observacao: ""
+};
+
+function nomeMes(m){ return MESES[m-1] || ""; }
+function diasNoMes(m,a){ return new Date(a, m, 0).getDate(); }
+function pad(n){ return String(n).padStart(2,"0"); }
+function formatDateBR(s){ return s ? s.split("-").reverse().join("/") : ""; }
+function hojeStr(){ var d=new Date(); return d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate()); }
+function horaAtual(){ var d=new Date(); return pad(d.getHours())+":"+pad(d.getMinutes()); }
+function dataHoraAgoraBR(){ return new Date().toLocaleString("pt-BR",{dateStyle:"short",timeStyle:"short"}); }
+function veiculoKey(cfg){ return cfg.ambulancia.trim().toUpperCase()+" - "+cfg.placa.trim().toUpperCase(); }
+function formatPct(val){ if(!val) return "-"; var v=String(val).replace("%","").trim(); return v+"%"; }
+function escapeHtml(s){
+  return (s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+}
+function limparNomeLocal(str){
+  return (str||"")
+    .replace(/[\u{1F000}-\u{1FAFF}\u{2600}-\u{27BF}\u{FE0F}]/gu,"")
+    .replace(/🏥/g,"")
+    .trim()
+    .toUpperCase();
+}
+function getLocalDisplay(localStr,isArrival){
+  if(!localStr) return "";
+  var partes = localStr.split("→");
+  var origem  = partes[0] ? partes[0].trim().toUpperCase() : "";
+  var destino = partes[1] ? partes[1].trim().toUpperCase() : "";
+  return isArrival ? (destino||origem) : (origem||destino);
+}
+function getParteLocal(local,index){
+  var partes=(local||"").split("→");
+  var parte=partes[index];
+  return parte ? parte.trim().toUpperCase() : "";
+}
+function isRecordDeletable(dataStr,shiftStr){
+  if(!dataStr) return true;
+  try{
+    var p=dataStr.split("-").map(function(v){return parseInt(v,10);});
+    var year=p[0],month=p[1],day=p[2];
+    var endHour=19, endDayOffset=0;
+    if(shiftStr==="SN 12hs"||shiftStr==="DN 24hs"){ endHour=7; endDayOffset=1; }
+    var endTime=new Date(year,month-1,day+endDayOffset,endHour,0,0);
+    endTime.setHours(endTime.getHours()+1);
+    return new Date().getTime() < endTime.getTime();
+  }catch(e){ return true; }
+}
+function filterByMonth(registros,mes,ano){
+  var prefix = ano+"-"+pad(mes)+"-";
+  return registros.filter(function(r){ return r.data && r.data.indexOf(prefix)===0; });
+}
+
+function agruparPorOcorrencia(registros){
+  var grupos={}; var ordem=[];
+  registros.forEach(function(r){
+    var key = r.ocorrenciaId || (r.data+"_"+r.shift+"_"+r.id);
+    if(!grupos[key]){ grupos[key]=[]; ordem.push(key); }
+    grupos[key].push(r);
+  });
+  var resultado=[];
+  ordem.forEach(function(key){
+    var cronologico = grupos[key].slice().reverse();
+    var timeline=[];
+    
+    cronologico.forEach(function(r,index){
+      var isFirst = index===0;
+      if(r.horaSaida){
+        var local=getLocalDisplay(r.local,false);
+        timeline.push({ tag: isFirst?"INICIO":"SAÍDA", local:local, hora:r.horaSaida, km:r.kmSaida });
+      }
+      if(r.horaChegada){
+        var local2=getLocalDisplay(r.local,true);
+        timeline.push({ tag: r.tipo==="base"?"FIM":"CHEGADA", local:local2, hora:r.horaChegada, km:r.kmChegada });
+      }
     });
+
+    var first=cronologico[0];
+    var last=cronologico[cronologico.length-1];
+    
+    var kmIni = 0;
+    if(first && first.kmSaida) kmIni = parseFloat(first.kmSaida);
+    
+    var kmFim = kmIni;
+    if(last && last.kmChegada) kmFim = parseFloat(last.kmChegada);
+    else if(last && last.kmSaida) kmFim = parseFloat(last.kmSaida);
+
+    var dataFim=first&&first.data?first.data:"";
+    for(var i=cronologico.length-1;i>=0;i--){
+      if(cronologico[i].horaChegada){ dataFim=cronologico[i].data; break; }
+    }
+
+    resultado.push({
+      ocorrenciaId: (first&&first.ocorrenciaId)||"",
+      data: (first&&first.data)||"",
+      dataFim: dataFim,
+      shift: (first&&first.shift)||"SD 12hs",
+      veiculo: (first&&first.veiculo)||"",
+      items: cronologico,
+      timeline: timeline,
+      kmInicial: kmIni,
+      kmFinal: kmFim,
+      kmRodado: kmFim>0 && kmIni>0 ? Math.max(0,kmFim-kmIni) : 0
+    });
+  });
+  return resultado;
+}
+
+function computeResumo(registros){
+  var grupos=agruparPorOcorrencia(registros);
+  var totalKm=grupos.reduce(function(acc,g){ return acc+g.kmRodado; },0);
+  var map={}; var ordem=[];
+  grupos.forEach(function(g){
+    var first=g.items[0];
+    if(first && first.local){
+      var partes=first.local.split("→");
+      if(partes.length>=2){
+        var destino=partes[1].trim().toUpperCase();
+        if(destino){ if(!map[destino]){ map[destino]=0; ordem.push(destino);} map[destino]+=1; }
+      }
+    }
+  });
+  var solicitantes=ordem.map(function(k){ return {local:k,total:map[k]}; });
+  solicitantes.sort(function(a,b){ return b.total-a.total; });
+  return { totalOcorrencias: grupos.length, totalKm: totalKm, solicitantes: solicitantes };
+}
+function getLastRecord(registros,veiculo){
+  for(var i=0;i<registros.length;i++){ if(registros[i].veiculo===veiculo) return registros[i]; }
+  return undefined;
+}
+function getUltimoDaOcorrencia(registros,ocorrenciaId){
+  for(var i=0;i<registros.length;i++){ if(registros[i].ocorrenciaId===ocorrenciaId) return registros[i]; }
+  return undefined;
+}
+function getUltimoKmChegada(registros,veiculo,kmInicial){
+  for(var i=0;i<registros.length;i++){
+    var r=registros[i];
+    if(r.veiculo!==veiculo) continue;
+    if(r.kmChegada) return r.kmChegada;
+    if(r.kmSaida) return r.kmSaida;
+  }
+  return kmInicial||"";
+}
+function getLocalAtual(registros,veiculo){
+  for(var i=0;i<registros.length;i++){
+    var r=registros[i];
+    if(r.veiculo!==veiculo) continue;
+    if(!r.local) continue;
+    return getLocalDisplay(r.local,true);
+  }
+  return null;
+}
+function validarSequencia(tipo,ultimoDaOcorrencia){
+  if(!ultimoDaOcorrencia){
+    if(tipo!=="saida") return "A primeira ação de uma ocorrência deve ser SAÍDA (INÍCIO).";
+    return null;
+  }
+  var lastType=ultimoDaOcorrencia.tipo;
+  if(tipo==="saida" && lastType!=="chegada") return "A última ação foi SAÍDA. Você deve registrar uma CHEGADA primeiro.";
+  if(tipo==="chegada" && lastType!=="saida") return "A última ação foi CHEGADA. Você deve registrar uma SAÍDA primeiro.";
+  return null;
+}
+function prepararFormulario(registros,cfg,ocorrenciaId,mes,ano){
+  var veiculo=veiculoKey(cfg);
+  var base=limparNomeLocal(cfg.unidade.trim())||"BASE";
+  var hoje=hojeStr();
+  var prefix=ano+"-"+pad(mes)+"-";
+  var data = hoje.indexOf(prefix)===0 ? hoje : (prefix+"01");
+  var kmRef=getUltimoKmChegada(registros,veiculo,cfg.kmInicial);
+  var itemsAtuais=registros.filter(function(r){ return r.ocorrenciaId===ocorrenciaId; });
+  var lastRecordOc = itemsAtuais.length>0 ? itemsAtuais[0] : null;
+
+  var local = base+" → ";
+  if(!lastRecordOc){
+    local = base+" → ";
+  }else if(lastRecordOc.tipo==="saida"){
+    var dest=getLocalDisplay(lastRecordOc.local,true);
+    local = dest+" → "+dest;
+  }else if(lastRecordOc.tipo==="chegada"){
+    var dest2=getLocalDisplay(lastRecordOc.local,true);
+    var chegadas=itemsAtuais.filter(function(r){ return r.horaChegada; }).length;
+    local = chegadas>=3 ? (dest2+" → "+dest2) : (dest2+" → ");
+  }else if(lastRecordOc.tipo==="base"){
+    local = base+" → ";
+  }
+  return { data:data, hora:horaAtual(), km:kmRef||"", local:local };
+}
+function getFrotaKms(){
+  try{ return JSON.parse(localStorage.getItem(FROTA_KEY)||"{}"); }
+  catch(e){ return {}; }
+}
+function updateFrotaKms(registros){
+  try{
+    var frota=getFrotaKms();
+    var vistos={};
+    registros.forEach(function(r){
+      if(!r.veiculo || vistos[r.veiculo]) return;
+      var km=r.kmChegada||r.kmSaida;
+      if(km){ frota[r.veiculo]=km; vistos[r.veiculo]=1; }
+    });
+    localStorage.setItem(FROTA_KEY,JSON.stringify(frota));
+  }catch(e){}
+}
+function getFrotaKm(veiculo){ return getFrotaKms()[veiculo]||""; }
+function kmInicialSugerido(cfg){ return getFrotaKm(veiculoKey(cfg)); }
+
+function migrarLegado(raw){
+  try{
+    var d=JSON.parse(raw);
+    var registros=(d.rows||[]).map(function(r){
+      return {
+        id: String(r.id!==undefined&&r.id!==null ? r.id : (Date.now()+"-"+Math.random())),
+        ocorrenciaId: String(r.ocorrenciaId!==undefined&&r.ocorrenciaId!==null ? r.ocorrenciaId : ((r.data||"")+"_"+(r.shift||"SD")+"_"+(r.id||""))),
+        data: String(r.data!==undefined?r.data:""),
+        shift: String(r.shift!==undefined?r.shift:"SD 12hs"),
+        tipo: r.tipo||"saida",
+        horaSaida: String(r.horaSaida!==undefined?r.horaSaida:""),
+        kmSaida: String(r.kmSaida!==undefined?r.kmSaida:""),
+        local: String(r.local!==undefined?r.local:""),
+        horaChegada: String(r.horaChegada!==undefined?r.horaChegada:""),
+        kmChegada: String(r.kmChegada!==undefined?r.kmChegada:""),
+        veiculo: String(r.veiculo!==undefined?r.veiculo:"")
+      };
+    });
+    var config={
+      condutor: d.condutor||DEFAULT_CONFIG.condutor,
+      unidade: d.unidade||DEFAULT_CONFIG.unidade,
+      ambulancia: d.ambulancia||DEFAULT_CONFIG.ambulancia,
+      placa: d.placa||DEFAULT_CONFIG.placa,
+      plantao: d.plantao||DEFAULT_CONFIG.plantao,
+      kmInicial: d.kmInicial||"",
+      o2Portatil: d.o2Portatil||DEFAULT_CONFIG.o2Portatil,
+      o2Fixo: d.o2Fixo||DEFAULT_CONFIG.o2Fixo,
+      abastecimento: d.abastecimento||DEFAULT_CONFIG.abastecimento,
+      nomeLegivel: d.nomeLegivel||d.condutor||DEFAULT_CONFIG.nomeLegivel,
+      observacao: d.observacao||""
+    };
+    return {
+      version:2, registros:registros, config:config,
+      assinaturaImg: (d.assinaturaImg && d.assinaturaImg!=="data:,") ? d.assinaturaImg : "",
+      currentOcorrenciaId: d.currentOcorrenciaId || String(Date.now()),
+      mes: d.mes || (new Date().getMonth()+1),
+      ano: d.ano || new Date().getFullYear()
+    };
+  }catch(e){ return null; }
+}
+function defaultStore(){
+  var agora=new Date();
+  return {
+    version:2, registros:[], config:Object.assign({},DEFAULT_CONFIG),
+    assinaturaImg:"", currentOcorrenciaId:String(Date.now()),
+    mes:agora.getMonth()+1, ano:agora.getFullYear()
+  };
+}
+function loadStore(){
+  try{
+    var raw=localStorage.getItem(STORAGE_KEY);
+    if(raw){
+      var d=JSON.parse(raw);
+      return {
+        version:2,
+        registros: Array.isArray(d.registros)?d.registros:[],
+        config: Object.assign({},DEFAULT_CONFIG,d.config||{}),
+        assinaturaImg: d.assinaturaImg||"",
+        currentOcorrenciaId: d.currentOcorrenciaId||String(Date.now()),
+        mes: d.mes||(new Date().getMonth()+1),
+        ano: d.ano||new Date().getFullYear()
+      };
+    }
+    var legacy=localStorage.getItem(LEGACY_KEY);
+    if(legacy){
+      var migrado=migrarLegado(legacy);
+      if(migrado){
+        localStorage.setItem(STORAGE_KEY,JSON.stringify(migrado));
+        return migrado;
+      }
+    }
+  }catch(e){}
+  return defaultStore();
+}
+function saveStore(store){
+  try{ localStorage.setItem(STORAGE_KEY,JSON.stringify(store)); }
+  catch(e){}
+}
+
+function buildWhatsAppText(registros,cfg,now){
+  now=now||new Date();
+  var isNoite=(cfg.plantao||"").indexOf("SN")!==-1;
+  var saudacao=isNoite?"Boa noite!":"Bom dia!";
+  var dataStr=pad(now.getDate())+"/"+pad(now.getMonth()+1)+"/"+now.getFullYear();
+  var horaStr=pad(now.getHours())+":"+pad(now.getMinutes());
+  var plantaoSigla=(cfg.plantao||"SD").split(" ")[0];
+  var texto=saudacao+"\n\n";
+  texto+="CONDUTOR: "+cfg.condutor.toUpperCase()+"\n";
+  texto+="PLANTÃO: "+plantaoSigla+" | "+cfg.unidade.toUpperCase()+"\n";
+  texto+="VTR: "+cfg.ambulancia.toUpperCase()+" PLACA: "+cfg.placa.toUpperCase()+"\n";
+  texto+="O2 PORTÁTIL: "+formatPct(cfg.o2Portatil)+" FIXO: "+formatPct(cfg.o2Fixo)+"\n";
+  texto+="ABASTECIMENTO: "+formatPct(cfg.abastecimento)+"\n";
+  texto+=dataStr+" "+horaStr+"\n";
+  texto+="OBS: "+(cfg.observacao?cfg.observacao.toUpperCase():"SEM NOVAS AVARIAS")+"\n\n";
+  texto+="Bom plantão a todos!\n";
+  texto+="-----------------------------------\n";
+  texto+="RELATÓRIO DE DESLOCAMENTO\n\n";
+  var grupos=agruparPorOcorrencia(registros);
+  var resumo=computeResumo(registros);
+  var solicitantes=resumo.solicitantes;
+  if(grupos.length===0){
+    texto+="PLANTÃO SEM OCORRÊNCIAS\n\n";
+  }else{
+    grupos.forEach(function(g){
+      g.timeline.forEach(function(l){
+        texto+=l.tag+": "+l.local+" H: "+l.hora+" KM: "+l.km+"\n";
+      });
+      var dataInicio=formatDateBR(g.data);
+      var dataFim=formatDateBR(g.dataFim);
+      var stringData = dataInicio===dataFim ? ("DATA: "+dataInicio) : ("INÍCIO DATA: "+dataInicio+" FIM DATA: "+dataFim);
+      texto+="\n"+stringData+"  KM ROD: "+g.kmRodado.toFixed(1)+"\n";
+      texto+="-----------------------------------\n\n";
+    });
+  }
+  texto+="RESUMO DO PLANTÃO\n";
+  texto+="Total de Deslocamentos: "+grupos.length+"\n";
+  texto+="Total KM Rodado: "+resumo.totalKm.toFixed(1)+" km\n\n";
+  texto+="UNIDADES SOLICITANTES:\n";
+  if(solicitantes.length>0){ solicitantes.forEach(function(s){ texto+="• "+s.local+": "+s.total+"\n"; }); }
+  else{ texto+="Nenhuma\n"; }
+  return texto;
+}
+
+function printHTML(html){
+  var iframe=document.createElement("iframe");
+  iframe.style.position="fixed"; iframe.style.right="0"; iframe.style.bottom="0";
+  iframe.style.width="0"; iframe.style.height="0"; iframe.style.border="0";
+  iframe.setAttribute("aria-hidden","true");
+  document.body.appendChild(iframe);
+  var remover=function(){ try{ iframe.remove(); }catch(e){} };
+  iframe.onload=function(){
+    var win=iframe.contentWindow;
+    if(!win) return;
+    win.addEventListener("afterprint",remover);
+    win.focus(); win.print();
+    setTimeout(remover,120000);
+  };
+  iframe.srcdoc=html;
+}
+
+var REPORT_BASE_CSS =
+" * { margin:0; padding:0; box-sizing:border-box; -webkit-print-color-adjust:exact; print-color-adjust:exact; }"+
+" body { font-family:'Inter','Segoe UI',Arial,sans-serif; background:#fff; color:#12212b; padding:28px 22px; }"+
+" .container { max-width:800px; margin:0 auto; }"+
+" .titulo { font-size:17pt; font-weight:800; color:#0e5a77; letter-spacing:-0.3px; }"+
+" .titulo span { color:#dc2626; }"+
+" .sub { font-size:9.5pt; color:#5a6b78; margin:4px 0 18px; border-bottom:2px solid #0e5a77; padding-bottom:10px; }"+
+" table.info { width:100%; border-collapse:collapse; margin-bottom:18px; font-size:8.5pt; }"+
+" table.info td { border:1px solid #cfd9e2; padding:6px 9px; }"+
+" table.info td.k { background:#eef4f7; font-weight:700; color:#0e5a77; width:16%; text-transform:uppercase; letter-spacing:0.4px; }"+
+" .box { border:1px solid #b7d3e0; background:#f0f8fb; border-radius:10px; padding:14px 16px; margin-bottom:18px; }"+
+" .box h3 { color:#0e5a77; font-size:11pt; margin-bottom:8px; text-transform:uppercase; letter-spacing:0.5px; }"+
+" .stats { display:flex; gap:12px; }"+
+" .stats div { flex:1; background:#fff; border:1px solid #cfd9e2; border-radius:8px; padding:8px; text-align:center; }"+
+" .stats span { display:block; font-size:7.5pt; color:#5a6b78; text-transform:uppercase; font-weight:700; }"+
+" .stats strong { font-size:13pt; color:#0e5a77; }"+
+" .ficha { border:1px solid #cfd9e2; border-radius:10px; margin-bottom:14px; page-break-inside:avoid; }"+
+" .ficha-head { background:#0e5a77; color:#fff; padding:8px 12px; font-weight:700; font-size:9.5pt; display:flex; justify-content:space-between; }"+
+" .ficha-head small { font-weight:600; opacity:0.85; }"+
+" .ficha-body { padding:10px 12px; font-size:9pt; }"+
+" .linha { display:flex; align-items:baseline; gap:8px; padding:3px 0; border-bottom:1px dashed #e2e8f0; }"+
+" .linha:last-child { border-bottom:none; }"+
+" .tag { width:88px; flex-shrink:0; font-weight:800; font-size:7.5pt; letter-spacing:0.6px; }"+
+" .tag.inicio { color:#0e5a77; } .tag.saida { color:#b45309; } .tag.chegada { color:#15803d; } .tag.fim { color:#dc2626; }"+
+" .linha .loc { flex:1; font-weight:600; color:#1e293b; }"+
+" .linha .hora { width:70px; font-weight:700; color:#334155; }"+
+" .linha .km { width:95px; text-align:right; font-weight:700; color:#334155; }"+
+" .ficha-foot { border-top:1px solid #cfd9e2; background:#f6fafc; padding:8px 12px; display:flex; justify-content:space-between; font-weight:800; font-size:9.5pt; }"+
+" .ficha-foot .km { color:#15803d; }"+
+" .obs { border:1px solid #cfd9e2; background:#f8fafc; border-radius:10px; padding:12px 14px; font-size:9pt; margin:14px 0; white-space:pre-wrap; }"+
+" .rodape { margin-top:26px; border-top:2px solid #0e5a77; padding-top:16px; display:flex; justify-content:space-between; align-items:center; gap:20px; }"+
+" .ass { display:flex; align-items:center; gap:14px; font-size:9pt; }"+
+" .ass img { height:56px; border:1px solid #cfd9e2; border-radius:6px; background:#fff; }"+
+" @media print { body { padding:8px 4px; } .no-print { display:none; } }";
+
+function buildRelatorioPlantaoHTML(registros,cfg,assinaturaImg,mes,ano){
+  var grupos=agruparPorOcorrencia(registros);
+  var resumo=computeResumo(registros);
+  var fichasHTML="";
+  if(grupos.length===0){
+    fichasHTML='<div class="obs" style="text-align:center;font-weight:700;color:#5a6b78;">PLANTÃO SEM OCORRÊNCIAS</div>';
+  }else{
+    grupos.forEach(function(g){
+      var dataInicio=formatDateBR(g.data);
+      var dataFim=formatDateBR(g.dataFim);
+      var tituloData = dataInicio===dataFim ? ("DATA: "+dataInicio) : ("INÍCIO: "+dataInicio+" • FIM: "+dataFim);
+      var linhas=g.timeline.map(function(l){
+        var cls = l.tag==="INICIO"?"inicio" : l.tag==="SAÍDA"?"saida" : l.tag==="FIM"?"fim" : "chegada";
+        return '<div class="linha"><span class="tag '+cls+'">'+l.tag+':</span><span class="loc">'+escapeHtml(l.local)+'</span><span class="hora">H: '+l.hora+'</span><span class="km">KM: '+l.km+'</span></div>';
+      }).join("");
+      fichasHTML+='<div class="ficha">'+
+        '<div class="ficha-head"><span>'+tituloData+' | '+escapeHtml(g.shift)+'</span><small>'+escapeHtml(g.veiculo)+'</small></div>'+
+        '<div class="ficha-body">'+linhas+'</div>'+
+        '<div class="ficha-foot"><span>'+tituloData+'</span><span class="km">KM RODADO: '+g.kmRodado.toFixed(1)+'</span></div>'+
+        '</div>';
+    });
+  }
+  var solicitantesHTML = resumo.solicitantes.length
+    ? resumo.solicitantes.map(function(s){
+        return '<div class="linha" style="border:none;"><span class="loc">'+escapeHtml(s.local)+'</span><span class="km" style="width:auto;">'+s.total+'</span></div>';
+      }).join("")
+    : '<div style="color:#5a6b78;font-size:8.5pt;">Nenhuma</div>';
+  var obsHTML = cfg.observacao ? '<div class="obs"><strong>OBSERVAÇÕES:</strong><br>'+escapeHtml(cfg.observacao.toUpperCase())+'</div>' : "";
+  var assinatura = (assinaturaImg && assinaturaImg.length>40)
+    ? '<img src="'+assinaturaImg+'" alt="Assinatura do condutor" />'
+    : '<img src="data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'160\' height=\'40\'><rect width=\'100%\' height=\'100%\' fill=\'white\'/><text x=\'50%\' y=\'52%\' font-size=\'10\' fill=\'%2394a3b8\' text-anchor=\'middle\'>sem assinatura</text></svg>" alt="Sem assinatura" />';
+
+  return '<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><title>Relatório de Deslocamento</title>'+
+    '<style>'+REPORT_BASE_CSS+'</style></head><body><div class="container">'+
+    '<div class="titulo">Relatório de Deslocamento <span>VTR</span></div>'+
+    '<div class="sub">Controle de Frota • '+nomeMes(mes)+' / '+ano+' • '+escapeHtml(cfg.unidade.toUpperCase())+'</div>'+
+    '<table class="info">'+
+    '<tr><td class="k">Condutor</td><td>'+escapeHtml(cfg.condutor.toUpperCase())+'</td><td class="k">Plantão</td><td>'+escapeHtml(cfg.plantao.toUpperCase())+'</td></tr>'+
+    '<tr><td class="k">Ambulância</td><td>'+escapeHtml(cfg.ambulancia.toUpperCase())+'</td><td class="k">Placa</td><td>'+escapeHtml(cfg.placa.toUpperCase())+'</td></tr>'+
+    '<tr><td class="k">KM Inicial</td><td>'+escapeHtml(cfg.kmInicial||"-")+'</td><td class="k">Base</td><td>'+escapeHtml(cfg.unidade.toUpperCase())+'</td></tr>'+
+    '<tr><td class="k">O2 Portátil</td><td>'+escapeHtml(formatPct(cfg.o2Portatil))+'</td><td class="k">O2 Fixo</td><td>'+escapeHtml(formatPct(cfg.o2Fixo))+'</td></tr>'+
+    '<tr><td class="k">Abastecim.</td><td>'+escapeHtml(formatPct(cfg.abastecimento))+'</td><td class="k">Gerado em</td><td>'+dataHoraAgoraBR()+'</td></tr>'+
+    '</table>'+
+    '<div class="box"><h3>Resumo do Plantão</h3><div class="stats">'+
+    '<div><span>Total de Ocorrências</span><strong>'+grupos.length+'</strong></div>'+
+    '<div><span>KM Total Rodado</span><strong>'+resumo.totalKm.toFixed(1)+'</strong></div>'+
+    '</div><div style="margin-top:10px; font-size:8.5pt; font-weight:700; color:#0e5a77; text-transform:uppercase; letter-spacing:0.5px;">Unidades Solicitantes</div>'+
+    solicitantesHTML+'</div>'+
+    fichasHTML+obsHTML+
+    '<div class="rodape"><div class="ass"><span>Assinatura:</span>'+assinatura+'</div>'+
+    '<div style="text-align:right;"><strong>Condutor:</strong> '+escapeHtml(cfg.nomeLegivel.toUpperCase())+'</div></div>'+
+    '</div></body></html>';
+}
+
+/* ✅ CORREÇÃO: Resumo Mensal agora usa o Menor KM Inicial e o Maior KM Final por VTR */
+function computeResumoMensal(registros,mes,ano,cfg){
+  cfg = cfg || {};
+  var prefix=ano+"-"+pad(mes)+"-";
+  var doMes=registros.filter(function(r){ return r.data && r.data.indexOf(prefix)===0; });
+  var grupos=agruparPorOcorrencia(doMes);
+
+  var totalKm=grupos.reduce(function(acc,g){ return acc+g.kmRodado; },0);
+  var diasSet={}; var dias=0;
+  grupos.forEach(function(g){ if(!(g.data in diasSet)){ diasSet[g.data]=1; dias++; } });
+
+  var veiculoFallback = ((cfg.ambulancia||"") + " - " + (cfg.placa||""))
+    .replace(/\s+/g," ").trim().toUpperCase().replace(/^-\s*|\s*-$/g,"");
+  if(!veiculoFallback) veiculoFallback = "VTR (sem identificação)";
+
+  var vtrMap={}, vtrOrdem=[];
+  grupos.forEach(function(g){
+    var veic = (g.veiculo||"").trim().toUpperCase();
+    if(!veic) veic = veiculoFallback;
+
+    if(!(veic in vtrMap)){
+      vtrMap[veic]={ocorrencias:0, kmMin: Infinity, kmMax: -Infinity};
+      vtrOrdem.push(veic);
+    }
+    var atual=vtrMap[veic];
+    atual.ocorrencias += 1;
+
+    /* Pega o MENOR e o MAIOR KM registrado naquele mês para a VTR */
+    g.items.forEach(function(r){
+      var kmS = parseFloat(r.kmSaida);
+      var kmC = parseFloat(r.kmChegada);
+      if(!isNaN(kmS) && kmS > 0) {
+        if(kmS < atual.kmMin) atual.kmMin = kmS;
+        if(kmS > atual.kmMax) atual.kmMax = kmS;
+      }
+      if(!isNaN(kmC) && kmC > 0) {
+        if(kmC < atual.kmMin) atual.kmMin = kmC;
+        if(kmC > atual.kmMax) atual.kmMax = kmC;
+      }
+    });
+  });
+
+  var vtrs=vtrOrdem.map(function(k){
+    var v=vtrMap[k];
+    var ini = (v.kmMin !== Infinity) ? v.kmMin : 0;
+    var fim = (v.kmMax !== -Infinity) ? v.kmMax : ini;
+    return {
+      veiculo:k,
+      ocorrencias:v.ocorrencias,
+      kmInicial:ini,
+      kmFinal:fim,
+      totalKm:Math.max(0, fim - ini)
+    };
+  });
+  vtrs.sort(function(a,b){ return b.totalKm-a.totalKm; });
+
+  var kmDiaMap={};
+  grupos.forEach(function(g){
+    if(g.kmRodado>0){ kmDiaMap[g.data]=(kmDiaMap[g.data]||0)+g.kmRodado; }
+  });
+  var totalDias=new Date(ano,mes,0).getDate();
+  var porDia=[];
+  for(var d=1;d<=totalDias;d++){
+    var data=prefix+pad(d);
+    if(data in kmDiaMap) porDia.push({ dia:pad(d), km:kmDiaMap[data] });
+  }
+
+  var solicitantes=computeResumo(doMes).solicitantes;
+  return { ocorrencias:grupos.length, totalKm:totalKm, dias:dias, vtrs:vtrs, porDia:porDia, solicitantes:solicitantes, grupos:grupos };
+}
+
+function buildFechamentoMensalHTML(resumoMensal,cfg,mes,ano){
+  var vtrsHTML = resumoMensal.vtrs.length
+    ? resumoMensal.vtrs.map(function(v){
+        return '<div class="linha"><span class="loc">'+escapeHtml(v.veiculo)+'</span><span class="hora" style="width:auto;">'+v.ocorrencias+' ocorr.</span><span class="km">'+v.totalKm.toFixed(1)+' km</span></div>';
+      }).join("")
+    : '<div style="color:#5a6b78;font-size:8.5pt;">Nenhuma VTR utilizada no período</div>';
+  var solicitantesHTML = resumoMensal.solicitantes.length
+    ? resumoMensal.solicitantes.map(function(s){
+        return '<div class="linha" style="border:none;"><span class="loc">'+escapeHtml(s.local)+'</span><span class="km" style="width:auto;">'+s.total+'</span></div>';
+      }).join("")
+    : '<div style="color:#5a6b78;font-size:8.5pt;">Nenhuma</div>';
+  var ocorrenciasHTML = resumoMensal.grupos.length
+    ? resumoMensal.grupos.map(function(g){
+        var trajetoArr=g.timeline.map(function(l){ return l.local; }).filter(function(v,i,arr){ return v && arr.indexOf(v)===i; });
+        var trajeto=trajetoArr.join(" → ");
+        var dataInicio=formatDateBR(g.data);
+        var dataFim=formatDateBR(g.dataFim);
+        var periodo = dataInicio===dataFim ? dataInicio : (dataInicio+" → "+dataFim);
+        return '<tr><td>'+periodo+'</td><td>'+escapeHtml(g.shift)+'</td><td>'+escapeHtml(g.veiculo)+'</td><td>'+escapeHtml(trajeto)+'</td><td style="text-align:right;">'+g.kmRodado.toFixed(1)+'</td></tr>';
+      }).join("")
+    : '<tr><td colspan="5" style="text-align:center;color:#5a6b78;">SEM OCORRÊNCIAS NO MÊS</td></tr>';
+  return '<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><title>Fechamento Mensal</title>'+
+    '<style>'+REPORT_BASE_CSS+
+    ' table.ocorr { width:100%; border-collapse:collapse; font-size:8pt; margin-bottom:14px; }'+
+    ' table.ocorr th { background:#0e5a77; color:#fff; padding:6px 8px; text-align:left; text-transform:uppercase; font-size:7.5pt; letter-spacing:0.4px; }'+
+    ' table.ocorr td { border-bottom:1px solid #dbe3ea; padding:6px 8px; }'+
+    ' table.ocorr tr:nth-child(even) td { background:#f6fafc; }'+
+    '</style></head><body><div class="container">'+
+    '<div class="titulo">Fechamento Mensal <span>VTR</span></div>'+
+    '<div class="sub">'+nomeMes(mes)+' / '+ano+' • '+escapeHtml(cfg.unidade.toUpperCase())+' • gerado em '+dataHoraAgoraBR()+'</div>'+
+    '<div class="box"><h3>Resumo do Mês</h3><div class="stats">'+
+    '<div><span>Ocorrências</span><strong>'+resumoMensal.ocorrencias+'</strong></div>'+
+    '<div><span>KM Rodado</span><strong>'+resumoMensal.totalKm.toFixed(1)+'</strong></div>'+
+    '<div><span>Dias c/ Saída</span><strong>'+resumoMensal.dias+'</strong></div>'+
+    '<div><span>VTRs</span><strong>'+resumoMensal.vtrs.length+'</strong></div>'+
+    '</div></div>'+
+    '<div class="box"><h3>KM por VTR</h3>'+vtrsHTML+'</div>'+
+    '<div class="box"><h3>Unidades Solicitantes</h3>'+solicitantesHTML+'</div>'+
+    '<div class="box" style="background:#fff;border-color:#cfd9e2;"><h3 style="color:#12212b;">Deslocamentos do Mês</h3>'+
+    '<table class="ocorr"><tr><th>Período</th><th>Turno</th><th>VTR</th><th>Trajeto</th><th style="text-align:right;">KM</th></tr>'+
+    ocorrenciasHTML+'</table></div>'+
+    '<div class="rodape">'+
+    '<div style="font-size:8.5pt;color:#5a6b78;">Documento gerado pelo Sistema de Deslocamento VTR.</div>'+
+    '<div style="text-align:right;font-size:9pt;"><strong>Base:</strong> '+escapeHtml(cfg.unidade.toUpperCase())+'</div>'+
+    '</div></div></body></html>';
+}
+
+var CRC_TABLE=(function(){
+  var t=new Uint32Array(256);
+  for(var n=0;n<256;n++){
+    var c=n;
+    for(var k=0;k<8;k++) c=(c&1)?(0xEDB88320^(c>>>1)):(c>>>1);
+    t[n]=c>>>0;
+  }
+  return t;
+})();
+function crc32(u8){
+  var c=0xFFFFFFFF;
+  for(var i=0;i<u8.length;i++) c=CRC_TABLE[(c^u8[i])&0xFF]^(c>>>8);
+  return (c^0xFFFFFFFF)>>>0;
+}
+function makeZip(files){
+  var enc=new TextEncoder();
+  var parts=[], central=[], offset=0;
+  var now=new Date();
+  var dosTime=((now.getHours()<<11)|(now.getMinutes()<<5)|Math.floor(now.getSeconds()/2))&0xFFFF;
+  var dosDate=(((now.getFullYear()-1980)<<9)|((now.getMonth()+1)<<5)|now.getDate())&0xFFFF;
+  files.forEach(function(f){
+    var name=enc.encode(f.name);
+    var data=enc.encode(f.data);
+    var crc=crc32(data);
+    var lh=new DataView(new ArrayBuffer(30));
+    lh.setUint32(0,0x04034b50,true); lh.setUint16(4,20,true); lh.setUint16(6,0,true); lh.setUint16(8,0,true);
+    lh.setUint16(10,dosTime,true); lh.setUint16(12,dosDate,true);
+    lh.setUint32(14,crc,true); lh.setUint32(18,data.length,true); lh.setUint32(22,data.length,true);
+    lh.setUint16(26,name.length,true); lh.setUint16(28,0,true);
+    parts.push(new Uint8Array(lh.buffer),name,data);
+    var ch=new DataView(new ArrayBuffer(46));
+    ch.setUint32(0,0x02014b50,true); ch.setUint16(4,20,true); ch.setUint16(6,20,true); ch.setUint16(8,0,true); ch.setUint16(10,0,true);
+    ch.setUint16(12,dosTime,true); ch.setUint16(14,dosDate,true);
+    ch.setUint32(16,crc,true); ch.setUint32(20,data.length,true); ch.setUint32(24,data.length,true);
+    ch.setUint16(28,name.length,true); ch.setUint16(30,0,true); ch.setUint16(32,0,true);
+    ch.setUint16(34,0,true); ch.setUint16(36,0,true); ch.setUint32(38,0,true); ch.setUint32(42,offset,true);
+    central.push(new Uint8Array(ch.buffer),name);
+    offset+=30+name.length+data.length;
+  });
+  var cdSize=0;
+  central.forEach(function(p){ cdSize+=p.length; });
+  var end=new DataView(new ArrayBuffer(22));
+  end.setUint32(0,0x06054b50,true); end.setUint16(4,0,true); end.setUint16(6,0,true);
+  end.setUint16(8,files.length,true); end.setUint16(10,files.length,true);
+  end.setUint32(12,cdSize,true); end.setUint32(16,offset,true); end.setUint16(20,0,true);
+  var total=offset+cdSize+22;
+  var out=new Uint8Array(total), pos=0;
+  parts.concat(central).concat([new Uint8Array(end.buffer)]).forEach(function(p){
+    out.set(p,pos); pos+=p.length;
+  });
+  return out;
+}
+function xmlEsc(s){
+  return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+}
+function colLetter(i0){
+  var i=i0+1, s="";
+  while(i>0){ var m=(i-1)%26; s=String.fromCharCode(65+m)+s; i=Math.floor((i-1)/26); }
+  return s;
+}
+function sheetXml(rows,colWidths){
+  var cols="";
+  if(colWidths){
+    cols="<cols>"+colWidths.map(function(w,i){ return '<col min="'+(i+1)+'" max="'+(i+1)+'" width="'+w+'" customWidth="1"/>'; }).join("")+"</cols>";
+  }
+  var body=rows.map(function(row,ri){
+    if(!row || row.length===0) return '<row r="'+(ri+1)+'"/>';
+    var cells=row.map(function(cell,ci){
+      var ref=colLetter(ci)+(ri+1);
+      if(typeof cell==="number" && isFinite(cell)){
+        return '<c r="'+ref+'"><v>'+cell+'</v></c>';
+      }
+      if(cell!==undefined && cell!==null && String(cell)!==""){
+        return '<c r="'+ref+'" t="inlineStr"><is><t xml:space="preserve">'+xmlEsc(cell)+'</t></is></c>';
+      }
+      return '<c r="'+ref+'"/>';
+    }).join("");
+    return '<row r="'+(ri+1)+'">'+cells+'</row>';
+  }).join("");
+  return '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'+
+    '<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">'+cols+
+    '<sheetData>'+body+'</sheetData></worksheet>';
+}
+var XLSX_STYLES='<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'+
+'<styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">'+
+'<fonts count="1"><font><sz val="11"/><name val="Calibri"/></font></fonts>'+
+'<fills count="2"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill></fills>'+
+'<borders count="1"><border/></borders>'+
+'<cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs>'+
+'<cellXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/></cellXfs>'+
+'</styleSheet>';
+
+function buildXlsxFiles(rm,cfg,mes,ano){
+  var cab=cfg.condutor.toUpperCase();
+  var resumoRows=[
+    ["FECHAMENTO MENSAL — SISTEMA DE DESLOCAMENTO VTR"],
+    [],
+    ["Mês/Ano", nomeMes(mes)+" / "+ano],
+    ["Base", cfg.unidade.toUpperCase()],
+    ["Condutor padrão", cab],
+    [],
+    ["RESUMO DO MÊS"],
+    ["Total de ocorrências", rm.ocorrencias],
+    ["Total KM rodado", Number(rm.totalKm.toFixed(1))],
+    ["Dias com deslocamento", rm.dias],
+    ["VTRs utilizadas", rm.vtrs.length],
+    [],
+    ["KM POR VTR"],
+    ["VTR","Ocorrências","KM Inicial","KM Final","Total KM"]
+  ];
+  rm.vtrs.forEach(function(v){
+    resumoRows.push([v.veiculo,v.ocorrencias,v.kmInicial,v.kmFinal,Number(v.totalKm.toFixed(1))]);
+  });
+  resumoRows.push([],["UNIDADES SOLICITANTES"],["Local","Atendimentos"]);
+  rm.solicitantes.forEach(function(s){ resumoRows.push([s.local,s.total]); });
+
+  var deslocRows=[["Data Início","Data Fim","Turno","VTR","Trajeto","KM Rodado"]];
+  rm.grupos.forEach(function(g){
+    var trajetoArr=g.timeline.map(function(l){ return l.local; }).filter(function(v,i,arr){ return v && arr.indexOf(v)===i; });
+    var trajeto=trajetoArr.join(" → ");
+    deslocRows.push([
+      formatDateBR(g.data), formatDateBR(g.dataFim), g.shift, g.veiculo, trajeto, Number(g.kmRodado.toFixed(1))
+    ]);
+  });
+
+  return [
+    {name:"[Content_Types].xml", data:'<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'+
+      '<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">'+
+      '<Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>'+
+      '<Default Extension="xml" ContentType="application/xml"/>'+
+      '<Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/>'+
+      '<Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>'+
+      '<Override PartName="/xl/worksheets/sheet2.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>'+
+      '<Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/>'+
+      '</Types>'},
+    {name:"_rels/.rels", data:'<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'+
+      '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'+
+      '<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/>'+
+      '</Relationships>'},
+    {name:"xl/workbook.xml", data:'<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'+
+      '<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">'+
+      '<sheets>'+
+      '<sheet name="Resumo" sheetId="1" r:id="rId1"/>'+
+      '<sheet name="Deslocamentos" sheetId="2" r:id="rId2"/>'+
+      '</sheets></workbook>'},
+    {name:"xl/_rels/workbook.xml.rels", data:'<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'+
+      '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'+
+      '<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/>'+
+      '<Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet2.xml"/>'+
+      '<Relationship Id="rId3" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/>'+
+      '</Relationships>'},
+    {name:"xl/styles.xml", data:XLSX_STYLES},
+    {name:"xl/worksheets/sheet1.xml", data:sheetXml(resumoRows,[34,16,12,12,12])},
+    {name:"xl/worksheets/sheet2.xml", data:sheetXml(deslocRows,[12,12,10,24,52,12])}
+  ];
+}
+function exportarFechamentoXLSX(rm,cfg,mes,ano){
+  var zip=makeZip(buildXlsxFiles(rm,cfg,mes,ano));
+  var blob=new Blob([zip],{type:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"});
+  var a=document.createElement("a");
+  var url=URL.createObjectURL(blob);
+  a.href=url;
+  a.download="Fechamento_VTR_"+pad(mes)+"-"+ano+".xlsx";
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(function(){ URL.revokeObjectURL(url); },5000);
+}
+
+function $(id){ return document.getElementById(id); }
+
+var state={ registros:[], config:Object.assign({},DEFAULT_CONFIG), assinaturaImg:"", currentOcorrenciaId:"", mes:1, ano:2026 };
+var form={ data:"", hora:"", km:"", local:"" };
+var editingRecordId=null;
+var headerCollapsed=false;
+var tab="plantao";
+var alertaKm={ open:false, hora:"", km:0 };
+var pendenteTipo=null;
+var confirmExcluir={ open:false, id:"" };
+var loaded=false;
+
+var CAMPOS=[
+  { field:"unidade",       label:"Base",          icon:"🏠" },
+  { field:"condutor",      label:"Condutor",      icon:"👤" },
+  { field:"plantao",       label:"Plantão",       icon:"📅", select:PLANTOES },
+  { field:"ambulancia",    label:"Ambulância",    icon:"🚑" },
+  { field:"placa",         label:"Placa",         icon:"🚗" },
+  { field:"kmInicial",     label:"KM Inicial",    icon:"🛞", type:"number" },
+  { field:"o2Portatil",    label:"O₂ Portátil",   icon:"💨" },
+  { field:"o2Fixo",        label:"O₂ Fixo",       icon:"💨" },
+  { field:"abastecimento", label:"Abastecimento", icon:"⛽" }
+];
+
+function toast(msg,type){
+  var box=$("toasts");
+  var el=document.createElement("div");
+  el.className="toast"+(type?" "+type:"");
+  el.setAttribute("role","status");
+  el.textContent=msg;
+  box.appendChild(el);
+  setTimeout(function(){
+    el.classList.add("out");
+    setTimeout(function(){ el.remove(); },300);
+  },4000);
+}
+toast.success=function(m){ toast(m,"success"); };
+toast.warning=function(m){ toast(m,"warning"); };
+toast.error  =function(m){ toast(m,"error"); };
+
+function save(){
+  if(!loaded) return;
+  saveStore({
+    version:2,
+    registros:state.registros,
+    config:state.config,
+    assinaturaImg:state.assinaturaImg,
+    currentOcorrenciaId:state.currentOcorrenciaId,
+    mes:state.mes,
+    ano:state.ano
+  });
+}
+
+function baseLabel(){ return limparNomeLocal(state.config.unidade.trim())||"BASE"; }
+
+function updateFormBadges(){
+  var plantao=state.config.plantao||"SD 12hs";
+  var base=limparNomeLocal(state.config.unidade.trim())||"BASE";
+  var vtr=state.config.ambulancia.trim().toUpperCase()||"VTR";
+  $("formBadges").innerHTML=
+    '<span class="badge">⏰ '+escapeHtml(plantao)+'</span>'+
+    '<span class="badge">📍 '+escapeHtml(base)+'</span>'+
+    '<span class="badge">🚑 '+escapeHtml(vtr)+'</span>';
+}
+function updateDataBounds(){
+  $("fData").min=state.ano+"-"+pad(state.mes)+"-01";
+  $("fData").max=state.ano+"-"+pad(state.mes)+"-"+diasNoMes(state.mes,state.ano);
+}
+function applyFormValues(f){
+  form={ data:f.data, hora:f.hora, km:f.km, local:f.local };
+  $("fData").value=f.data;
+  $("fHora").value=f.hora;
+  $("fKm").value=f.km;
+  $("fLocal").value=f.local;
+  updateDataBounds();
+}
+function setEditingVisual(editing){
+  var t=$("fsTitle");
+  if(editing){ t.textContent="✏️ Editando Deslocamento"; t.classList.add("editing"); }
+  else{ t.textContent="➕ Novo Deslocamento"; t.classList.remove("editing"); }
+}
+function setAlert(field,on){
+  var id = field==="km"?"fKm" : field==="hora"?"fHora" : "fLocal";
+  var el=$(id);
+  if(!el) return;
+  el.classList.toggle("alert",!!on);
+}
+function setBaseOk(on){ $("fLocal").classList.toggle("base-ok",!!on); }
+function alertasParaZero(){ setAlert("km",false); setAlert("hora",false); setAlert("local",false); }
+
+function setCollapsed(v){
+  headerCollapsed=v;
+  $("cfgGrid").hidden=v;
+  var b=$("btnCollapse");
+  b.textContent=v?"▼":"▲";
+  b.setAttribute("aria-label", v?"Expandir cabeçalho":"Recolher cabeçalho");
+  b.setAttribute("aria-expanded", String(!v));
+  b.title=v?"Expandir dados do plantão":"Recolher dados do plantão";
+}
+function checkAndCollapse(cfg){
+  if(window.innerWidth<=768){
+    if(cfg.unidade.trim() && cfg.condutor.trim() && cfg.ambulancia.trim() && cfg.placa.trim()){
+      setCollapsed(true);
+    }
+  }
+}
+function syncHeaderFields(){
+  CAMPOS.forEach(function(c){
+    var el=$("cfg-"+c.field);
+    if(el) el.value=state.config[c.field];
+  });
+}
+function syncPeriodo(){
+  $("selMes").value=String(state.mes);
+  $("inpAno").value=state.ano;
+}
+function preparar(regs,cfg,ocurId,m,a){
+  applyFormValues(prepararFormulario(regs,cfg,ocurId,m,a));
+}
+function renderDerived(){ renderHistorico(); renderResumo(); renderMensal(); }
+
+function handleConfigChange(field,value){
+  state.config[field]=value;
+  save();
+  updateFormBadges();
+
+  if(field==="unidade"){
+    var novaBase=limparNomeLocal(value.trim())||"BASE";
+    var itemsAtuais=state.registros.filter(function(r){
+      return r.ocorrenciaId===state.currentOcorrenciaId;
+    });
+    var lastRecordOc=itemsAtuais.length>0?itemsAtuais[0]:null;
+
+    if(!lastRecordOc || lastRecordOc.tipo==="base"){
+      var el=$("fLocal");
+      var partes=el.value.split("→");
+      var dest=partes[1]?partes[1].trim():"";
+      var novoLocal = dest ? (novaBase+" → "+dest) : (novaBase+" → ");
+      el.value=novoLocal;
+      form.local=novoLocal;
+      setAlert("local",false);
+    }
+  }
+}
+function handleCampoBlur(field){
+  if(field==="ambulancia"||field==="placa"){
+    state.config.ambulancia=state.config.ambulancia.trim();
+    state.config.placa=state.config.placa.trim();
+    state.config.kmInicial=kmInicialSugerido(state.config);
+    syncHeaderFields();
+    updateFormBadges();
+    preparar(state.registros,state.config,state.currentOcorrenciaId,state.mes,state.ano);
+  }
+  checkAndCollapse(state.config);
+}
+function handleMesAnoChange(novoMes,novoAno){
+  state.mes=novoMes;
+  state.ano=novoAno;
+  save();
+  syncPeriodo();
+  preparar(state.registros,state.config,state.currentOcorrenciaId,novoMes,novoAno);
+  alertasParaZero();
+  renderDerived();
+}
+
+function handleNovoDeslocamento(){
+  if(editingRecordId) toast("Edição cancelada. Novo deslocamento iniciado.");
+  else toast("🆕 Novo deslocamento iniciado");
+  state.currentOcorrenciaId=String(Date.now());
+  editingRecordId=null;
+  setEditingVisual(false);
+  save();
+  preparar(state.registros,state.config,state.currentOcorrenciaId,state.mes,state.ano);
+  alertasParaZero();
+}
+
+function handleRegistrar(tipo){
+  try{
+    if(!editingRecordId){
+      var ultimoDaOc=getUltimoDaOcorrencia(state.registros,state.currentOcorrenciaId);
+      var erroSeq=validarSequencia(tipo,ultimoDaOc);
+      if(erroSeq){ toast.warning(erroSeq); return; }
+    }
+    var localInput=limparNomeLocal(form.local);
+    if(tipo!=="base" && !localInput){
+      setAlert("local",true);
+      toast.warning("Preencha o Local / Destino.");
+      return;
+    }
+    if(tipo==="chegada"||tipo==="base"){
+      var ultimoDaOc2=getUltimoDaOcorrencia(state.registros,state.currentOcorrenciaId);
+      if(ultimoDaOc2 && ultimoDaOc2.tipo==="saida"){
+        var origemSaida=getParteLocal(ultimoDaOc2.local,0);
+        var destinoChegada=getParteLocal(limparNomeLocal(form.local),1);
+        var kmAtual=parseFloat(form.km);
+        var kmSaida=parseFloat(ultimoDaOc2.kmSaida);
+        if(origemSaida && destinoChegada && origemSaida===destinoChegada && kmAtual!==kmSaida){
+          setAlert("local",true);
+          toast.warning("O destino ("+destinoChegada+") é o mesmo local de onde você saiu. Se você rodou ("+kmSaida+" → "+kmAtual+"), deve ir para outro local.");
+          return;
+        }
+      }
+    }
+    if(!form.hora || isNaN(parseFloat(form.km)) || !form.data){
+      toast.warning("Preencha Data, Hora e KM corretamente.");
+      return;
+    }
+    if(!editingRecordId){
+      var veic=veiculoKey(state.config);
+      var lastVeiculo=getLastRecord(state.registros,veic);
+      if(lastVeiculo){
+        var ultimoKm=parseFloat(lastVeiculo.kmChegada||lastVeiculo.kmSaida||"0");
+        var ultimaHora=lastVeiculo.horaChegada||lastVeiculo.horaSaida||"";
+        var kmAtual2=parseFloat(form.km);
+        var kmIgual=(!isNaN(kmAtual2)&&!isNaN(ultimoKm)&&kmAtual2===ultimoKm);
+        var horaIgual=!!(form.hora&&ultimaHora&&form.hora===ultimaHora);
+        if(kmIgual && horaIgual){
+          pendenteTipo=tipo;
+          alertaKm={ open:true, hora:ultimaHora, km:ultimoKm };
+          setAlert("km",true);
+          setAlert("hora",true);
+          showAlertaDialog();
+          return;
+        }
+      }
+    }
+    alertasParaZero();
+    executarRegistro(tipo);
+  }catch(e){
+    toast.error("Erro inesperado. Tente novamente.");
+  }
+}
+
+function executarRegistro(tipo){
+  var hora=form.hora;
+  var km=parseFloat(form.km).toString();
+  var data=form.data;
+  var veic=veiculoKey(state.config);
+  var base=baseLabel();
+
+  var local=limparNomeLocal(form.local);
+  var partesL=local.split("→");
+  var origem=partesL[0]?partesL[0].trim():"";
+  var destino=partesL[1]?partesL[1].trim():"";
+
+  if(tipo==="saida"){
+    if(!destino && origem){ destino=origem; local=origem+" → "+destino; }
+    else if(!destino){ setAlert("local",true); toast.warning("Preencha o DESTINO para registrar a Saída."); return; }
+    else { local=origem+" → "+destino; }
+  }else if(tipo==="chegada"){
+    if(!destino){
+      destino=origem||getLocalAtual(state.registros,veic)||base||"ORIGEM";
+      local=destino+" → "+destino;
+    }else{
+      local=origem+" → "+destino;
+    }
+  }else if(tipo==="base"){
+    if(editingRecordId){
+      local=local||(base+" → "+base);
+    }else{
+      var ultimaLocalizacao=getLocalAtual(state.registros,veic);
+      origem=ultimaLocalizacao||origem||base;
+      local=origem+" → "+base;
+      setBaseOk(true);
+    }
+  }
+
+  var next=state.registros.slice();
+
+  if(editingRecordId){
+    var idx=next.findIndex(function(r){ return r.id===editingRecordId; });
+    if(idx!==-1){
+      var atual=next[idx];
+      var patched=Object.assign({},atual,{ tipo:tipo, local:local });
+      if(tipo==="chegada"||tipo==="base"){ patched.horaChegada=hora; patched.kmChegada=km; }
+      else { patched.horaSaida=hora; patched.kmSaida=km; }
+      next[idx]=patched;
+      toast.success("✅ Registro atualizado!");
+    }
+    editingRecordId=null;
+    setEditingVisual(false);
+    state.registros=next;
+    updateFrotaKms(next);
+    save();
+    preparar(next,state.config,state.currentOcorrenciaId,state.mes,state.ano);
+    renderDerived();
+    checkAndCollapse(state.config);
+    return;
+  }
+
+  if(tipo==="saida"){
+    next.unshift({
+      id:String(Date.now()),
+      ocorrenciaId:state.currentOcorrenciaId,
+      data:data,
+      shift:state.config.plantao||"SD 12hs",
+      tipo:"saida",
+      horaSaida:hora,
+      kmSaida:km,
+      local:local,
+      horaChegada:"",
+      kmChegada:"",
+      veiculo:veic
+    });
+    toast.success("🚑 Saída registrada!");
+  }else{
+    var idxAberto=next.findIndex(function(r){
+      return r.veiculo===veic && r.ocorrenciaId===state.currentOcorrenciaId && !r.horaChegada;
+    });
+    if(idxAberto!==-1){
+      var patched2=Object.assign({},next[idxAberto],{ tipo:tipo, horaChegada:hora, kmChegada:km });
+      if(tipo==="base") patched2.local=local;
+      next[idxAberto]=patched2;
+      if(tipo==="base") toast.success("🏥 Fim de Plantão na Base!");
+      else toast.success("📍 Chegada registrada!");
+    }else if(tipo==="base"){
+      next.unshift({
+        id:String(Date.now()),
+        ocorrenciaId:state.currentOcorrenciaId,
+        data:data,
+        shift:state.config.plantao||"SD 12hs",
+        tipo:"base",
+        horaSaida:"",
+        kmSaida:"",
+        local:local,
+        horaChegada:hora,
+        kmChegada:km,
+        veiculo:veic
+      });
+      toast.success("🏥 Fim de Plantão na Base!");
+    }else{
+      toast.error("Não há saída em aberto para esta VTR.");
+      return;
+    }
+  }
+
+  var proximaOcorrencia = tipo==="base" ? String(Date.now()) : state.currentOcorrenciaId;
+  if(tipo==="base") state.currentOcorrenciaId=proximaOcorrencia;
+
+  state.registros=next;
+  updateFrotaKms(next);
+  save();
+
+  if(tipo==="base" && !editingRecordId){
+    var elLocal=$("fLocal");
+    elLocal.value=local;
+    form.local=local;
+    renderDerived();
+    checkAndCollapse(state.config);
+    setTimeout(function(){
+      preparar(next,state.config,proximaOcorrencia,state.mes,state.ano);
+      setBaseOk(false);
+    }, 800);
+  }else{
+    preparar(next,state.config,proximaOcorrencia,state.mes,state.ano);
+    renderDerived();
+    checkAndCollapse(state.config);
+  }
+}
+
+function handleEditar(ocorrenciaId){
+  var rec=state.registros.find(function(r){ return r.ocorrenciaId===ocorrenciaId; });
+  if(!rec) return;
+  if(!isRecordDeletable(rec.data,rec.shift)){
+    toast.warning("🔒 Plantão encerrado. Não é possível editar.");
+    return;
+  }
+  editingRecordId=rec.id;
+  setEditingVisual(true);
+  applyFormValues({
+    data:rec.data,
+    hora:rec.horaChegada||rec.horaSaida,
+    km:rec.kmChegada||rec.kmSaida,
+    local:rec.local
+  });
+  alertasParaZero();
+  toast("✏️ Editando o último registro. Altere e salve.");
+  var target=document.querySelector('[aria-label="Registrar deslocamento"]');
+  if(target && target.scrollIntoView) target.scrollIntoView({ behavior:"smooth", block:"start" });
+}
+function handleExcluir(ocorrenciaId){
+  var rec=state.registros.find(function(r){ return r.ocorrenciaId===ocorrenciaId; });
+  if(!rec) return;
+  if(!isRecordDeletable(rec.data,rec.shift)){
+    toast.warning("🔒 Plantão encerrado. Não é possível excluir.");
+    return;
+  }
+  confirmExcluir={ open:true, id:ocorrenciaId };
+  $("ovExcluir").hidden=false;
+}
+function confirmarExclusao(){
+  var id=confirmExcluir.id;
+  state.registros=state.registros.filter(function(r){ return r.ocorrenciaId!==id; });
+  updateFrotaKms(state.registros);
+  save();
+  $("ovExcluir").hidden=true;
+  confirmExcluir={ open:false, id:"" };
+  toast.success("🗑️ Deslocamento excluído com sucesso");
+  renderDerived();
+}
+
+function showAlertaDialog(){
+  $("alertaValores").innerHTML=
+    "<div>⏱ Hora: "+escapeHtml(alertaKm.hora)+"</div>"+
+    "<div>🛞 KM: "+escapeHtml(String(alertaKm.km))+"</div>";
+  $("ovAlerta").hidden=false;
+}
+function corrigirAlerta(){
+  alertaKm.open=false;
+  $("ovAlerta").hidden=true;
+  var h=$("fHora");
+  if(h){ h.focus(); try{ h.select(); }catch(e){} }
+}
+function ignorarAlerta(){
+  alertaKm.open=false;
+  $("ovAlerta").hidden=true;
+  setAlert("km",false);
+  setAlert("hora",false);
+  if(pendenteTipo){ executarRegistro(pendenteTipo); }
+}
+
+function handleCompartilhar(){
+  try{
+    var monthRecords=filterByMonth(state.registros,state.mes,state.ano);
+    var texto=buildWhatsAppText(monthRecords,state.config);
+    window.open("https://api.whatsapp.com/send?text="+encodeURIComponent(texto),"_blank");
+  }catch(e){
+    toast.error("Não foi possível abrir o WhatsApp.");
+  }
+}
+function handleGerarPDF(){
+  try{
+    var monthRecords=filterByMonth(state.registros,state.mes,state.ano);
+    printHTML(buildRelatorioPlantaoHTML(monthRecords,state.config,state.assinaturaImg,state.mes,state.ano));
+    toast.success("✅ Relatório pronto para impressão/PDF!");
+  }catch(e){
+    toast.error("Não foi possível gerar o relatório.");
+  }
+}
+function gerarPdfMensal(){
+  try{
+    var rm=computeResumoMensal(state.registros,state.mes,state.ano,state.config);
+    printHTML(buildFechamentoMensalHTML(rm,state.config,state.mes,state.ano));
+    toast.success("Fechamento mensal pronto para impressão/PDF!");
+  }catch(e){
+    toast.error("Não foi possível gerar o relatório.");
+  }
+}
+function exportarExcel(){
+  try{
+    var rm=computeResumoMensal(state.registros,state.mes,state.ano,state.config);
+    exportarFechamentoXLSX(rm,state.config,state.mes,state.ano);
+    toast.success("Planilha Excel gerada! Confira seus downloads.");
+  }catch(e){
+    toast.error("Não foi possível gerar o Excel. Tente novamente.");
+  }
+}
+
+function renderHistorico(){
+  var monthRecords=filterByMonth(state.registros,state.mes,state.ano);
+  var grupos=agruparPorOcorrencia(monthRecords);
+  var list=$("histList");
+  if(grupos.length===0){
+    list.innerHTML='<p class="empty">PLANTÃO SEM OCORRÊNCIAS</p>';
+    return;
+  }
+  list.innerHTML=grupos.map(function(g,i){
+    var dataInicio=formatDateBR(g.data);
+    var dataFim=formatDateBR(g.dataFim);
+    var tituloData = dataInicio===dataFim ? ("DATA: "+dataInicio) : ("INÍCIO: "+dataInicio+" • FIM: "+dataFim);
+    var podeDel=isRecordDeletable(g.data,g.shift);
+    var linhas=g.timeline.map(function(l){
+      var cls = l.tag==="INICIO"?"tag-inicio" : l.tag==="SAÍDA"?"tag-saida" : l.tag==="FIM"?"tag-fim" : "tag-chegada";
+      return '<div class="tl-row">'+
+        '<span class="tag '+cls+'">'+escapeHtml(l.tag)+':</span>'+
+        '<span class="tl-loc">'+escapeHtml(l.local)+'</span>'+
+        '<span class="tl-hora">H '+escapeHtml(l.hora)+'</span>'+
+        '<span class="tl-km">'+escapeHtml(l.km)+'</span></div>';
+    }).join("");
+    return '<article class="ficha" style="animation-delay:'+Math.min(i*0.05,0.35)+'s">'+
+      '<div class="ficha-head">'+
+      '<div class="fh-info">'+
+      '<span>📅 '+tituloData+' | '+escapeHtml(g.shift)+'</span>'+
+      '<span class="fh-vtr" title="'+escapeHtml(g.veiculo)+'">'+escapeHtml(g.veiculo)+'</span>'+
+      '</div>'+
+      '<div class="fh-actions">'+
+      '<button class="mini-btn edit" data-action="editar" data-id="'+escapeHtml(g.ocorrenciaId)+'" aria-label="Editar deslocamento de '+dataInicio+'" title="Editar último registro da ocorrência">✏️</button>'+
+      '<button class="mini-btn '+(podeDel?"del":"locked")+'" data-action="excluir" data-id="'+escapeHtml(g.ocorrenciaId)+'" '+
+      (podeDel?"":"disabled")+
+      ' aria-label="'+(podeDel?("Excluir deslocamento de "+dataInicio):"Plantão encerrado — exclusão bloqueada")+'" '+
+      'title="'+(podeDel?"Excluir este deslocamento":"Plantão encerrado — exclusão bloqueada")+'">'+(podeDel?"🗑️":"🔒")+'</button>'+
+      '</div></div>'+
+      '<div class="ficha-body">'+linhas+'</div>'+
+      '<div class="ficha-foot"><span>'+tituloData+'</span><span>KM ROD: <span class="km-em">'+g.kmRodado.toFixed(1)+'</span></span></div>'+
+      '</article>';
+  }).join("");
+}
+
+function renderResumo(){
+  var monthRecords=filterByMonth(state.registros,state.mes,state.ano);
+  var resumo=computeResumo(monthRecords);
+  var solHTML;
+  if(resumo.solicitantes.length===0){
+    solHTML='<p class="empty" style="padding:.5rem 0">'+(resumo.totalOcorrencias===0?"PLANTÃO SEM OCORRÊNCIAS":"Nenhum destino registrado")+'</p>';
+  }else{
+    solHTML='<ul class="sol-list">'+resumo.solicitantes.map(function(s){
+      return '<li><span style="word-break:break-word">'+escapeHtml(s.local)+'</span><strong>'+s.total+'</strong></li>';
+    }).join("")+'</ul>';
+  }
+  $("resumoCard").innerHTML=
+    '<h2 class="resumo-title">📊 Resumo do Plantão</h2>'+
+    '<div class="stat-grid">'+
+    '<div class="stat"><span class="stat-label">Total de Ocorrências</span><strong class="stat-value">'+resumo.totalOcorrencias+'</strong></div>'+
+    '<div class="stat" style="animation-delay:.06s"><span class="stat-label">KM Rodados</span><strong class="stat-value em">'+resumo.totalKm.toFixed(1)+'</strong></div>'+
+    '</div>'+
+    '<div class="stat-card-list">'+
+    '<h3 class="sol-title">Unidades Solicitantes</h3>'+solHTML+
+    '</div>';
+}
+
+function renderMensal(){
+  var rm=computeResumoMensal(state.registros,state.mes,state.ano,state.config);
+
+  var chartSection="";
+  if(rm.porDia.length>0){
+    var maxKm=1;
+    rm.porDia.forEach(function(d){ if(d.km>maxKm) maxKm=d.km; });
+    var showVals=rm.porDia.length<=14;
+    var cols=rm.porDia.map(function(d){
+      return '<div class="chart-col" title="Dia '+d.dia+' — '+d.km.toFixed(1)+' km rodado">'+
+        (showVals?('<span class="bar-val">'+d.km.toFixed(1)+'</span>'):"")+
+        '<div class="bar" style="height:'+Math.max(2,Math.round(d.km/maxKm*170))+'px"></div></div>';
+    }).join("");
+    chartSection=
+      '<section class="card" aria-label="KM por dia do mês">'+
+      '<h2 class="sec-title">KM Rodado por Dia</h2>'+
+      '<p class="chart-sub">'+nomeMes(state.mes)+' / '+state.ano+' — dias com deslocamentos registrados</p>'+
+      '<div class="chart-wrap">'+
+      '<div class="chart">'+cols+'</div>'+
+      '<div class="chart-labels">'+rm.porDia.map(function(d){ return '<span>'+d.dia+'</span>'; }).join("")+'</div>'+
+      '</div></section>';
+  }
+
+  var vtrSection;
+  if(rm.vtrs.length===0){
+    vtrSection='<p class="empty">NENHUMA VTR UTILIZADA NESTE MÊS</p>';
+  }else{
+    vtrSection='<div class="table-wrap"><table class="vtr-table"><thead><tr>'+
+      '<th>VTR</th>'+
+      '<th class="c">Ocorr.</th>'+
+      '<th class="r col-km-ini">KM Ini.</th>'+
+      '<th class="r col-km-fim">KM Fim</th>'+
+      '<th class="r">Total KM</th>'+
+      '</tr></thead><tbody>'+
+      rm.vtrs.map(function(v){
+        return '<tr>'+
+          '<td class="td-vtr" title="'+escapeHtml(v.veiculo)+'">'+escapeHtml(v.veiculo)+'</td>'+
+          '<td class="td-c">'+v.ocorrencias+'</td>'+
+          '<td class="td-r col-km-ini">'+v.kmInicial.toFixed(1)+'</td>'+
+          '<td class="td-r col-km-fim">'+v.kmFinal.toFixed(1)+'</td>'+
+          '<td class="td-r td-em">'+v.totalKm.toFixed(1)+'</td></tr>';
+      }).join("")+
+      '</tbody></table></div>';
+  }
+
+  var solSection;
+  if(rm.solicitantes.length===0){
+    solSection='<p class="empty">NENHUM DESTINO REGISTRADO NESTE MÊS</p>';
+  }else{
+    solSection='<ul class="sol-mes">'+rm.solicitantes.map(function(s,i){
+      return '<li><span class="sol-rank"><span class="rank'+(i===0?" first":"")+'">'+(i+1)+'</span><span style="word-break:break-word">'+escapeHtml(s.local)+'</span></span><strong>'+s.total+'</strong></li>';
+    }).join("")+'</ul>';
+  }
+
+  $("paneMensal").innerHTML=
+    '<section class="card" aria-label="Período do fechamento">'+
+    '<h2 class="sec-title">📊 Fechamento Mensal</h2>'+
+    '<div class="periodo2">'+
+    '<div class="f-field"><label class="lbl-mini" for="pmMes">📅 Mês</label>'+
+    '<select id="pmMes" class="sel-lg">'+MESES.map(function(m,i){
+      return '<option value="'+(i+1)+'"'+((i+1)===state.mes?" selected":"")+'>'+m+'</option>';
+    }).join("")+'</select></div>'+
+    '<div class="f-field"><label class="lbl-mini" for="pmAno">Ano</label>'+
+    '<input id="pmAno" class="inp-lg no-spinner" type="number" min="2000" max="2100" value="'+state.ano+'"></div>'+
+    '</div></section>'+
+    '<section class="stat-grid4" aria-label="Estatísticas do mês">'+
+    '<div class="stat"><span class="stat-label">Ocorrências</span><strong class="stat-value">'+rm.ocorrencias+'</strong></div>'+
+    '<div class="stat" style="animation-delay:.05s"><span class="stat-label">KM Rodado Total</span><strong class="stat-value em">'+rm.totalKm.toFixed(1)+'</strong></div>'+
+    '<div class="stat" style="animation-delay:.1s"><span class="stat-label">Dias c/ Saída</span><strong class="stat-value">'+rm.dias+'</strong></div>'+
+    '<div class="stat" style="animation-delay:.15s"><span class="stat-label">VTRs Utilizadas</span><strong class="stat-value">'+rm.vtrs.length+'</strong></div>'+
+    '</section>'+
+    chartSection+
+    '<section class="card" aria-label="KM por VTR"><h2 class="sec-title">🚚 KM por VTR</h2>'+vtrSection+'</section>'+
+    '<section class="card" aria-label="Unidades solicitantes do mês"><h2 class="sec-title">🎯 Unidades Solicitantes do Mês</h2>'+solSection+'</section>'+
+    '<div class="export-grid" aria-label="Exportar fechamento">'+
+    '<button class="btn btn-excel" id="btnExcel">📊 Exportar Excel (.xlsx)</button>'+
+    '<button class="btn btn-pdf2" id="btnPdfMensal">📄 Relatório PDF (imprimir)</button>'+
+    '</div>';
+
+  $("pmMes").addEventListener("change",function(e){
+    handleMesAnoChange(Number(e.target.value),state.ano);
+  });
+  $("pmAno").addEventListener("input",function(e){
+    var v=parseInt(e.target.value,10);
+    handleMesAnoChange(state.mes,Number.isNaN(v)?new Date().getFullYear():v);
+  });
+  $("btnExcel").addEventListener("click",exportarExcel);
+  $("btnPdfMensal").addEventListener("click",gerarPdfMensal);
+}
+
+var CANVAS_HEIGHT=120;
+var signCanvas=null, signCtx=null, signDesenho=false, signCarregouInicial=false;
+
+function setupCanvas(){
+  signCanvas=$("signCanvas");
+  if(!signCanvas || !signCanvas.getContext) return;
+  signCtx=signCanvas.getContext("2d");
+  function configurarEstilo(){
+    signCtx.strokeStyle="#0f2027";
+    signCtx.lineWidth=2.2;
+    signCtx.lineCap="round";
+    signCtx.lineJoin="round";
+  }
+  function redesenhar(imgData){
+    if(!imgData || imgData==="data:," || imgData.length<100) return;
+    var img=new Image();
+    img.onload=function(){ signCtx.drawImage(img,0,0,signCanvas.width,signCanvas.height); };
+    img.src=imgData;
+  }
+  function resize(){
+    var w=signCanvas.clientWidth||320;
+    var anterior=signCanvas.width>0?signCanvas.toDataURL():"";
+    signCanvas.width=w;
+    signCanvas.height=CANVAS_HEIGHT;
+    signCtx.fillStyle="#ffffff";
+    signCtx.fillRect(0,0,w,CANVAS_HEIGHT);
+    configurarEstilo();
+    redesenhar(anterior);
+  }
+  function getCoords(e){
+    var rect=signCanvas.getBoundingClientRect();
+    var sx=signCanvas.width/rect.width;
+    var sy=signCanvas.height/rect.height;
+    return {
+      x:Math.min(Math.max(0,(e.clientX-rect.left)*sx),signCanvas.width),
+      y:Math.min(Math.max(0,(e.clientY-rect.top)*sy),signCanvas.height)
+    };
+  }
+  function finalizar(){
+    if(!signDesenho) return;
+    signDesenho=false;
+    state.assinaturaImg=signCanvas.toDataURL("image/png");
+    save();
+  }
+  resize();
+  window.addEventListener("resize",resize);
+  if(!signCarregouInicial){
+    signCarregouInicial=true;
+    redesenhar(state.assinaturaImg);
+  }
+  signCanvas.addEventListener("pointerdown",function(e){
+    e.preventDefault();
+    if(signCanvas.setPointerCapture){ try{ signCanvas.setPointerCapture(e.pointerId); }catch(err){} }
+    signDesenho=true;
+    var c=getCoords(e);
+    signCtx.beginPath();
+    signCtx.moveTo(c.x,c.y);
+    signCtx.lineTo(c.x,c.y);
+    signCtx.stroke();
+  });
+  signCanvas.addEventListener("pointermove",function(e){
+    if(!signDesenho) return;
+    e.preventDefault();
+    var c=getCoords(e);
+    signCtx.lineTo(c.x,c.y);
+    signCtx.stroke();
+    signCtx.beginPath();
+    signCtx.moveTo(c.x,c.y);
+  });
+  signCanvas.addEventListener("pointerup",finalizar);
+  signCanvas.addEventListener("pointerleave",finalizar);
+  $("btnLimpar").addEventListener("click",function(){
+    signCtx.fillStyle="#ffffff";
+    signCtx.fillRect(0,0,signCanvas.width,signCanvas.height);
+    state.assinaturaImg=signCanvas.toDataURL("image/png");
+    save();
+  });
+}
+
+function handleLocalFocus(){
+  var el=$("fLocal");
+  setTimeout(function(){
+    var val=el.value;
+    var arrowPos=val.indexOf("→");
+    if(arrowPos!==-1){
+      var start=arrowPos+1;
+      while(start<val.length && val[start]===" ") start++;
+      try{ el.setSelectionRange(start,val.length); }catch(e){}
+      return;
+    }
+    try{ el.setSelectionRange(val.length,val.length); }catch(e){}
+  },50);
+}
+
+function buildHeaderGrid(){
+  $("cfgGrid").innerHTML=CAMPOS.map(function(c){
+    var control;
+    if(c.select){
+      control='<select id="cfg-'+c.field+'">'+c.select.map(function(o){
+        return '<option value="'+escapeHtml(o)+'"'+(o===state.config[c.field]?" selected":"")+'>'+escapeHtml(o)+'</option>';
+      }).join("")+'</select>';
+    }else{
+      control='<input id="cfg-'+c.field+'"'+(c.type?' type="'+c.type+'"':' type="text"')+
+        (c.type==="number"?' inputmode="decimal"':'')+
+        ' value="'+escapeHtml(state.config[c.field])+'">';
+    }
+    return '<div class="hh-field"><label for="cfg-'+c.field+'">'+c.icon+' '+escapeHtml(c.label)+'</label>'+control+'</div>';
+  }).join("");
+
+  CAMPOS.forEach(function(c){
+    var el=$("cfg-"+c.field);
+    el.addEventListener("input",function(e){ handleConfigChange(c.field,e.target.value); });
+    el.addEventListener("blur",function(){ handleCampoBlur(c.field); });
+  });
+  $("selMes").innerHTML=MESES.map(function(m,i){
+    return '<option value="'+(i+1)+'"'+((i+1)===state.mes?" selected":"")+'>'+m.substring(0,3).toUpperCase()+'</option>';
+  }).join("");
+  $("inpAno").value=state.ano;
+}
+
+function wireEvents(){
+  $("selMes").addEventListener("change",function(e){
+    handleMesAnoChange(Number(e.target.value),state.ano);
+  });
+  $("inpAno").addEventListener("input",function(e){
+    var v=parseInt(e.target.value,10);
+    handleMesAnoChange(state.mes,Number.isNaN(v)?new Date().getFullYear():v);
+  });
+  $("btnTheme").addEventListener("click",function(){
+    var el=document.documentElement;
+    var now=el.dataset.theme==="dark"?"light":"dark";
+    el.dataset.theme=now;
+    try{ localStorage.setItem("vtr-theme",now); }catch(e){}
+    $("btnTheme").textContent=now==="dark"?"☀️":"🌙";
+  });
+  $("btnCollapse").addEventListener("click",function(){
+    setCollapsed(!headerCollapsed);
+  });
+  $("tabPlantao").addEventListener("click",function(){ switchTab("plantao"); });
+  $("tabMensal").addEventListener("click",function(){ switchTab("mensal"); });
+
+  $("fData").addEventListener("input",function(e){ form.data=e.target.value; });
+  $("fHora").addEventListener("input",function(e){ form.hora=e.target.value; setAlert("hora",false); });
+  $("fKm").addEventListener("input",function(e){ form.km=e.target.value; setAlert("km",false); });
+  $("fLocal").addEventListener("input",function(e){ form.local=e.target.value; setAlert("local",false); setBaseOk(false); });
+  $("fLocal").addEventListener("focus",handleLocalFocus);
+  $("btnNovo").addEventListener("click",handleNovoDeslocamento);
+  $("btnSaida").addEventListener("click",function(){ handleRegistrar("saida"); });
+  $("btnChegada").addEventListener("click",function(){ handleRegistrar("chegada"); });
+  $("btnBase").addEventListener("click",function(){ handleRegistrar("base"); });
+
+  $("histList").addEventListener("click",function(e){
+    var btn=e.target.closest("[data-action]");
+    if(!btn) return;
+    if(btn.disabled) return;
+    if(btn.dataset.action==="editar") handleEditar(btn.dataset.id);
+    if(btn.dataset.action==="excluir") handleExcluir(btn.dataset.id);
+  });
+  $("btnWhats").addEventListener("click",handleCompartilhar);
+
+  $("obsTxt").value=state.config.observacao;
+  $("obsTxt").addEventListener("input",function(e){ state.config.observacao=e.target.value; save(); });
+  $("nomeLegivel").value=state.config.nomeLegivel;
+  $("nomeLegivel").addEventListener("input",function(e){ state.config.nomeLegivel=e.target.value; save(); });
+
+  $("btnPDF").addEventListener("click",handleGerarPDF);
+
+  $("btnCorrigir").addEventListener("click",corrigirAlerta);
+  $("btnIgnorar").addEventListener("click",ignorarAlerta);
+  $("ovAlerta").addEventListener("click",function(e){ if(e.target===this) corrigirAlerta(); });
+  $("btnCancelarExc").addEventListener("click",function(){ $("ovExcluir").hidden=true; confirmExcluir={open:false,id:""}; });
+  $("btnConfirmarExc").addEventListener("click",confirmarExclusao);
+  $("ovExcluir").addEventListener("click",function(e){ if(e.target===this){ this.hidden=true; confirmExcluir={open:false,id:""}; } });
+
+  document.addEventListener("keydown",function(e){
+    if(e.key==="Escape"){
+      if(!$("ovAlerta").hidden) corrigirAlerta();
+      if(!$("ovExcluir").hidden){ $("ovExcluir").hidden=true; confirmExcluir={open:false,id:""}; }
+    }
+  });
+}
+
+function switchTab(t){
+  tab=t;
+  $("tabPlantao").classList.toggle("active",t==="plantao");
+  $("tabMensal").classList.toggle("active",t==="mensal");
+  $("tabPlantao").setAttribute("aria-selected",String(t==="plantao"));
+  $("tabMensal").setAttribute("aria-selected",String(t==="mensal"));
+  $("panePlantao").hidden=(t!=="plantao");
+  $("paneMensal").hidden=(t!=="mensal");
+  if(t==="mensal") renderMensal();
+}
+
+function init(){
+  var store=loadStore();
+  state.registros=store.registros;
+  state.config=store.config;
+  state.assinaturaImg=store.assinaturaImg;
+  state.currentOcorrenciaId=store.currentOcorrenciaId;
+  state.mes=store.mes;
+  state.ano=store.ano;
+  updateFrotaKms(store.registros);
+
+  if(!state.config.kmInicial.trim()){
+    state.config.kmInicial=kmInicialSugerido(state.config);
+  }
+
+  buildHeaderGrid();
+  wireEvents();
+  updateFormBadges();
+  setCollapsed(window.innerWidth<=768 && store.registros.length>0);
+  $("btnTheme").textContent=(document.documentElement.dataset.theme==="dark")?"☀️":"🌙";
+  setEditingVisual(false);
+
+  preparar(state.registros,state.config,state.currentOcorrenciaId,state.mes,state.ano);
+  renderHistorico();
+  renderResumo();
+  renderMensal();
+  setupCanvas();
+  loaded=true;
+}
+
+if(typeof window!=="undefined" && typeof document!=="undefined"){
+  if(document.readyState==="loading") document.addEventListener("DOMContentLoaded",init);
+  else init();
+}
 </script>
 </body>
 </html>
