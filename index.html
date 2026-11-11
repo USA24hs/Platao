@@ -175,6 +175,33 @@ html[data-theme="dark"] .tag-fim{color:#f87171}
 .km-em{color:#059669}
 html[data-theme="dark"] .km-em{color:#34d399}
 
+/* ✅ ESTILO PARA O BOX DE SUGESTÕES CUSTOMIZADO */
+.sugestoes-box {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+  z-index: 999;
+  max-height: 200px;
+  overflow-y: auto;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  display: none;
+}
+.sugestoes-box div {
+  padding: 0.6rem 0.75rem;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  border-bottom: 1px solid var(--border);
+  transition: background 0.2s;
+}
+.sugestoes-box div:last-child { border-bottom: none; }
+.sugestoes-box div:hover { background: var(--muted); }
+
 .obs-grid{display:grid;grid-template-columns:1fr;gap:16px}
 @media (min-width:1024px){.obs-grid{grid-template-columns:1fr 1fr}}
 .textarea{width:100%;min-height:96px;resize:vertical;border:1px solid var(--input);border-radius:.75rem;background:color-mix(in srgb,var(--muted) 50%,var(--card));color:var(--foreground);font-size:.8rem;font-weight:500;padding:.6rem;outline:none;font-family:inherit}
@@ -379,10 +406,11 @@ html[data-theme="dark"] .dlg-box{border-color:rgba(127,29,29,.6);background:rgba
           <input class="f-input readonly-field" id="fPlantao" type="text" readonly tabindex="-1">
         </div>
 
-        <div class="f-field full">
+        <!-- ✅ CAMPO DE DESTINO COM O BOX DE SUGESTÕES CUSTOMIZADO -->
+        <div class="f-field full" style="position: relative;">
           <label class="f-label" for="fLocal">📍 Local / Destino (Origem → Destino)</label>
-          <input class="f-input field-upper" id="fLocal" type="text" placeholder="DIGITE O DESTINO AQUI" autocomplete="off" list="sugestoesDestino">
-          <datalist id="sugestoesDestino"></datalist>
+          <input class="f-input field-upper" id="fLocal" type="text" placeholder="DIGITE O DESTINO AQUI" autocomplete="off">
+          <div id="sugestoesDestinoBox" class="sugestoes-box"></div>
         </div>
       </div>
       <div class="actions">
@@ -663,25 +691,71 @@ function prepararFormulario(registros,cfg,ocorrenciaId,mes,ano){
   return { data:data, hora:horaAtual(), km:kmRef||"", local:local };
 }
 
+// ✅ VARIÁVEL GLOBAL PARA GUARDAR AS SUGESTÕES
+var sugestoesLocais = [];
+
+// ✅ ATUALIZA A LISTA DE SUGESTÕES (SEM DATALIST)
 function atualizarSugestoesDestino(registros, ocorrenciaId){
-  var datalist = $("sugestoesDestino");
-  if(!datalist) return;
-  
   var locais = new Set();
   registros.forEach(function(r){
     if(r.ocorrenciaId === ocorrenciaId && r.local){
       var partes = r.local.split("→");
-      if(partes[0]) locais.add(partes[0].trim());
-      if(partes[1]) locais.add(partes[1].trim());
+      if(partes[0]) locais.add(partes[0].trim().toUpperCase());
+      if(partes[1]) locais.add(partes[1].trim().toUpperCase());
     }
   });
   
   var base = limparNomeLocal(state.config.unidade.trim()) || "BASE";
   locais.add(base);
 
-  datalist.innerHTML = Array.from(locais).map(function(loc) {
-    return '<option value="' + escapeHtml(loc) + '">';
+  sugestoesLocais = Array.from(locais);
+}
+
+// ✅ FUNÇÃO PARA MOSTRAR O BOX CUSTOMIZADO DE SUGESTÕES
+function mostrarSugestoes() {
+  var el = $("fLocal");
+  var box = $("sugestoesDestinoBox");
+  var val = el.value;
+  
+  // Pega apenas o que foi digitado após a seta
+  var arrowPos = val.indexOf("→");
+  var textoDigitado = arrowPos !== -1 ? val.substring(arrowPos + 1).trim().toUpperCase() : val.trim().toUpperCase();
+
+  // Filtra os locais
+  var filtrados = sugestoesLocais.filter(function(loc) {
+    return loc.indexOf(textoDigitado) !== -1;
+  });
+
+  // Se não houver nenhum, esconde
+  if (filtrados.length === 0) {
+    box.style.display = "none";
+    return;
+  }
+
+  // Monta o box
+  box.innerHTML = filtrados.map(function(loc) {
+    return '<div data-loc="' + escapeHtml(loc) + '">' + escapeHtml(loc) + '</div>';
   }).join("");
+  box.style.display = "block";
+
+  // Adiciona evento de clique nos itens
+  Array.from(box.children).forEach(function(child) {
+    child.onmousedown = function(e) {
+      e.preventDefault(); // Evita perder o foco do input antes do click
+      var locSelecionado = this.getAttribute("data-loc");
+      var posArrow = el.value.indexOf("→");
+      if (posArrow !== -1) {
+        el.value = el.value.substring(0, posArrow + 1) + " " + locSelecionado;
+      } else {
+        el.value = locSelecionado;
+      }
+      form.local = el.value;
+      box.style.display = "none";
+      el.focus();
+      // Coloca o cursor no final do texto
+      el.setSelectionRange(el.value.length, el.value.length);
+    };
+  });
 }
 
 function getFrotaKms(){
@@ -2053,8 +2127,22 @@ function wireEvents(){
   $("fData").addEventListener("input",function(e){ form.data=e.target.value; });
   $("fHora").addEventListener("input",function(e){ form.hora=e.target.value; setAlert("hora",false); });
   $("fKm").addEventListener("input",function(e){ form.km=e.target.value; setAlert("km",false); });
-  $("fLocal").addEventListener("input",function(e){ form.local=e.target.value; setAlert("local",false); setBaseOk(false); });
-  $("fLocal").addEventListener("focus",handleLocalFocus);
+  
+  // ✅ NOVOS EVENTOS PARA O CAMPO DE DESTINO
+  $("fLocal").addEventListener("input",function(e){ 
+    form.local=e.target.value; 
+    setAlert("local",false); 
+    setBaseOk(false); 
+    mostrarSugestoes(); 
+  });
+  $("fLocal").addEventListener("focus",function(){
+    handleLocalFocus();
+    mostrarSugestoes();
+  });
+  $("fLocal").addEventListener("blur",function(){
+    setTimeout(function(){ $("sugestoesDestinoBox").style.display="none"; }, 150);
+  });
+
   $("btnNovo").addEventListener("click",handleNovoDeslocamento);
   $("btnSaida").addEventListener("click",function(){ handleRegistrar("saida"); });
   $("btnChegada").addEventListener("click",function(){ handleRegistrar("chegada"); });
