@@ -381,7 +381,8 @@ html[data-theme="dark"] .dlg-box{border-color:rgba(127,29,29,.6);background:rgba
 
         <div class="f-field full">
           <label class="f-label" for="fLocal">📍 Local / Destino (Origem → Destino)</label>
-          <input class="f-input field-upper" id="fLocal" type="text" placeholder="DIGITE O DESTINO AQUI" autocomplete="off">
+          <input class="f-input field-upper" id="fLocal" type="text" placeholder="DIGITE O DESTINO AQUI" autocomplete="off" list="sugestoesDestino">
+          <datalist id="sugestoesDestino"></datalist>
         </div>
       </div>
       <div class="actions">
@@ -471,7 +472,7 @@ var DEFAULT_CONFIG = {
   placa: "TGP5G55",
   plantao: "SD 12hs",
   kmInicial: "",
-  cartao: "", /* ✅ NOVO CAMPO AQUI */
+  cartao: "",
   o2Portatil: "125%",
   o2Fixo: "150%",
   abastecimento: "75%",
@@ -636,6 +637,7 @@ function validarSequencia(tipo,ultimoDaOcorrencia){
   if(tipo==="chegada" && lastType!=="saida") return "A última ação foi CHEGADA. Você deve registrar uma SAÍDA primeiro.";
   return null;
 }
+
 function prepararFormulario(registros,cfg,ocorrenciaId,mes,ano){
   var veiculo=veiculoKey(cfg);
   var base=limparNomeLocal(cfg.unidade.trim())||"BASE";
@@ -653,14 +655,35 @@ function prepararFormulario(registros,cfg,ocorrenciaId,mes,ano){
     var dest=getLocalDisplay(lastRecordOc.local,true);
     local = dest+" → "+dest;
   }else if(lastRecordOc.tipo==="chegada"){
-    var dest2=getLocalDisplay(lastRecordOc.local,true);
-    var chegadas=itemsAtuais.filter(function(r){ return r.horaChegada; }).length;
-    local = chegadas>=3 ? (dest2+" → "+dest2) : (dest2+" → ");
+    var currentLoc = getLocalDisplay(lastRecordOc.local,true);
+    local = currentLoc+" → "; 
   }else if(lastRecordOc.tipo==="base"){
     local = base+" → ";
   }
   return { data:data, hora:horaAtual(), km:kmRef||"", local:local };
 }
+
+function atualizarSugestoesDestino(registros, ocorrenciaId){
+  var datalist = $("sugestoesDestino");
+  if(!datalist) return;
+  
+  var locais = new Set();
+  registros.forEach(function(r){
+    if(r.ocorrenciaId === ocorrenciaId && r.local){
+      var partes = r.local.split("→");
+      if(partes[0]) locais.add(partes[0].trim());
+      if(partes[1]) locais.add(partes[1].trim());
+    }
+  });
+  
+  var base = limparNomeLocal(state.config.unidade.trim()) || "BASE";
+  locais.add(base);
+
+  datalist.innerHTML = Array.from(locais).map(function(loc) {
+    return '<option value="' + escapeHtml(loc) + '">';
+  }).join("");
+}
+
 function getFrotaKms(){
   try{ return JSON.parse(localStorage.getItem(FROTA_KEY)||"{}"); }
   catch(e){ return {}; }
@@ -705,7 +728,7 @@ function migrarLegado(raw){
       placa: d.placa||DEFAULT_CONFIG.placa,
       plantao: d.plantao||DEFAULT_CONFIG.plantao,
       kmInicial: d.kmInicial||"",
-      cartao: d.cartao||DEFAULT_CONFIG.cartao, /* ✅ NOVO CAMPO AQUI */
+      cartao: d.cartao||DEFAULT_CONFIG.cartao,
       o2Portatil: d.o2Portatil||DEFAULT_CONFIG.o2Portatil,
       o2Fixo: d.o2Fixo||DEFAULT_CONFIG.o2Fixo,
       abastecimento: d.abastecimento||DEFAULT_CONFIG.abastecimento,
@@ -771,7 +794,7 @@ function buildWhatsAppText(registros,cfg,now){
   texto+="CONDUTOR: "+cfg.condutor.toUpperCase()+"\n";
   texto+="PLANTÃO: "+plantaoSigla+" | "+cfg.unidade.toUpperCase()+"\n";
   texto+="VTR: "+cfg.ambulancia.toUpperCase()+" PLACA: "+cfg.placa.toUpperCase()+"\n";
-  texto+="CARTÃO: "+(cfg.cartao?cfg.cartao.toUpperCase():"-")+"\n"; /* ✅ ADICIONADO NO WHATSAPP */
+  texto+="CARTÃO: "+(cfg.cartao?cfg.cartao.toUpperCase():"-")+"\n";
   texto+="O2 PORTÁTIL: "+formatPct(cfg.o2Portatil)+" FIXO: "+formatPct(cfg.o2Fixo)+"\n";
   texto+="ABASTECIMENTO: "+formatPct(cfg.abastecimento)+"\n";
   texto+=dataStr+" "+horaStr+"\n";
@@ -898,7 +921,7 @@ function buildRelatorioPlantaoHTML(registros,cfg,assinaturaImg,mes,ano){
     '<tr><td class="k">Ambulância</td><td>'+escapeHtml(cfg.ambulancia.toUpperCase())+'</td><td class="k">Placa</td><td>'+escapeHtml(cfg.placa.toUpperCase())+'</td></tr>'+
     '<tr><td class="k">KM Inicial</td><td>'+escapeHtml(cfg.kmInicial||"-")+'</td><td class="k">Base</td><td>'+escapeHtml(cfg.unidade.toUpperCase())+'</td></tr>'+
     '<tr><td class="k">O2 Portátil</td><td>'+escapeHtml(formatPct(cfg.o2Portatil))+'</td><td class="k">O2 Fixo</td><td>'+escapeHtml(formatPct(cfg.o2Fixo))+'</td></tr>'+
-    '<tr><td class="k">Abastecim.</td><td>'+escapeHtml(formatPct(cfg.abastecimento))+'</td><td class="k">Cartão</td><td>'+escapeHtml(cfg.cartao||"-")+'</td></tr>'+ /* ✅ ADICIONADO NO PDF */
+    '<tr><td class="k">Abastecim.</td><td>'+escapeHtml(formatPct(cfg.abastecimento))+'</td><td class="k">Cartão</td><td>'+escapeHtml(cfg.cartao||"-")+'</td></tr>'+
     '<tr><td class="k">Gerado em</td><td colspan="3">'+dataHoraAgoraBR()+'</td></tr>'+
     '</table>'+
     '<div class="box"><h3>Resumo do Plantão</h3><div class="stats">'+
@@ -1209,7 +1232,6 @@ var pendenteTipo=null;
 var confirmExcluir={ open:false, id:"" };
 var loaded=false;
 
-/* ✅ CAMPO CARTÃO ADICIONADO AQUI PARA APARECER NO CABEÇALHO */
 var CAMPOS=[
   { field:"unidade",       label:"Base",          icon:"🏠" },
   { field:"condutor",      label:"Condutor",      icon:"👤" },
@@ -1220,7 +1242,7 @@ var CAMPOS=[
   { field:"o2Portatil",    label:"O₂ Portátil",   icon:"💨" },
   { field:"o2Fixo",        label:"O₂ Fixo",       icon:"💨" },
   { field:"abastecimento", label:"Abastecimento", icon:"⛽" },
-  { field:"cartao",        label:"Cartão",        icon:"💳" } /* ✅ NOVO CAMPO AQUI */
+  { field:"cartao",        label:"Cartão",        icon:"💳" }
 ];
 
 function toast(msg,type){
@@ -1263,7 +1285,6 @@ function updateFormBadges(){
     '<span class="badge">📍 '+escapeHtml(base)+'</span>'+
     '<span class="badge">🚑 '+escapeHtml(vtr)+'</span>';
 
-  // ✅ Alimenta o campo visual do Plantão ao lado do KM
   var fPlantaoEl = $("fPlantao");
   if(fPlantaoEl) {
     fPlantaoEl.value = (plantao + " | " + base).toUpperCase();
@@ -1323,18 +1344,17 @@ function syncPeriodo(){
 }
 function preparar(regs,cfg,ocurId,m,a){
   applyFormValues(prepararFormulario(regs,cfg,ocurId,m,a));
-  updateActionButtons(); // ✅ Atualiza o estado dos botões
+  atualizarSugestoesDestino(regs, ocurId);
+  updateActionButtons();
 }
 function renderDerived(){ renderHistorico(); renderResumo(); renderMensal(); }
 
-/* ✅ NOVA FUNÇÃO: Habilita/Desabilita botões conforme a sequência */
 function updateActionButtons(){
   var btnSaida = $("btnSaida");
   var btnChegada = $("btnChegada");
   var btnBase = $("btnBase");
   if(!btnSaida || !btnChegada || !btnBase) return;
 
-  // Se estiver editando, libera todos
   if(editingRecordId){
     btnSaida.disabled = false;
     btnChegada.disabled = false;
@@ -1345,22 +1365,18 @@ function updateActionButtons(){
   var ultimoDaOc = getUltimoDaOcorrencia(state.registros, state.currentOcorrenciaId);
 
   if(!ultimoDaOc){
-    // Início: Só saída liberada
     btnSaida.disabled = false;
     btnChegada.disabled = true;
     btnBase.disabled = false;
   }else if(ultimoDaOc.tipo === "saida"){
-    // Após saída: Saída bloqueada, chegada e base liberadas
     btnSaida.disabled = true;
     btnChegada.disabled = false;
     btnBase.disabled = false;
   }else if(ultimoDaOc.tipo === "chegada"){
-    // Após chegada: Chegada bloqueada, saída e base liberadas
     btnSaida.disabled = false;
     btnChegada.disabled = true;
     btnBase.disabled = false;
   }else{
-    // Padrão (base finalizada)
     btnSaida.disabled = false;
     btnChegada.disabled = true;
     btnBase.disabled = false;
@@ -1506,9 +1522,16 @@ function executarRegistro(tipo){
     if(editingRecordId){
       local=local||(base+" → "+base);
     }else{
-      var ultimaLocalizacao=getLocalAtual(state.registros,veic);
-      origem=ultimaLocalizacao||origem||base;
-      local=origem+" → "+base;
+      var idxAberto = state.registros.findIndex(function(r){ return r.veiculo===veic && r.ocorrenciaId===state.currentOcorrenciaId && !r.horaChegada; });
+      if(idxAberto !== -1) {
+          var localSaidaAberta = state.registros[idxAberto].local;
+          var destinoSaidaAberta = getLocalDisplay(localSaidaAberta, true);
+          local = destinoSaidaAberta + " → " + base;
+      } else {
+          var ultimaLocalizacao=getLocalAtual(state.registros,veic);
+          origem=ultimaLocalizacao||origem||base;
+          local=origem+" → "+base;
+      }
       setBaseOk(true);
     }
   }
@@ -1555,13 +1578,31 @@ function executarRegistro(tipo){
     var idxAberto=next.findIndex(function(r){
       return r.veiculo===veic && r.ocorrenciaId===state.currentOcorrenciaId && !r.horaChegada;
     });
-    if(idxAberto!==-1){
+
+    if(tipo === "base" && idxAberto !== -1) {
+        // CORREÇÃO: Apenas cria o registro de Fim. Não altera a saída em aberto (não adiciona horaChegada a ela).
+        next.unshift({
+          id:String(Date.now()),
+          ocorrenciaId:state.currentOcorrenciaId,
+          data:data,
+          shift:state.config.plantao||"SD 12hs",
+          tipo:"base",
+          horaSaida:"",
+          kmSaida:"",
+          local:local,
+          horaChegada:hora,
+          kmChegada:km,
+          veiculo:veic
+        });
+        toast.success("🏥 Fim de Plantão na Base!");
+    }
+    else if(idxAberto!==-1){
       var patched2=Object.assign({},next[idxAberto],{ tipo:tipo, horaChegada:hora, kmChegada:km });
-      if(tipo==="base") patched2.local=local;
       next[idxAberto]=patched2;
       if(tipo==="base") toast.success("🏥 Fim de Plantão na Base!");
       else toast.success("📍 Chegada registrada!");
-    }else if(tipo==="base"){
+    }
+    else if(tipo==="base"){
       next.unshift({
         id:String(Date.now()),
         ocorrenciaId:state.currentOcorrenciaId,
@@ -1622,7 +1663,7 @@ function handleEditar(ocorrenciaId){
     local:rec.local
   });
   alertasParaZero();
-  updateActionButtons(); // ✅ Atualiza botões
+  updateActionButtons();
   toast("✏️ Editando o último registro. Altere e salve.");
   var target=document.querySelector('[aria-label="Registrar deslocamento"]');
   if(target && target.scrollIntoView) target.scrollIntoView({ behavior:"smooth", block:"start" });
@@ -1645,7 +1686,7 @@ function confirmarExclusao(){
   $("ovExcluir").hidden=true;
   confirmExcluir={ open:false, id:"" };
   toast.success("🗑️ Deslocamento excluído com sucesso");
-  preparar(state.registros,state.config,state.currentOcorrenciaId,state.mes,state.ano); // ✅ Atualiza botões se necessário
+  preparar(state.registros,state.config,state.currentOcorrenciaId,state.mes,state.ano);
   renderDerived();
 }
 
@@ -1726,7 +1767,6 @@ function renderHistorico(){
     var tituloData = dataInicio===dataFim ? ("DATA: "+dataInicio) : ("INÍCIO: "+dataInicio+" • FIM: "+dataFim);
     var podeDel=isRecordDeletable(g.data,g.shift);
     
-    // ✅ CORREÇÃO: Inverte a timeline para mostrar o último registro em cima
     var reversedTimeline = g.timeline.slice().reverse();
     
     var linhas=reversedTimeline.map(function(l){
