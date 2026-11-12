@@ -883,7 +883,7 @@ function saveStore(store){
   catch(e){}
 }
 
-// ✅ FUNÇÃO DE COMPARTILHAMENTO GERAL ATUALIZADA
+// ✅ FUNÇÃO DE COMPARTILHAMENTO GERAL ATUALIZADA (COM ZERO-WIDTH SPACE PARA NÃO FORMATAR)
 function buildWhatsAppText(registros,cfg,now){
   now=now||new Date();
   var isNoite=(cfg.plantao||"").indexOf("SN")!==-1;
@@ -913,7 +913,8 @@ function buildWhatsAppText(registros,cfg,now){
   }else{
     grupos.forEach(function(g){
       g.timeline.forEach(function(l){
-        texto+=l.tag+": "+l.local+" H: "+l.hora+" KM: "+l.km+"\n";
+        // ✅ \u200B (Zero Width Space) adicionado para evitar que o WhatsApp formate Hora e KM como links
+        texto+=l.tag+": "+l.local+" H:\u200B "+l.hora+" KM:\u200B "+l.km+"\n";
       });
       var dataInicio=formatDateBR(g.data);
       var dataFim=formatDateBR(g.dataFim);
@@ -932,7 +933,7 @@ function buildWhatsAppText(registros,cfg,now){
   return texto;
 }
 
-// ✅ NOVA FUNÇÃO: GERAR TEXTO DE UMA ÚNICA OCORRÊNCIA
+// ✅ FUNÇÃO DE COMPARTILHAMENTO INDIVIDUAL ATUALIZADA (COM ZERO-WIDTH SPACE)
 function buildSingleOcorrenciaText(grupo, cfg) {
   var texto = "RELATÓRIO DE DESLOCAMENTO (INDIVIDUAL)\n\n";
   texto += "CONDUTOR: " + cfg.condutor.toUpperCase() + "\n";
@@ -941,7 +942,8 @@ function buildSingleOcorrenciaText(grupo, cfg) {
   texto += "DATA: " + formatDateBR(grupo.data) + " | TURNO: " + grupo.shift + "\n\n";
   
   grupo.timeline.forEach(function(l){
-    texto += l.tag + ": " + l.local + " H: " + l.hora + " KM: " + l.km + "\n";
+    // ✅ \u200B (Zero Width Space) adicionado para evitar que o WhatsApp formate Hora e KM como links
+    texto += l.tag + ": " + l.local + " H:\u200B " + l.hora + " KM:\u200B " + l.km + "\n";
   });
   
   texto += "-----------------------------------\n";
