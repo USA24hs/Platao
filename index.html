@@ -157,6 +157,9 @@ html[data-theme="dark"] .mini-btn.edit{background:rgba(12,74,110,.6);color:#7dd3
 .mini-btn.del{background:#fee2e2;color:#b91c1c}
 html[data-theme="dark"] .mini-btn.del{background:rgba(127,29,29,.55);color:#fca5a5}
 .mini-btn.locked{background:var(--muted);color:var(--muted-foreground);cursor:not-allowed}
+/* ✅ Botão de Compartilhar Individual */
+.mini-btn.share{background:#f0fdf4;color:#15803d}
+html[data-theme="dark"] .mini-btn.share{background:rgba(21,128,61,.5);color:#86efac}
 
 .ficha-body{display:flex;flex-direction:column;gap:0;padding:.65rem .75rem .8rem;font-size:.8rem}
 .tl-row{display:flex;align-items:center;gap:.5rem;line-height:1.5;padding:4px 0;min-height:24px;}
@@ -880,7 +883,7 @@ function saveStore(store){
   catch(e){}
 }
 
-// ✅ FUNÇÃO DE COMPARTILHAMENTO ATUALIZADA PARA O FORMATO EXATO E SUPORTE A TELEGRAM
+// ✅ FUNÇÃO DE COMPARTILHAMENTO GERAL ATUALIZADA
 function buildWhatsAppText(registros,cfg,now){
   now=now||new Date();
   var isNoite=(cfg.plantao||"").indexOf("SN")!==-1;
@@ -927,6 +930,53 @@ function buildWhatsAppText(registros,cfg,now){
   if(solicitantes.length>0){ solicitantes.forEach(function(s){ texto+="• "+s.local+": "+s.total+"\n"; }); }
   else{ texto+="Nenhuma\n"; }
   return texto;
+}
+
+// ✅ NOVA FUNÇÃO: GERAR TEXTO DE UMA ÚNICA OCORRÊNCIA
+function buildSingleOcorrenciaText(grupo, cfg) {
+  var texto = "RELATÓRIO DE DESLOCAMENTO (INDIVIDUAL)\n\n";
+  texto += "CONDUTOR: " + cfg.condutor.toUpperCase() + "\n";
+  texto += "VTR: " + grupo.veiculo + "\n";
+  texto += "-----------------------------------\n";
+  texto += "DATA: " + formatDateBR(grupo.data) + " | TURNO: " + grupo.shift + "\n\n";
+  
+  grupo.timeline.forEach(function(l){
+    texto += l.tag + ": " + l.local + " H: " + l.hora + " KM: " + l.km + "\n";
+  });
+  
+  texto += "-----------------------------------\n";
+  texto += "KM RODADO: " + grupo.kmRodado.toFixed(1) + " km\n";
+  return texto;
+}
+
+// ✅ NOVA FUNÇÃO: COMPARTILHAR APENAS UMA OCORRÊNCIA
+function handleCompartilharOcorrencia(ocorrenciaId) {
+  try {
+    var grupos = agruparPorOcorrencia(state.registros);
+    var grupo = grupos.find(function(g) { return g.ocorrenciaId === ocorrenciaId; });
+    if(!grupo) return;
+    
+    var texto = buildSingleOcorrenciaText(grupo, state.config);
+    
+    // Usa a API nativa de compartilhamento se disponível (ótimo para celular)
+    if (navigator.share) {
+      navigator.share({
+        title: 'Deslocamento VTR',
+        text: texto
+      }).catch(function() {
+        // Se o usuário cancelar, não faz nada. Se der erro, tenta copiar.
+      });
+    } else {
+      // Fallback para copiar e colar (desktop ou navegadores antigos)
+      navigator.clipboard.writeText(texto).then(function() {
+        toast.success("📋 Dados da ocorrência copiados!");
+      }).catch(function() {
+        toast.error("Não foi possível copiar os dados.");
+      });
+    }
+  } catch(e) {
+    toast.error("Erro ao compartilhar ocorrência.");
+  }
 }
 
 function printHTML(html){
@@ -1811,7 +1861,7 @@ function ignorarAlerta(){
   if(pendenteTipo){ executarRegistro(pendenteTipo); }
 }
 
-// ✅ FUNÇÃO DE COMPARTILHAMENTO ATUALIZADA PARA SUPORTAR WHATSAPP E TELEGRAM
+// ✅ FUNÇÃO DE COMPARTILHAMENTO GERAL ATUALIZADA
 function handleCompartilhar(plataforma){
   try{
     var veic = veiculoKey(state.config);
@@ -1895,6 +1945,7 @@ function renderHistorico(){
       '<span class="fh-vtr" title="'+escapeHtml(g.veiculo)+'">'+escapeHtml(g.veiculo)+'</span>'+
       '</div>'+
       '<div class="fh-actions">'+
+      '<button class="mini-btn share" data-action="compartilhar-oc" data-id="'+escapeHtml(g.ocorrenciaId)+'" aria-label="Copiar ou compartilhar dados da ocorrência" title="Copiar/Compartilhar Dados">📋</button>'+
       '<button class="mini-btn edit" data-action="editar" data-id="'+escapeHtml(g.ocorrenciaId)+'" aria-label="Editar deslocamento de '+dataInicio+'" title="Editar último registro da ocorrência">✏️</button>'+
       '<button class="mini-btn '+(podeDel?"del":"locked")+'" data-action="excluir" data-id="'+escapeHtml(g.ocorrenciaId)+'" '+
       (podeDel?"":"disabled")+
@@ -2190,6 +2241,7 @@ function wireEvents(){
     if(btn.disabled) return;
     if(btn.dataset.action==="editar") handleEditar(btn.dataset.id);
     if(btn.dataset.action==="excluir") handleExcluir(btn.dataset.id);
+    if(btn.dataset.action==="compartilhar-oc") handleCompartilharOcorrencia(btn.dataset.id);
   });
   
   // Antigo btnWhats, agora usando a nova função via onclick no HTML para os dois botões.
