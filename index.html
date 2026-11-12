@@ -857,6 +857,7 @@ function saveStore(store){
   catch(e){}
 }
 
+// ✅ FUNÇÃO DE COMPARTILHAMENTO WHATSAPP ATUALIZADA
 function buildWhatsAppText(registros,cfg,now){
   now=now||new Date();
   var isNoite=(cfg.plantao||"").indexOf("SN")!==-1;
@@ -864,21 +865,22 @@ function buildWhatsAppText(registros,cfg,now){
   var dataStr=pad(now.getDate())+"/"+pad(now.getMonth()+1)+"/"+now.getFullYear();
   var horaStr=pad(now.getHours())+":"+pad(now.getMinutes());
   var plantaoSigla=(cfg.plantao||"SD").split(" ")[0];
+  
   var texto=saudacao+"\n\n";
   texto+="CONDUTOR: "+cfg.condutor.toUpperCase()+"\n";
   texto+="PLANTÃO: "+plantaoSigla+" | "+cfg.unidade.toUpperCase()+"\n";
   texto+="VTR: "+cfg.ambulancia.toUpperCase()+" PLACA: "+cfg.placa.toUpperCase()+"\n";
-  texto+="CARTÃO: "+(cfg.cartao?cfg.cartao.toUpperCase():"-")+"\n";
   texto+="O2 PORTÁTIL: "+formatPct(cfg.o2Portatil)+" FIXO: "+formatPct(cfg.o2Fixo)+"\n";
-  texto+="ABASTECIMENTO: "+formatPct(cfg.abastecimento)+"\n";
-  texto+=dataStr+" "+horaStr+"\n";
+  texto+="ABASTECIMENTO: "+formatPct(cfg.abastecimento)+" CARTÃO: "+(cfg.cartao?cfg.cartao.toUpperCase():"-")+"\n";
   texto+="OBS: "+(cfg.observacao?cfg.observacao.toUpperCase():"SEM NOVAS AVARIAS")+"\n\n";
-  texto+="Bom plantão a todos!\n";
+  texto+="Bom plantão a todos! "+dataStr+" "+horaStr+"\n";
   texto+="-----------------------------------\n";
   texto+="RELATÓRIO DE DESLOCAMENTO\n\n";
+  
   var grupos=agruparPorOcorrencia(registros);
   var resumo=computeResumo(registros);
   var solicitantes=resumo.solicitantes;
+  
   if(grupos.length===0){
     texto+="PLANTÃO SEM OCORRÊNCIAS\n\n";
   }else{
@@ -893,6 +895,7 @@ function buildWhatsAppText(registros,cfg,now){
       texto+="-----------------------------------\n\n";
     });
   }
+  
   texto+="RESUMO DO PLANTÃO\n";
   texto+="Total de Deslocamentos: "+grupos.length+"\n";
   texto+="Total KM Rodado: "+resumo.totalKm.toFixed(1)+" km\n\n";
@@ -1379,7 +1382,7 @@ function applyFormValues(f){
 function setEditingVisual(editing){
   var t=$("fsTitle");
   if(editing){ t.textContent="✏️ Editando Deslocamento"; t.classList.add("editing"); }
-  else{ t.textContent="🚑 Novo Deslocamento"; t.classList.remove("editing"); }
+  else{ t.textContent="➕ Novo Deslocamento"; t.classList.remove("editing"); }
 }
 function setAlert(field,on){
   var id = field==="km"?"fKm" : field==="hora"?"fHora" : "fLocal";
