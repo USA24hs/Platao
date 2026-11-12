@@ -954,18 +954,19 @@ function buildWhatsAppText(registros,cfg,now){
   return texto;
 }
 
-// ✅ NOVA FUNÇÃO: GERAR TEXTO DE UMA ÚNICA OCORRÊNCIA
+// ✅ MODELO ATUALIZADO — RELATÓRIO INDIVIDUAL (WhatsApp / Share)
 function buildSingleOcorrenciaText(grupo, cfg) {
   var texto = "RELATÓRIO DE DESLOCAMENTO (INDIVIDUAL)\n\n";
-  texto += "CONDUTOR: " + ((grupo.condutor||cfg.condutor||"").toUpperCase()) + "\n";
-  texto += "VTR: " + grupo.veiculo + "\n";
+  texto += "CONDUTOR: " + ((grupo.condutor || cfg.condutor || "").toUpperCase()) + "\n";
+  texto += "UNIDADE: "  + ((cfg.unidade  || "").toUpperCase()) + "\n";
+  texto += "VTR: "      + grupo.veiculo + "\n";
   texto += "-----------------------------------\n";
   texto += "DATA: " + formatDateBR(grupo.data) + " | TURNO: " + grupo.shift + "\n\n";
-  
+
   grupo.timeline.forEach(function(l){
     texto += l.tag + ": " + l.local + " H: " + l.hora + " KM: " + l.km + "\n";
   });
-  
+
   texto += "-----------------------------------\n";
   texto += "KM RODADO: " + grupo.kmRodado.toFixed(1) + " km\n";
   return texto;
