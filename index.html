@@ -139,6 +139,9 @@ html[data-theme="dark"] .f-input.base-ok{border-color:#10b981;background:rgba(2,
 .btn-gray{height:2.75rem;background:var(--secondary);color:var(--secondary-foreground);font-size:.85rem}
 .btn-whatsapp{height:2rem;border-radius:999px;padding:0 .85rem;font-size:.72rem;font-weight:800;color:#fff;background:#25D366;box-shadow:0 3px 8px -2px rgba(37,211,102,.5)}
 .btn-whatsapp:hover{filter:brightness(.9)}
+/* ✅ Botão do Telegram Adicionado */
+.btn-telegram{height:2rem;border-radius:999px;padding:0 .85rem;font-size:.72rem;font-weight:800;color:#fff;background:#0088cc;box-shadow:0 3px 8px -2px rgba(0,136,204,.5)}
+.btn-telegram:hover{filter:brightness(.9)}
 .btn-ghost-sm{height:1.75rem;border:none;background:transparent;color:var(--muted-foreground);font-size:.7rem;font-weight:700;border-radius:.5rem;padding:0 .5rem;cursor:pointer;display:inline-flex;align-items:center;gap:.25rem}
 .btn-ghost-sm:hover{color:var(--foreground);background:var(--muted)}
 
@@ -423,7 +426,11 @@ html[data-theme="dark"] .dlg-box{border-color:rgba(127,29,29,.6);background:rgba
     <section class="card" aria-label="Histórico de ocorrências">
       <div class="card-head-row">
         <h2 class="sec-title">📅 Histórico de Ocorrências</h2>
-        <button class="btn btn-whatsapp" id="btnWhats" aria-label="Compartilhar relatório no WhatsApp" title="Compartilhar no WhatsApp">💬 Enviar</button>
+        <!-- ✅ BOTÕES DE COMPARTILHAMENTO ATUALIZADOS -->
+        <div style="display:flex; gap:0.4rem;">
+          <button class="btn btn-whatsapp" onclick="handleCompartilhar('whatsapp')" aria-label="Compartilhar relatório no WhatsApp" title="Compartilhar no WhatsApp">💬 Enviar</button>
+          <button class="btn btn-telegram" onclick="handleCompartilhar('telegram')" aria-label="Compartilhar relatório no Telegram" title="Compartilhar no Telegram">✈️ Enviar</button>
+        </div>
       </div>
       <div class="hist-list scroll-thin" id="histList"></div>
     </section>
@@ -554,6 +561,22 @@ function isRecordDeletable(dataStr,shiftStr){
 function filterByMonth(registros,mes,ano){
   var prefix = ano+"-"+pad(mes)+"-";
   return registros.filter(function(r){ return r.data && r.data.indexOf(prefix)===0; });
+}
+
+// ✅ NOVA FUNÇÃO QUE FILTRA A OCORRÊNCIA INTEIRA SE ELA TIVER INÍCIO NO MÊS
+function getOcorrenciasDoMes(registros, mes, ano) {
+  var prefix = ano + "-" + pad(mes) + "-";
+  // Encontra os IDs de todas as ocorrências que têm pelo menos um registro neste mês
+  var ocorrenciaIds = new Set();
+  registros.forEach(function(r) {
+      if (r.data && r.data.indexOf(prefix) === 0) {
+          ocorrenciaIds.add(r.ocorrenciaId);
+      }
+  });
+  // Filtra todos os registros que pertencem a essas ocorrências (garantindo que a ocorrência inteira seja incluída)
+  return registros.filter(function(r) {
+      return ocorrenciaIds.has(r.ocorrenciaId);
+  });
 }
 
 function agruparPorOcorrencia(registros){
@@ -857,7 +880,7 @@ function saveStore(store){
   catch(e){}
 }
 
-// ✅ FUNÇÃO DE COMPARTILHAMENTO WHATSAPP ATUALIZADA
+// ✅ FUNÇÃO DE COMPARTILHAMENTO ATUALIZADA PARA O FORMATO EXATO E SUPORTE A TELEGRAM
 function buildWhatsAppText(registros,cfg,now){
   now=now||new Date();
   var isNoite=(cfg.plantao||"").indexOf("SN")!==-1;
@@ -871,7 +894,8 @@ function buildWhatsAppText(registros,cfg,now){
   texto+="PLANTÃO: "+plantaoSigla+" | "+cfg.unidade.toUpperCase()+"\n";
   texto+="VTR: "+cfg.ambulancia.toUpperCase()+" PLACA: "+cfg.placa.toUpperCase()+"\n";
   texto+="O2 PORTÁTIL: "+formatPct(cfg.o2Portatil)+" FIXO: "+formatPct(cfg.o2Fixo)+"\n";
-  texto+="ABASTECIMENTO: "+formatPct(cfg.abastecimento)+" CARTÃO: "+(cfg.cartao?cfg.cartao.toUpperCase():"-")+"\n";
+  // Abastecimento junto com o Cartão
+  texto+="ABASTECIMENTO: "+formatPct(cfg.abastecimento)+" CARTÃO: "+(cfg.cartao?cfg.cartao.toUpperCase():"SEM")+"\n";
   texto+="OBS: "+(cfg.observacao?cfg.observacao.toUpperCase():"SEM NOVAS AVARIAS")+"\n\n";
   texto+="Bom plantão a todos! "+dataStr+" "+horaStr+"\n";
   texto+="-----------------------------------\n";
@@ -1787,25 +1811,34 @@ function ignorarAlerta(){
   if(pendenteTipo){ executarRegistro(pendenteTipo); }
 }
 
-function handleCompartilhar(){
+// ✅ FUNÇÃO DE COMPARTILHAMENTO ATUALIZADA PARA SUPORTAR WHATSAPP E TELEGRAM
+function handleCompartilhar(plataforma){
   try{
     var veic = veiculoKey(state.config);
-    var monthRecords = filterByMonth(state.registros, state.mes, state.ano).filter(function(r){
+    // Usa a nova função que inclui ocorrências que atravessam a meia-noite
+    var registrosFiltrados = getOcorrenciasDoMes(state.registros, state.mes, state.ano).filter(function(r){
       return r.veiculo === veic;
     });
-    var texto=buildWhatsAppText(monthRecords,state.config);
-    window.open("https://api.whatsapp.com/send?text="+encodeURIComponent(texto),"_blank");
+    var texto = buildWhatsAppText(registrosFiltrados, state.config);
+    
+    if (plataforma === 'telegram') {
+      window.open("https://t.me/share/url?url=&text=" + encodeURIComponent(texto), "_blank");
+    } else {
+      window.open("https://api.whatsapp.com/send?text=" + encodeURIComponent(texto), "_blank");
+    }
   }catch(e){
-    toast.error("Não foi possível abrir o WhatsApp.");
+    toast.error("Não foi possível abrir o aplicativo.");
   }
 }
+
 function handleGerarPDF(){
   try{
     var veic = veiculoKey(state.config);
-    var monthRecords = filterByMonth(state.registros, state.mes, state.ano).filter(function(r){
+    // Usa a nova função que inclui ocorrências que atravessam a meia-noite
+    var registrosFiltrados = getOcorrenciasDoMes(state.registros, state.mes, state.ano).filter(function(r){
       return r.veiculo === veic;
     });
-    printHTML(buildRelatorioPlantaoHTML(monthRecords,state.config,state.assinaturaImg,state.mes,state.ano));
+    printHTML(buildRelatorioPlantaoHTML(registrosFiltrados,state.config,state.assinaturaImg,state.mes,state.ano));
     toast.success("✅ Relatório pronto para impressão/PDF!");
   }catch(e){
     toast.error("Não foi possível gerar o relatório.");
@@ -2158,7 +2191,9 @@ function wireEvents(){
     if(btn.dataset.action==="editar") handleEditar(btn.dataset.id);
     if(btn.dataset.action==="excluir") handleExcluir(btn.dataset.id);
   });
-  $("btnWhats").addEventListener("click",handleCompartilhar);
+  
+  // Antigo btnWhats, agora usando a nova função via onclick no HTML para os dois botões.
+  // $("btnWhats").addEventListener("click",handleCompartilhar); // Removido, agora usa onclick no HTML
 
   $("obsTxt").value=state.config.observacao;
   $("obsTxt").addEventListener("input",function(e){ state.config.observacao=e.target.value; save(); });
