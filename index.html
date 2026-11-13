@@ -303,7 +303,6 @@ html[data-theme="dark"] .stat-value.em{color:#34d399}
   .bar-val{font-size:.55rem;}
   .hh-grid{padding:.55rem;gap:.4rem;}
 
-  /* ✅ AJUSTE NO MENU DE ABAS PARA NÃO SOBREPOR */
   .tabs { height: 2.5rem; padding: 0.2rem; }
   .tab-btn { font-size: 0.72rem; gap: 0.2rem; }
 }
@@ -495,10 +494,6 @@ html[data-theme="dark"] #ovTurno .dlg-head h3{color:#fde047}
           <input class="f-input no-spinner" id="ckKm" type="number" step="0.1" placeholder="0.0" style="height:2.5rem">
         </div>
         <div class="f-field">
-          <label class="f-label" for="ckLitros">Litros</label>
-          <input class="f-input no-spinner" id="ckLitros" type="number" step="0.1" placeholder="0.0" style="height:2.5rem">
-        </div>
-        <div class="f-field">
           <label class="f-label" for="ckNivel">Nível Combustível</label>
           <select class="f-input" id="ckNivel" style="height:2.5rem">
             <option value="">Selecione...</option>
@@ -532,13 +527,31 @@ html[data-theme="dark"] #ovTurno .dlg-head h3{color:#fde047}
             <option value="Nota">Nota</option>
           </select>
         </div>
-        <div class="f-field">
-          <label class="f-label" for="ckCartao">Cartão</label>
-          <select class="f-input" id="ckCartao" style="height:2.5rem">
-            <option value="SIM">SIM</option>
-            <option value="NÃO">NÃO</option>
-          </select>
+        
+        <!-- ✅ LITROS, CARTÃO E CRV NA MESMA LINHA -->
+        <div class="f-field full">
+          <div style="display: flex; gap: 8px; width: 100%;">
+            <div class="f-field" style="flex: 1;">
+              <label class="f-label" for="ckLitros">Litros</label>
+              <input class="f-input no-spinner" id="ckLitros" type="number" step="0.1" placeholder="0.0" style="height:2.5rem">
+            </div>
+            <div class="f-field" style="flex: 1;">
+              <label class="f-label" for="ckCartao">Cartão</label>
+              <select class="f-input" id="ckCartao" style="height:2.5rem">
+                <option value="SIM">SIM</option>
+                <option value="NÃO">NÃO</option>
+              </select>
+            </div>
+            <div class="f-field" style="flex: 1;">
+              <label class="f-label" for="ckCrv">CRV</label>
+              <select class="f-input" id="ckCrv" style="height:2.5rem">
+                <option value="SIM">SIM</option>
+                <option value="NÃO">NÃO</option>
+              </select>
+            </div>
+          </div>
         </div>
+
       </div>
     </section>
 
@@ -1671,6 +1684,25 @@ function handleConfigChange(field,value){
   save();
   updateFormBadges();
 
+  if(field==="abastecimento"){
+    var ckNivel = $("ckNivel");
+    if (ckNivel) {
+      Array.from(ckNivel.options).forEach(function(opt) {
+        if (opt.value.startsWith(value)) {
+          ckNivel.value = opt.value;
+          state.checklist.nivelCombustivel = opt.value;
+        }
+      });
+    }
+  }
+
+  if(field==="crv"){
+    var ckCrv = $("ckCrv");
+    if (ckCrv) {
+      ckCrv.value = value;
+    }
+  }
+
   if(field==="unidade"){
     var novaBase=limparNomeLocal(value.trim())||"BASE";
     var itemsAtuais=state.registros.filter(function(r){
@@ -2356,6 +2388,7 @@ function renderChecklist() {
   $("ckNivel").value = state.checklist.nivelCombustivel || "";
   $("ckPagamento").value = state.checklist.pagamento || "";
   $("ckCartao").value = state.checklist.cartao || "SIM";
+  if ($("ckCrv")) $("ckCrv").value = state.config.crv || "SIM";
 
   var html = "";
   TODOS_ITENS.forEach(function(item) {
@@ -2400,6 +2433,7 @@ function limparChecklist() {
     $("ckNivel").value = "";
     $("ckPagamento").value = "";
     $("ckCartao").value = "SIM";
+    $("ckCrv").value = "SIM";
     state.checklist.dataAbast = "";
     state.checklist.kmAbast = "";
     state.checklist.litros = "";
@@ -2430,7 +2464,7 @@ function gerarPdfChecklist() {
       nivelCombustivel: $("ckNivel").value,
       pagamento: $("ckPagamento").value,
       cartao: $("ckCartao").value,
-      crv: state.config.crv,
+      crv: $("ckCrv").value,
       observacao: state.config.observacao,
       itens: state.checklist.itens || {}
     };
@@ -2645,9 +2679,26 @@ function wireEvents(){
   $("ckData").addEventListener("change", function(e) { state.checklist.dataAbast = e.target.value; save(); });
   $("ckKm").addEventListener("input", function(e) { state.checklist.kmAbast = e.target.value; save(); });
   $("ckLitros").addEventListener("input", function(e) { state.checklist.litros = e.target.value; save(); });
-  $("ckNivel").addEventListener("change", function(e) { state.checklist.nivelCombustivel = e.target.value; save(); });
   $("ckPagamento").addEventListener("change", function(e) { state.checklist.pagamento = e.target.value; save(); });
   $("ckCartao").addEventListener("change", function(e) { state.checklist.cartao = e.target.value; save(); });
+  
+  $("ckNivel").addEventListener("change", function(e) {
+    state.checklist.nivelCombustivel = e.target.value;
+    var match = e.target.value.match(/(\d+%|E)/);
+    if (match) {
+      state.config.abastecimento = match[0];
+      var cfgAbast = $("cfg-abastecimento");
+      if (cfgAbast) cfgAbast.value = state.config.abastecimento;
+    }
+    save();
+  });
+
+  $("ckCrv").addEventListener("change", function(e) {
+    state.config.crv = e.target.value;
+    var cfgCrv = $("cfg-crv");
+    if (cfgCrv) cfgCrv.value = state.config.crv;
+    save();
+  });
 
   $("btnInstall").addEventListener("click",handleInstallClick);
   $("btnBackup").addEventListener("click",exportarBackup);
