@@ -340,6 +340,12 @@ html[data-theme="dark"] .dlg-box{border-color:rgba(127,29,29,.6);background:rgba
 .dlg-actions{display:flex;flex-direction:column;gap:.5rem}
 .dlg-actions .btn{width:100%}
 
+/* ✅ ESTILO DO MODAL DE TROCA DE TURNO */
+#ovTurno .dlg-icon{background:#fef08a;color:#854d0e}
+html[data-theme="dark"] #ovTurno .dlg-icon{background:rgba(113,63,18,.6);color:#fde047}
+#ovTurno .dlg-head h3{color:#854d0e}
+html[data-theme="dark"] #ovTurno .dlg-head h3{color:#fde047}
+
 #toasts{position:fixed;bottom:1rem;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;gap:.5rem;z-index:100;width:min(92vw,26rem)}
 .toast{background:var(--card);color:var(--foreground);border:1px solid var(--border);border-radius:.75rem;padding:.7rem 1rem;font-size:.8rem;font-weight:600;box-shadow:0 10px 30px -8px rgba(2,8,20,.35);display:flex;gap:.5rem;align-items:center;animation:toastIn .25s ease}
 .toast.success{border-color:#34d399;background:linear-gradient(0deg,rgba(16,185,129,.09),rgba(16,185,129,.09)),var(--card)}
@@ -471,7 +477,7 @@ html[data-theme="dark"] .dlg-box{border-color:rgba(127,29,29,.6);background:rgba
   <div id="paneMensal" class="tab-pane" role="tabpanel" aria-label="Painel mensal" hidden></div>
 </main>
 
-<footer class="app-footer">💾 Sistema de Deslocamento VTR v2.2 — dados salvos localmente neste dispositivo</footer>
+<footer class="app-footer">💾 Sistema de Deslocamento VTR v2.1 — dados salvos localmente neste dispositivo</footer>
 
 <div class="overlay" id="ovAlerta" hidden>
   <div class="modal" role="dialog" aria-modal="true" aria-labelledby="alertaTitle">
@@ -497,6 +503,23 @@ html[data-theme="dark"] .dlg-box{border-color:rgba(127,29,29,.6);background:rgba
     <div class="dlg-actions">
       <button class="btn btn-gray" id="btnCancelarExc">Cancelar</button>
       <button class="btn btn-red" id="btnConfirmarExc">Excluir</button>
+    </div>
+  </div>
+</div>
+
+<!-- ✅ NOVO MODAL DE FIM DE PLANTÃO -->
+<div class="overlay" id="ovTurno" hidden>
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="turnoTitle">
+    <div class="dlg-head">
+      <div class="dlg-icon">🌅</div>
+      <div>
+        <h3 id="turnoTitle">Fim de Plantão Detectado!</h3>
+        <p>O horário do plantão anterior já encerrou. Deseja atualizar os dados (KM, O₂, Plantão, etc.) para o novo plantão?</p>
+      </div>
+    </div>
+    <div class="dlg-actions">
+      <button class="btn btn-chegada" id="btnAtualizarTurno">✅ Atualizar Novo Plantão</button>
+      <button class="btn btn-gray" id="btnIgnorarTurno">⏳ Continuar no Plantão Atual</button>
     </div>
   </div>
 </div>
@@ -568,6 +591,19 @@ function isRecordDeletable(dataStr,shiftStr){
     return new Date().getTime() < endTime.getTime();
   }catch(e){ return true; }
 }
+
+// ✅ NOVA FUNÇÃO: CALCULA O FIM DO PLANTÃO
+function getShiftEndTime(dateStr, shiftStr) {
+  if (!dateStr) return null;
+  try {
+    var p = dateStr.split("-").map(function(v){return parseInt(v,10);});
+    var year = p[0], month = p[1], day = p[2];
+    var endHour = 19, endDayOffset = 0;
+    if (shiftStr === "SN 12hs" || shiftStr === "DN 24hs") { endHour = 7; endDayOffset = 1; }
+    return new Date(year, month - 1, day + endDayOffset, endHour, 0, 0);
+  } catch(e) { return null; }
+}
+
 function filterByMonth(registros,mes,ano){
   var prefix = ano+"-"+pad(mes)+"-";
   return registros.filter(function(r){ return r.data && r.data.indexOf(prefix)===0; });
@@ -576,14 +612,12 @@ function filterByMonth(registros,mes,ano){
 // ✅ NOVA FUNÇÃO QUE FILTRA A OCORRÊNCIA INTEIRA SE ELA TIVER INÍCIO NO MÊS
 function getOcorrenciasDoMes(registros, mes, ano) {
   var prefix = ano + "-" + pad(mes) + "-";
-  // Encontra os IDs de todas as ocorrências que têm pelo menos um registro neste mês
   var ocorrenciaIds = new Set();
   registros.forEach(function(r) {
       if (r.data && r.data.indexOf(prefix) === 0) {
           ocorrenciaIds.add(r.ocorrenciaId);
       }
   });
-  // Filtra todos os registros que pertencem a essas ocorrências (garantindo que a ocorrência inteira seja incluída)
   return registros.filter(function(r) {
       return ocorrenciaIds.has(r.ocorrenciaId);
   });
@@ -1627,6 +1661,8 @@ function handleNovoDeslocamento(){
   save(true);
   preparar(state.registros,state.config,state.currentOcorrenciaId,state.mes,state.ano);
   alertasParaZero();
+  // ✅ CHECAR O FIM DE PLANTÃO AO INICIAR NOVO DESLOCAMENTO
+  checkShiftUpdate();
 }
 
 function handleRegistrar(tipo){
@@ -2317,6 +2353,22 @@ function buildHeaderGrid(){
   $("inpAno").value=state.ano;
 }
 
+// ✅ CHECAGEM DE FIM DE PLANTÃO
+function checkShiftUpdate() {
+  if (!state.registros.length) return;
+  var lastRecord = state.registros[0];
+  var shiftEnd = getShiftEndTime(lastRecord.data, lastRecord.shift);
+  
+  if (shiftEnd && new Date().getTime() > shiftEnd.getTime()) {
+    // Evita mostrar repetidamente na mesma sessão para o mesmo plantão
+    var sessionKey = "shiftWarn_" + lastRecord.data + "_" + lastRecord.shift;
+    if (!sessionStorage.getItem(sessionKey)) {
+      $("ovTurno").hidden = false;
+      sessionStorage.setItem(sessionKey, "1");
+    }
+  }
+}
+
 function wireEvents(){
   $("selMes").addEventListener("change",function(e){
     handleMesAnoChange(Number(e.target.value),state.ano);
@@ -2393,14 +2445,35 @@ function wireEvents(){
   $("btnCorrigir").addEventListener("click",corrigirAlerta);
   $("btnIgnorar").addEventListener("click",ignorarAlerta);
   $("ovAlerta").addEventListener("click",function(e){ if(e.target===this) corrigirAlerta(); });
+  
   $("btnCancelarExc").addEventListener("click",function(){ $("ovExcluir").hidden=true; confirmExcluir={open:false,id:""}; restaurarFoco(); });
   $("btnConfirmarExc").addEventListener("click",confirmarExclusao);
   $("ovExcluir").addEventListener("click",function(e){ if(e.target===this){ this.hidden=true; confirmExcluir={open:false,id:""}; restaurarFoco(); } });
+
+  // ✅ EVENTOS DO NOVO MODAL DE TROCA DE TURNO
+  $("btnAtualizarTurno").addEventListener("click", function() {
+    $("ovTurno").hidden = true;
+    setCollapsed(false); // Expande o cabeçalho
+    var target = document.querySelector('.app-header');
+    if(target && target.scrollIntoView) target.scrollIntoView({ behavior: "smooth", block: "start" });
+    var plantaoSelect = $("cfg-plantao");
+    if(plantaoSelect) {
+      setTimeout(function() { plantaoSelect.focus(); }, 300); // Foca no campo Plantão
+    }
+  });
+  
+  $("btnIgnorarTurno").addEventListener("click", function() {
+    $("ovTurno").hidden = true;
+  });
+  $("ovTurno").addEventListener("click", function(e) { 
+    if(e.target === this) this.hidden = true; 
+  });
 
   document.addEventListener("keydown",function(e){
     if(e.key==="Escape"){
       if(!$("ovAlerta").hidden) corrigirAlerta();
       if(!$("ovExcluir").hidden){ $("ovExcluir").hidden=true; confirmExcluir={open:false,id:""}; restaurarFoco(); }
+      if(!$("ovTurno").hidden) $("ovTurno").hidden=true;
     }
   });
 }
@@ -2443,6 +2516,10 @@ function init(){
   renderMensal();
   setupCanvas();
   loaded=true;
+  
+  // ✅ VERIFICA O FIM DE PLANTÃO NA ABERTURA DO APP
+  checkShiftUpdate();
+
   window.addEventListener("pagehide",function(){
     if(saveTimer){ clearTimeout(saveTimer); saveTimer=null; saveNow(); }
   });
