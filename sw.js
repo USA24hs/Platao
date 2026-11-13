@@ -1,6 +1,6 @@
 /* Service Worker — Sistema de Deslocamento VTR v2.1 */
 /* Ao publicar uma atualização, aumente a versão do CACHE (ex.: v2.2) */
-var CACHE = "vtr-cache-v2.2";
+var CACHE = "vtr-cache-v2.3";
 var ASSETS = [
   "./",
   "./index.html",
