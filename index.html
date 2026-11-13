@@ -562,9 +562,10 @@ html[data-theme="dark"] #ovTurno .dlg-head h3{color:#fde047}
       <div id="checkListContent"></div>
     </section>
 
+    <!-- ✅ BOTÕES INVERTIDOS -->
     <div class="export-grid" style="grid-template-columns: 1fr 1fr;">
-      <button class="btn" style="background:#25D366; color:#fff; height:3rem; font-size:0.85rem; box-shadow:0 6px 16px -6px rgba(37,211,102,.5);" onclick="handleCompartilharChecklist()">💬 Enviar WhatsApp</button>
       <button class="btn btn-pdf" onclick="gerarPdfChecklist()" style="height:3rem;">📄 Gerar PDF</button>
+      <button class="btn" style="background:#25D366; color:#fff; height:3rem; font-size:0.85rem; box-shadow:0 6px 16px -6px rgba(37,211,102,.5);" onclick="handleCompartilharChecklist()">💬 Enviar WhatsApp</button>
     </div>
     
     <div style="margin-top: 10px;">
@@ -2054,7 +2055,7 @@ function handleCompartilhar(plataforma){
   }
 }
 
-// ✅ MODELO DO WHATSAPP ATUALIZADO COM SAUDAÇÃO DINÂMICA
+// ✅ MODELO DO WHATSAPP ATUALIZADO COM SAUDAÇÃO DINÂMICA E NOVA FORMATAÇÃO
 function handleCompartilharChecklist() {
   try {
     var hoje = new Date();
@@ -2071,7 +2072,7 @@ function handleCompartilharChecklist() {
     var text = "*🚑💭 CHECK LIST DA VTR*\n\n";
     text += saudacao + "\n\n";
     text += "CONDUTOR: " + (state.config.condutor || "").toUpperCase() + "\n";
-    text += "UNIDADE: " + (state.config.unidade || "").toUpperCase() + "  PLANTÃO: " + plantaoCompleto + "\n";
+    text += "UNIDADE: " + (state.config.unidade || "").toUpperCase() + "   PLANTÃO: " + plantaoCompleto + "\n";
     text += "VTR: " + veiculoKey(state.config) + "\n";
     text += "CARTÃO: " + (state.checklist.cartao || "NÃO") + " CRV: " + (state.config.crv || "NÃO") + "\n";
     text += "O² PORTÁTIL: " + formatPct(state.config.o2Portatil) + " FIXO: " + formatPct(state.config.o2Fixo) + "\n";
@@ -2085,8 +2086,7 @@ function handleCompartilharChecklist() {
     var nivel = state.checklist.nivelCombustivel || "Não informado";
     
     text += "Data: " + dtAbast + "  | KM: " + kmAbast + "\n";
-    text += "Litros: " + litros + "\n";
-    text += "Nível: " + nivel + "\n";
+    text += "Litros: " + litros + "  Nível: " + nivel + "\n";
     text += "-----------------------------------\n";
     
     var itensRuins = [];
