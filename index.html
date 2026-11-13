@@ -2054,15 +2054,24 @@ function handleCompartilhar(plataforma){
   }
 }
 
+// ✅ MODELO DO WHATSAPP ATUALIZADO COM SAUDAÇÃO DINÂMICA
 function handleCompartilharChecklist() {
   try {
     var hoje = new Date();
+    var hora = hoje.getHours();
+    var saudacao = "";
+    
+    if (hora < 12) saudacao = "Bom dia!";
+    else if (hora < 18) saudacao = "Boa Tarde!";
+    else saudacao = "Boa Noite!";
+
     var dataStr = pad(hoje.getDate()) + "/" + pad(hoje.getMonth() + 1) + "/" + hoje.getFullYear();
-    var plantaoSigla = (state.config.plantao || "SD").split(" ")[0];
+    var plantaoCompleto = state.config.plantao || "SD 12hs";
     
     var text = "*🚑💭 CHECK LIST DA VTR*\n\n";
+    text += saudacao + "\n\n";
     text += "CONDUTOR: " + (state.config.condutor || "").toUpperCase() + "\n";
-    text += "UNIDADE: " + (state.config.unidade || "").toUpperCase() + "   PLANTÃO: " + plantaoSigla + "\n";
+    text += "UNIDADE: " + (state.config.unidade || "").toUpperCase() + "  PLANTÃO: " + plantaoCompleto + "\n";
     text += "VTR: " + veiculoKey(state.config) + "\n";
     text += "CARTÃO: " + (state.checklist.cartao || "NÃO") + " CRV: " + (state.config.crv || "NÃO") + "\n";
     text += "O² PORTÁTIL: " + formatPct(state.config.o2Portatil) + " FIXO: " + formatPct(state.config.o2Fixo) + "\n";
