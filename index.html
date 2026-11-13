@@ -1203,9 +1203,9 @@ function buildChecklistHTML(checkData) {
   CHECKLIST_ITENS_ESQ.forEach(function(it) { esqRows += renderRow(it); });
   CHECKLIST_ITENS_DIR.forEach(function(it) { dirRows += renderRow(it); });
 
-  return '<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><title>Check List VTR</title>'+
+  return '<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><title> Check List VTR</title>'+
     '<style>'+REPORT_BASE_CSS+'</style></head><body><div class="container">'+
-    '<div class="titulo">Check List de VTR <span>Ambulância</span></div>'+
+    '<div class="titulo">Check List da VTR <span>Ambulância</span></div>'+
     '<div class="sub">Controle de Frota • '+escapeHtml(checkData.unidade.toUpperCase())+' • gerado em '+dataHoraAgoraBR()+'</div>'+
     '<table class="info">'+
     '<tr><td class="k">Condutor</td><td>'+escapeHtml(checkData.condutor.toUpperCase())+'</td><td class="k">VTR</td><td>'+escapeHtml(checkData.veiculo)+'</td></tr>'+
@@ -2060,7 +2060,7 @@ function handleCompartilharChecklist() {
     var dataStr = pad(hoje.getDate()) + "/" + pad(hoje.getMonth() + 1) + "/" + hoje.getFullYear();
     var plantaoSigla = (state.config.plantao || "SD").split(" ")[0];
     
-    var text = "*CHECK LIST DA VTR*\n\n";
+    var text = "*🚑💭 CHECK LIST DA VTR*\n\n";
     text += "CONDUTOR: " + (state.config.condutor || "").toUpperCase() + "\n";
     text += "UNIDADE: " + (state.config.unidade || "").toUpperCase() + "   PLANTÃO: " + plantaoSigla + "\n";
     text += "VTR: " + veiculoKey(state.config) + "\n";
