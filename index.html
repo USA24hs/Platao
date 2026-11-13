@@ -245,7 +245,7 @@ html[data-theme="dark"] .stat-value.em{color:#34d399}
 .sol-mes li:last-child{border-bottom:none}
 .sol-mes li strong{color:var(--primary);flex-shrink:0}
 
-.periodO²{display:grid;grid-template-columns:repeat(2,1fr);gap:.75rem;max-width:384px}
+.periodo2{display:grid;grid-template-columns:repeat(2,1fr);gap:.75rem;max-width:384px}
 .chart-wrap{display:flex;flex-direction:column}
 .chart-sub{margin:0 0 .75rem;font-size:.72rem;font-weight:600;color:var(--muted-foreground)}
 .chart{display:flex;align-items:flex-end;gap:6px;height:200px;border-bottom:1px solid var(--border);padding:18px 4px 0}
@@ -624,8 +624,8 @@ var DEFAULT_CONFIG = {
   kmInicial: "",
   cartao: "",
   crv: "SIM",
-  O²Portatil: "125%",
-  O²Fixo: "150%",
+  o2Portatil: "125%",
+  o2Fixo: "150%",
   abastecimento: "75%",
   nomeLegivel: "Anderson Martins",
   observacao: ""
@@ -969,8 +969,8 @@ function migrarLegado(raw){
       kmInicial: d.kmInicial||"",
       cartao: d.cartao||DEFAULT_CONFIG.cartao,
       crv: d.crv||DEFAULT_CONFIG.crv,
-      O²Portatil: d.O²Portatil||DEFAULT_CONFIG.O²Portatil,
-      O²Fixo: d.O²Fixo||DEFAULT_CONFIG.O²Fixo,
+      o2Portatil: d.o2Portatil||DEFAULT_CONFIG.o2Portatil,
+      o2Fixo: d.o2Fixo||DEFAULT_CONFIG.o2Fixo,
       abastecimento: d.abastecimento||DEFAULT_CONFIG.abastecimento,
       nomeLegivel: d.nomeLegivel||d.condutor||DEFAULT_CONFIG.nomeLegivel,
       observacao: d.observacao||""
@@ -1038,7 +1038,7 @@ function buildWhatsAppText(registros,cfg,now){
   texto+="CONDUTOR: "+cfg.condutor.toUpperCase()+"\n";
   texto+="PLANTÃO: "+plantaoSigla+" | "+cfg.unidade.toUpperCase()+"\n";
   texto+="VTR: "+cfg.ambulancia.toUpperCase()+" PLACA: "+cfg.placa.toUpperCase()+"\n";
-  texto+="O² PORTÁTIL: "+formatPct(cfg.O²Portatil)+" FIXO: "+formatPct(cfg.O²Fixo)+"\n";
+  texto+="O2 PORTÁTIL: "+formatPct(cfg.o2Portatil)+" FIXO: "+formatPct(cfg.o2Fixo)+"\n";
   texto+="ABASTECIMENTO: "+formatPct(cfg.abastecimento)+" CARTÃO: "+(cfg.cartao?cfg.cartao.toUpperCase():"SEM")+"\n";
   texto+="OBS: "+(cfg.observacao?cfg.observacao.toUpperCase():"SEM NOVAS AVARIAS")+"\n\n";
   texto+="Bom plantão a todos! "+dataStr+" "+horaStr+"\n";
@@ -1510,8 +1510,8 @@ var CAMPOS=[
   { field:"ambulancia",    label:"Ambulância",    icon:"🚑" },
   { field:"placa",         label:"Placa",         icon:"🚗" },
   { field:"kmInicial",     label:"KM Inicial",    icon:"🛞", type:"number" },
-  { field:"O²Portatil",    label:"O₂ Portátil",   icon:"💨" },
-  { field:"O²Fixo",        label:"O₂ Fixo",       icon:"💨" },
+  { field:"o2Portatil",    label:"O₂ Portátil",   icon:"💨" },
+  { field:"o2Fixo",        label:"O₂ Fixo",       icon:"💨" },
   { field:"abastecimento", label:"Abastecimento", icon:"⛽" },
   { field:"crv",           label:"CRV",           icon:"📄" }
 ];
@@ -2030,7 +2030,7 @@ function handleCompartilharChecklist() {
     text += "UNIDADE: " + (state.config.unidade || "").toUpperCase() + "   PLANTÃO: " + plantaoSigla + "\n";
     text += "VTR: " + veiculoKey(state.config) + "\n";
     text += "CARTÃO: " + (state.checklist.cartao || "NÃO") + " CRV: " + (state.config.crv || "NÃO") + "\n";
-    text += "O² PORTÁTIL: " + formatPct(state.config.O²Portatil) + " FIXO: " + formatPct(state.config.O²Fixo) + "\n";
+    text += "O² PORTÁTIL: " + formatPct(state.config.o2Portatil) + " FIXO: " + formatPct(state.config.o2Fixo) + "\n";
     text += "-----------------------------------\n";
     
     text += "ABASTECIMENTO: " + (state.checklist.pagamento || "Não informado") + "\n";
@@ -2311,7 +2311,7 @@ function renderMensal(){
   $("paneMensal").innerHTML=
     '<section class="card" aria-label="Período do fechamento">'+
     '<h2 class="sec-title">📊 Fechamento Mensal</h2>'+
-    '<div class="periodO²">'+
+    '<div class="periodo2">'+
     '<div class="f-field"><label class="lbl-mini" for="pmMes">📅 Mês</label>'+
     '<select id="pmMes" class="sel-lg">'+MESES.map(function(m,i){
       return '<option value="'+(i+1)+'"'+((i+1)===state.mes?" selected":"")+'>'+m+'</option>';
