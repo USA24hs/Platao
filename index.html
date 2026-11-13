@@ -302,6 +302,10 @@ html[data-theme="dark"] .stat-value.em{color:#34d399}
   .chart{height:160px;}
   .bar-val{font-size:.55rem;}
   .hh-grid{padding:.55rem;gap:.4rem;}
+
+  /* ✅ AJUSTE NO MENU DE ABAS PARA NÃO SOBREPOR */
+  .tabs { height: 2.5rem; padding: 0.2rem; }
+  .tab-btn { font-size: 0.72rem; gap: 0.2rem; }
 }
 
 .vtr-table{width:100%;border-collapse:collapse;font-size:.78rem}
@@ -393,7 +397,6 @@ html[data-theme="dark"] #ovTurno .dlg-head h3{color:#fde047}
     <div class="hh-grid" id="cfgGrid"></div>
   </header>
 
-  <!-- ✅ ABA CHECK LIST COMO PADRÃO -->
   <div class="tabs" role="tablist" aria-label="Abas do sistema">
     <button class="tab-btn" id="tabPlantao" role="tab" aria-controls="panePlantao" aria-selected="false">📋 Plantão</button>
     <button class="tab-btn active" id="tabChecklist" role="tab" aria-controls="paneChecklist" aria-selected="true">🧰 Check List</button>
@@ -560,7 +563,7 @@ html[data-theme="dark"] #ovTurno .dlg-head h3{color:#fde047}
   <div id="paneMensal" class="tab-pane" role="tabpanel" aria-label="Painel mensal" hidden></div>
 </main>
 
-<footer class="app-footer">💾 Sistema de Deslocamento VTR v2.3 — dados salvos localmente neste dispositivo</footer>
+<footer class="app-footer">💾 Sistema de Deslocamento VTR v2.4 — dados salvos localmente neste dispositivo</footer>
 
 <div class="overlay" id="ovAlerta" hidden>
   <div class="modal" role="dialog" aria-modal="true" aria-labelledby="alertaTitle">
@@ -596,7 +599,7 @@ html[data-theme="dark"] #ovTurno .dlg-head h3{color:#fde047}
       <div class="dlg-icon">🌅</div>
       <div>
         <h3 id="turnoTitle">Fim de Plantão Detectado!</h3>
-        <p>O horário do plantão anterior já encerrou. Deseja atualizar os dados (KM, O₂, Plantão, etc.) para o novo plantão?</p>
+        <p>O horário do plantão anterior já encerrou. Deseja atualizar os dados (KM, O², Plantão, etc.) para o novo plantão?</p>
       </div>
     </div>
     <div class="dlg-actions">
@@ -1038,7 +1041,7 @@ function buildWhatsAppText(registros,cfg,now){
   texto+="CONDUTOR: "+cfg.condutor.toUpperCase()+"\n";
   texto+="PLANTÃO: "+plantaoSigla+" | "+cfg.unidade.toUpperCase()+"\n";
   texto+="VTR: "+cfg.ambulancia.toUpperCase()+" PLACA: "+cfg.placa.toUpperCase()+"\n";
-  texto+="O2 PORTÁTIL: "+formatPct(cfg.o2Portatil)+" FIXO: "+formatPct(cfg.o2Fixo)+"\n";
+  texto+="O² PORTÁTIL: "+formatPct(cfg.o2Portatil)+" FIXO: "+formatPct(cfg.o2Fixo)+"\n";
   texto+="ABASTECIMENTO: "+formatPct(cfg.abastecimento)+" CARTÃO: "+(cfg.cartao?cfg.cartao.toUpperCase():"SEM")+"\n";
   texto+="OBS: "+(cfg.observacao?cfg.observacao.toUpperCase():"SEM NOVAS AVARIAS")+"\n\n";
   texto+="Bom plantão a todos! "+dataStr+" "+horaStr+"\n";
@@ -1495,7 +1498,7 @@ var state={ registros:[], config:Object.assign({},DEFAULT_CONFIG), assinaturaImg
 var form={ data:"", hora:"", km:"", local:"" };
 var editingRecordId=null;
 var headerCollapsed=false;
-var tab="checklist"; // ✅ Inicia no checklist
+var tab="checklist";
 var alertaKm={ open:false, hora:"", km:0 };
 var pendenteTipo=null;
 var confirmExcluir={ open:false, id:"" };
@@ -1510,8 +1513,8 @@ var CAMPOS=[
   { field:"ambulancia",    label:"Ambulância",    icon:"🚑" },
   { field:"placa",         label:"Placa",         icon:"🚗" },
   { field:"kmInicial",     label:"KM Inicial",    icon:"🛞", type:"number" },
-  { field:"o2Portatil",    label:"O₂ Portátil",   icon:"💨" },
-  { field:"o2Fixo",        label:"O₂ Fixo",       icon:"💨" },
+  { field:"o2Portatil",    label:"O² Portátil",   icon:"💨" },
+  { field:"o2Fixo",        label:"O² Fixo",       icon:"💨" },
   { field:"abastecimento", label:"Abastecimento", icon:"⛽" },
   { field:"crv",           label:"CRV",           icon:"📄" }
 ];
@@ -2588,7 +2591,6 @@ function wireEvents(){
     $("btnTheme").textContent=now==="dark"?"☀️":"🌙";
   });
 
-  // ✅ LÓGICA DA SETA: Se estiver colapsado, expande e vai pro checklist. Se estiver aberto, apenas colapsa.
   $("btnCollapse").addEventListener("click",function(){
     if (headerCollapsed) {
       switchTab("checklist");
@@ -2703,7 +2705,6 @@ function switchTab(t){
   $("paneChecklist").hidden=(t!=="checklist");
   $("paneMensal").hidden=(t!=="mensal");
   
-  // ✅ Fecha o cabeçalho ao ir para Plantão ou Mensal, e Abre ao ir para Check List
   if (t === "plantao" || t === "mensal") {
     setCollapsed(true);
   } else if (t === "checklist") {
@@ -2748,7 +2749,6 @@ function init(){
   
   checkShiftUpdate();
 
-  // Garantir que a aba checklist está ativa visualmente
   switchTab("checklist");
 
   window.addEventListener("pagehide",function(){
