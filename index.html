@@ -86,7 +86,7 @@ main{flex:1;width:100%;max-width:768px;margin:0 auto;padding:8px 8px;display:fle
 
 .tabs{display:flex;gap:.25rem;background:var(--muted);border-radius:.75rem;padding:.25rem;height:2.75rem;box-shadow:inset 0 1px 2px rgba(0,0,0,.06)}
 .tab-btn{flex:1;border:none;background:transparent;border-radius:.55rem;font-size:.8rem;font-weight:700;color:var(--muted-foreground);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:.4rem;transition:all .2s}
-.tab-btn.active{background:var(--card);color:var(--foreground);box-shadow:0 2px 8px -2px rgba(0,0,0,.25)}
+.tab-btn.active{background:#fde047;color:#000;box-shadow:0 2px 8px -2px rgba(0,0,0,.25)}
 .tab-pane{display:flex;flex-direction:column;gap:8px}
 
 .card{background:var(--card);border:1px solid var(--border);border-radius:1rem;padding:1rem;box-shadow:0 1px 3px rgba(2,8,20,.06)}
@@ -114,7 +114,6 @@ html[data-theme="dark"] .f-label{color:#34d399}
 .f-input:focus{box-shadow:0 0 0 2px #10b981}
 html[data-theme="dark"] .f-input{border-color:rgba(6,78,59,.65);background:#0f172a;color:#f1f5f9}
 
-/* ✅ Campo Plantão (Fundo cinza e bloqueado) */
 .f-input.readonly-field{background-color:#e2e8f0;color:#475569;border-color:#cbd5e1;cursor:not-allowed}
 html[data-theme="dark"] .f-input.readonly-field{background-color:#1e293b;color:#94a3b8;border-color:#334155}
 
@@ -139,7 +138,6 @@ html[data-theme="dark"] .f-input.base-ok{border-color:#10b981;background:rgba(2,
 .btn-gray{height:2.75rem;background:var(--secondary);color:var(--secondary-foreground);font-size:.85rem}
 .btn-whatsapp{height:2rem;border-radius:999px;padding:0 .85rem;font-size:.72rem;font-weight:800;color:#fff;background:#25D366;box-shadow:0 3px 8px -2px rgba(37,211,102,.5)}
 .btn-whatsapp:hover{filter:brightness(.9)}
-/* ✅ Botão do Telegram Adicionado */
 .btn-telegram{height:2rem;border-radius:999px;padding:0 .85rem;font-size:.72rem;font-weight:800;color:#fff;background:#0088cc;box-shadow:0 3px 8px -2px rgba(0,136,204,.5)}
 .btn-telegram:hover{filter:brightness(.9)}
 .btn-ghost-sm{height:1.75rem;border:none;background:transparent;color:var(--muted-foreground);font-size:.7rem;font-weight:700;border-radius:.5rem;padding:0 .5rem;cursor:pointer;display:inline-flex;align-items:center;gap:.25rem}
@@ -157,7 +155,6 @@ html[data-theme="dark"] .mini-btn.edit{background:rgba(12,74,110,.6);color:#7dd3
 .mini-btn.del{background:#fee2e2;color:#b91c1c}
 html[data-theme="dark"] .mini-btn.del{background:rgba(127,29,29,.55);color:#fca5a5}
 .mini-btn.locked{background:var(--muted);color:var(--muted-foreground);cursor:not-allowed}
-/* ✅ Botão de Compartilhar Individual */
 .mini-btn.share{background:#f0fdf4;color:#15803d}
 html[data-theme="dark"] .mini-btn.share{background:rgba(21,128,61,.5);color:#86efac}
 
@@ -181,7 +178,6 @@ html[data-theme="dark"] .tag-fim{color:#f87171}
 .km-em{color:#059669}
 html[data-theme="dark"] .km-em{color:#34d399}
 
-/* ✅ ESTILO PARA O BOX DE SUGESTÕES CUSTOMIZADO */
 .sugestoes-box {
   position: absolute;
   top: calc(100% + 4px);
@@ -249,7 +245,7 @@ html[data-theme="dark"] .stat-value.em{color:#34d399}
 .sol-mes li:last-child{border-bottom:none}
 .sol-mes li strong{color:var(--primary);flex-shrink:0}
 
-.periodo2{display:grid;grid-template-columns:repeat(2,1fr);gap:.75rem;max-width:384px}
+.periodO²{display:grid;grid-template-columns:repeat(2,1fr);gap:.75rem;max-width:384px}
 .chart-wrap{display:flex;flex-direction:column}
 .chart-sub{margin:0 0 .75rem;font-size:.72rem;font-weight:600;color:var(--muted-foreground)}
 .chart{display:flex;align-items:flex-end;gap:6px;height:200px;border-bottom:1px solid var(--border);padding:18px 4px 0}
@@ -269,7 +265,6 @@ html[data-theme="dark"] .stat-value.em{color:#34d399}
   .desk{display:inline}
 }
 
-/* ✅ AJUSTES ESPECÍFICOS PARA CELULAR (MUITO MAIS COMPACTO) */
 @media (max-width: 639px){
   .hh-top { flex-wrap: nowrap; padding: 0.4rem 0.6rem; gap: 0.2rem; }
   .hh-title { font-size: 0.85rem; gap: 0.2rem; white-space: nowrap; }
@@ -340,7 +335,6 @@ html[data-theme="dark"] .dlg-box{border-color:rgba(127,29,29,.6);background:rgba
 .dlg-actions{display:flex;flex-direction:column;gap:.5rem}
 .dlg-actions .btn{width:100%}
 
-/* ✅ ESTILO DO MODAL DE TROCA DE TURNO */
 #ovTurno .dlg-icon{background:#fef08a;color:#854d0e}
 html[data-theme="dark"] #ovTurno .dlg-icon{background:rgba(113,63,18,.6);color:#fde047}
 #ovTurno .dlg-head h3{color:#854d0e}
@@ -365,6 +359,19 @@ html[data-theme="dark"] #ovTurno .dlg-head h3{color:#fde047}
 @keyframes toastIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
 @keyframes fadeIn{from{opacity:0}to{opacity:1}}
 @keyframes modalIn{from{opacity:0;transform:scale(.95) translateY(8px)}to{opacity:1;transform:none}}
+
+.check-section { margin-bottom: 15px; }
+.check-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px dashed var(--border); gap: 10px; }
+.check-row:last-child { border-bottom: none; }
+.check-label { font-size: 0.8rem; font-weight: 600; text-transform: uppercase; flex: 1; }
+.check-options { display: flex; gap: 4px; flex-shrink: 0; }
+.check-opt { position: relative; }
+.check-opt input { position: absolute; opacity: 0; width: 0; height: 0; }
+.check-opt label { display: inline-block; padding: 6px 10px; font-size: 0.65rem; font-weight: 800; border-radius: 0.5rem; background: var(--muted); border: 1px solid var(--border); color: var(--muted-foreground); cursor: pointer; transition: all 0.2s; user-select: none; }
+.check-opt input:checked + label { background: var(--primary); border-color: var(--primary); color: #fff; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
+.check-opt input[value="BOM"]:checked + label { background: #059669; border-color: #059669; }
+.check-opt input[value="RUIM"]:checked + label { background: #d97706; border-color: #d97706; }
+.check-opt input[value="N TEM"]:checked + label { background: #dc2626; border-color: #dc2626; }
 </style>
 </head>
 <body>
@@ -386,13 +393,14 @@ html[data-theme="dark"] #ovTurno .dlg-head h3{color:#fde047}
     <div class="hh-grid" id="cfgGrid"></div>
   </header>
 
+  <!-- ✅ ABA CHECK LIST COMO PADRÃO -->
   <div class="tabs" role="tablist" aria-label="Abas do sistema">
-    <button class="tab-btn active" id="tabPlantao" role="tab" aria-controls="panePlantao" aria-selected="true">📋 Plantão</button>
-    <button class="tab-btn" id="tabMensal" role="tab" aria-controls="paneMensal" aria-selected="false">📊 Painel Mensal</button>
+    <button class="tab-btn" id="tabPlantao" role="tab" aria-controls="panePlantao" aria-selected="false">📋 Plantão</button>
+    <button class="tab-btn active" id="tabChecklist" role="tab" aria-controls="paneChecklist" aria-selected="true">🧰 Check List</button>
+    <button class="tab-btn" id="tabMensal" role="tab" aria-controls="paneMensal" aria-selected="false">📊 Mensal</button>
   </div>
 
-  <div id="panePlantao" class="tab-pane" role="tabpanel" aria-label="Plantão">
-
+  <div id="panePlantao" class="tab-pane" role="tabpanel" aria-label="Plantão" hidden>
     <section class="form-section" aria-label="Registrar deslocamento">
       <div class="fs-head">
         <h2 class="fs-title" id="fsTitle">➕ Novo Deslocamento</h2>
@@ -413,13 +421,11 @@ html[data-theme="dark"] #ovTurno .dlg-head h3{color:#fde047}
           <input class="f-input no-spinner" id="fKm" type="number" step="0.1" inputmode="decimal" placeholder="0.0">
         </div>
         
-        <!-- ✅ CAMPO PLANTÃO AO LADO DO KM -->
         <div class="f-field">
           <label class="f-label" for="fPlantao">📋 Plantão</label>
           <input class="f-input readonly-field" id="fPlantao" type="text" readonly tabindex="-1">
         </div>
 
-        <!-- ✅ CAMPO DE DESTINO COM O BOX DE SUGESTÕES CUSTOMIZADO -->
         <div class="f-field full" style="position: relative;">
           <label class="f-label" for="fLocal">📍 Local / Destino (Origem → Destino)</label>
           <input class="f-input field-upper" id="fLocal" type="text" placeholder="DIGITE O DESTINO AQUI" autocomplete="off">
@@ -436,7 +442,6 @@ html[data-theme="dark"] #ovTurno .dlg-head h3{color:#fde047}
     <section class="card" aria-label="Histórico de ocorrências">
       <div class="card-head-row">
         <h2 class="sec-title">📅 Histórico de Ocorrências</h2>
-        <!-- ✅ BOTÕES DE COMPARTILHAMENTO ATUALIZADOS -->
         <div style="display:flex; gap:0.4rem;">
           <button class="btn btn-whatsapp" onclick="handleCompartilhar('whatsapp')" aria-label="Compartilhar relatório no WhatsApp" title="Compartilhar no WhatsApp">💬 Enviar</button>
           <button class="btn btn-telegram" onclick="handleCompartilhar('telegram')" aria-label="Compartilhar relatório no Telegram" title="Compartilhar no Telegram">✈️ Enviar</button>
@@ -474,6 +479,84 @@ html[data-theme="dark"] #ovTurno .dlg-head h3{color:#fde047}
     <input type="file" id="restoreInput" accept=".json,application/json" hidden>
   </div>
 
+  <div id="paneChecklist" class="tab-pane" role="tabpanel" aria-label="Check List">
+    <section class="card" aria-label="Dados de Abastecimento">
+      <h2 class="sec-title">⛽ Abastecimento e Nível</h2>
+      <div class="form-grid" style="grid-template-columns: 1fr 1fr;">
+        <div class="f-field">
+          <label class="f-label" for="ckData">Data Abast.</label>
+          <input class="f-input" id="ckData" type="date" style="height:2.5rem">
+        </div>
+        <div class="f-field">
+          <label class="f-label" for="ckKm">KM Abast.</label>
+          <input class="f-input no-spinner" id="ckKm" type="number" step="0.1" placeholder="0.0" style="height:2.5rem">
+        </div>
+        <div class="f-field">
+          <label class="f-label" for="ckLitros">Litros</label>
+          <input class="f-input no-spinner" id="ckLitros" type="number" step="0.1" placeholder="0.0" style="height:2.5rem">
+        </div>
+        <div class="f-field">
+          <label class="f-label" for="ckNivel">Nível Combustível</label>
+          <select class="f-input" id="ckNivel" style="height:2.5rem">
+            <option value="">Selecione...</option>
+            <option value="100% (Cheio)">⛽ 100% (Cheio)</option>
+            <option value="95%">⛽ 95%</option>
+            <option value="90%">⛽ 90%</option>
+            <option value="85%">⛽ 85%</option>
+            <option value="80%">⛽ 80%</option>
+            <option value="75% (3/4)">⛽ 75% (3/4)</option>
+            <option value="70%">⛽ 70%</option>
+            <option value="65%">⛽ 65%</option>
+            <option value="60%">⛽ 60%</option>
+            <option value="55%">⛽ 55%</option>
+            <option value="50% (1/2)">⛽ 50% (1/2)</option>
+            <option value="45%">⛽ 45%</option>
+            <option value="40%">⛽ 40%</option>
+            <option value="35%">⛽ 35%</option>
+            <option value="30%">⛽ 30%</option>
+            <option value="25% (1/4)">⛽ 25% (1/4)</option>
+            <option value="20%">⛽ 20%</option>
+            <option value="15%">⛽ 15%</option>
+            <option value="10%">⛽ 10%</option>
+            <option value="E - Reserva">⛽ E - Reserva</option>
+          </select>
+        </div>
+        <div class="f-field">
+          <label class="f-label" for="ckPagamento">Forma de Abastecimento</label>
+          <select class="f-input" id="ckPagamento" style="height:2.5rem">
+            <option value="">Selecione...</option>
+            <option value="Cartão">Cartão</option>
+            <option value="Nota">Nota</option>
+          </select>
+        </div>
+        <div class="f-field">
+          <label class="f-label" for="ckCartao">Cartão</label>
+          <select class="f-input" id="ckCartao" style="height:2.5rem">
+            <option value="SIM">SIM</option>
+            <option value="NÃO">NÃO</option>
+          </select>
+        </div>
+      </div>
+    </section>
+
+    <section class="card" aria-label="Itens do Checklist">
+      <div class="card-head-row">
+        <h2 class="sec-title">🔍 Itens de Verificação</h2>
+        <button class="btn-ghost-sm" onclick="limparChecklist()" title="Limpar todas as marcações">🧽 Limpar</button>
+      </div>
+      <div id="checkListContent"></div>
+    </section>
+
+    <div class="export-grid" style="grid-template-columns: 1fr 1fr;">
+      <button class="btn" style="background:#25D366; color:#fff; height:3rem; font-size:0.85rem; box-shadow:0 6px 16px -6px rgba(37,211,102,.5);" onclick="handleCompartilharChecklist()">💬 Enviar WhatsApp</button>
+      <button class="btn btn-pdf" onclick="gerarPdfChecklist()" style="height:3rem;">📄 Gerar PDF</button>
+    </div>
+    
+    <div style="margin-top: 10px;">
+      <button class="btn btn-chegada" style="width:100%; height:3rem; font-size:0.95rem;" onclick="concluirChecklist()">✅ Concluir Check List e Ir para Plantão</button>
+    </div>
+  </div>
+
   <div id="paneMensal" class="tab-pane" role="tabpanel" aria-label="Painel mensal" hidden></div>
 </main>
 
@@ -507,7 +590,6 @@ html[data-theme="dark"] #ovTurno .dlg-head h3{color:#fde047}
   </div>
 </div>
 
-<!-- ✅ NOVO MODAL DE FIM DE PLANTÃO -->
 <div class="overlay" id="ovTurno" hidden>
   <div class="modal" role="dialog" aria-modal="true" aria-labelledby="turnoTitle">
     <div class="dlg-head">
@@ -541,12 +623,27 @@ var DEFAULT_CONFIG = {
   plantao: "SD 12hs",
   kmInicial: "",
   cartao: "",
-  o2Portatil: "125%",
-  o2Fixo: "150%",
+  crv: "SIM",
+  O²Portatil: "125%",
+  O²Fixo: "150%",
   abastecimento: "75%",
   nomeLegivel: "Anderson Martins",
   observacao: ""
 };
+
+var CHECKLIST_ITENS_ESQ = [
+  "ÓLEO DO MOTOR", "ÓLEO DIREÇÃO HIDRÁULICA", "ÓLEO DE FREIO", "DOCUMENTO DO VEÍCULO (CRVL)",
+  "CHAVE DE BOCA", "FAROL BAIXO", "FAROL ALTO", "LIMPADOR DE PARA BRISA", "SINALERAS",
+  "RETROVISORES", "EXTINTOR DE INCÊNDIO", "PNEUS", "PNEU ESTEPE", "LATARIA", "BUZINA",
+  "FREIO DE MÃO", "BANCOS", "ESCADA PARA MACA", "MACACO", "CAPA PARA CHUVA"
+];
+var CHECKLIST_ITENS_DIR = [
+  "CHAVE DE RODAS", "TRIANGULO", "AR CONDICIONADO", "RÁDIO DE COMUNICAÇÃO", "GIRO FLEX",
+  "SIRENE", "LUZES INTERNAS", "LUZ DE FREIO", "LUZ DE EMBARQUE", "SIRENE DE RÉ", "MACA",
+  "CADEIRA DE RODAS", "CONES", "CILINDRO DE OXIGÊNIO PORTATIL", "CILINDRO DE AR COMPRIMIDO",
+  "CILINDRO DE OXIGÊNIO FIXO", "CABO DE FORÇA", "PRANCHA", "LIMPEZA INTERNA", "LIMPEZA EXTERNA"
+];
+var TODOS_ITENS = CHECKLIST_ITENS_ESQ.concat(CHECKLIST_ITENS_DIR);
 
 function nomeMes(m){ return MESES[m-1] || ""; }
 function diasNoMes(m,a){ return new Date(a, m, 0).getDate(); }
@@ -591,8 +688,6 @@ function isRecordDeletable(dataStr,shiftStr){
     return new Date().getTime() < endTime.getTime();
   }catch(e){ return true; }
 }
-
-// ✅ NOVA FUNÇÃO: CALCULA O FIM DO PLANTÃO
 function getShiftEndTime(dateStr, shiftStr) {
   if (!dateStr) return null;
   try {
@@ -608,8 +703,6 @@ function filterByMonth(registros,mes,ano){
   var prefix = ano+"-"+pad(mes)+"-";
   return registros.filter(function(r){ return r.data && r.data.indexOf(prefix)===0; });
 }
-
-// ✅ NOVA FUNÇÃO QUE FILTRA A OCORRÊNCIA INTEIRA SE ELA TIVER INÍCIO NO MÊS
 function getOcorrenciasDoMes(registros, mes, ano) {
   var prefix = ano + "-" + pad(mes) + "-";
   var ocorrenciaIds = new Set();
@@ -759,10 +852,7 @@ function prepararFormulario(registros,cfg,ocorrenciaId,mes,ano){
   return { data:data, hora:horaAtual(), km:kmRef||"", local:local };
 }
 
-// ✅ VARIÁVEL GLOBAL PARA GUARDAR AS SUGESTÕES
 var sugestoesLocais = [];
-
-// ✅ ATUALIZA A LISTA DE SUGESTÕES (SEM DATALIST)
 function atualizarSugestoesDestino(registros, ocorrenciaId){
   var counts={}; var ordem=[];
   function addLocal(loc){
@@ -793,37 +883,31 @@ function atualizarSugestoesDestino(registros, ocorrenciaId){
   sugestoesLocais = ordem.slice(0,40);
 }
 
-// ✅ FUNÇÃO PARA MOSTRAR O BOX CUSTOMIZADO DE SUGESTÕES
 function mostrarSugestoes() {
   var el = $("fLocal");
   var box = $("sugestoesDestinoBox");
   var val = el.value;
   
-  // Pega apenas o que foi digitado após a seta
   var arrowPos = val.indexOf("→");
   var textoDigitado = arrowPos !== -1 ? val.substring(arrowPos + 1).trim().toUpperCase() : val.trim().toUpperCase();
 
-  // Filtra os locais
   var filtrados = sugestoesLocais.filter(function(loc) {
     return loc.indexOf(textoDigitado) !== -1;
   });
 
-  // Se não houver nenhum, esconde
   if (filtrados.length === 0) {
     box.style.display = "none";
     return;
   }
 
-  // Monta o box
   box.innerHTML = filtrados.map(function(loc) {
     return '<div data-loc="' + escapeHtml(loc) + '">' + escapeHtml(loc) + '</div>';
   }).join("");
   box.style.display = "block";
 
-  // Adiciona evento de clique nos itens
   Array.from(box.children).forEach(function(child) {
     child.onmousedown = function(e) {
-      e.preventDefault(); // Evita perder o foco do input antes do click
+      e.preventDefault(); 
       var locSelecionado = this.getAttribute("data-loc");
       var posArrow = el.value.indexOf("→");
       if (posArrow !== -1) {
@@ -834,7 +918,6 @@ function mostrarSugestoes() {
       form.local = el.value;
       box.style.display = "none";
       el.focus();
-      // Coloca o cursor no final do texto
       el.setSelectionRange(el.value.length, el.value.length);
     };
   });
@@ -885,27 +968,30 @@ function migrarLegado(raw){
       plantao: d.plantao||DEFAULT_CONFIG.plantao,
       kmInicial: d.kmInicial||"",
       cartao: d.cartao||DEFAULT_CONFIG.cartao,
-      o2Portatil: d.o2Portatil||DEFAULT_CONFIG.o2Portatil,
-      o2Fixo: d.o2Fixo||DEFAULT_CONFIG.o2Fixo,
+      crv: d.crv||DEFAULT_CONFIG.crv,
+      O²Portatil: d.O²Portatil||DEFAULT_CONFIG.O²Portatil,
+      O²Fixo: d.O²Fixo||DEFAULT_CONFIG.O²Fixo,
       abastecimento: d.abastecimento||DEFAULT_CONFIG.abastecimento,
       nomeLegivel: d.nomeLegivel||d.condutor||DEFAULT_CONFIG.nomeLegivel,
       observacao: d.observacao||""
     };
     return {
-      version:2, registros:registros, config:config,
+      version:3, registros:registros, config:config,
       assinaturaImg: (d.assinaturaImg && d.assinaturaImg!=="data:,") ? d.assinaturaImg : "",
       currentOcorrenciaId: d.currentOcorrenciaId || String(Date.now()),
       mes: d.mes || (new Date().getMonth()+1),
-      ano: d.ano || new Date().getFullYear()
+      ano: d.ano || new Date().getFullYear(),
+      checklist: {}
     };
   }catch(e){ return null; }
 }
 function defaultStore(){
   var agora=new Date();
   return {
-    version:2, registros:[], config:Object.assign({},DEFAULT_CONFIG),
+    version:3, registros:[], config:Object.assign({},DEFAULT_CONFIG),
     assinaturaImg:"", currentOcorrenciaId:String(Date.now()),
-    mes:agora.getMonth()+1, ano:agora.getFullYear()
+    mes:agora.getMonth()+1, ano:agora.getFullYear(),
+    checklist: {}
   };
 }
 function loadStore(){
@@ -914,13 +1000,14 @@ function loadStore(){
     if(raw){
       var d=JSON.parse(raw);
       return {
-        version:2,
+        version:3,
         registros: Array.isArray(d.registros)?d.registros:[],
         config: Object.assign({},DEFAULT_CONFIG,d.config||{}),
         assinaturaImg: d.assinaturaImg||"",
         currentOcorrenciaId: d.currentOcorrenciaId||String(Date.now()),
         mes: d.mes||(new Date().getMonth()+1),
-        ano: d.ano||new Date().getFullYear()
+        ano: d.ano||new Date().getFullYear(),
+        checklist: d.checklist||{}
       };
     }
     var legacy=localStorage.getItem(LEGACY_KEY);
@@ -939,7 +1026,6 @@ function saveStore(store){
   catch(e){}
 }
 
-// ✅ FUNÇÃO DE COMPARTILHAMENTO GERAL ATUALIZADA
 function buildWhatsAppText(registros,cfg,now){
   now=now||new Date();
   var isNoite=(cfg.plantao||"").indexOf("SN")!==-1;
@@ -952,8 +1038,7 @@ function buildWhatsAppText(registros,cfg,now){
   texto+="CONDUTOR: "+cfg.condutor.toUpperCase()+"\n";
   texto+="PLANTÃO: "+plantaoSigla+" | "+cfg.unidade.toUpperCase()+"\n";
   texto+="VTR: "+cfg.ambulancia.toUpperCase()+" PLACA: "+cfg.placa.toUpperCase()+"\n";
-  texto+="O2 PORTÁTIL: "+formatPct(cfg.o2Portatil)+" FIXO: "+formatPct(cfg.o2Fixo)+"\n";
-  // Abastecimento junto com o Cartão
+  texto+="O² PORTÁTIL: "+formatPct(cfg.O²Portatil)+" FIXO: "+formatPct(cfg.O²Fixo)+"\n";
   texto+="ABASTECIMENTO: "+formatPct(cfg.abastecimento)+" CARTÃO: "+(cfg.cartao?cfg.cartao.toUpperCase():"SEM")+"\n";
   texto+="OBS: "+(cfg.observacao?cfg.observacao.toUpperCase():"SEM NOVAS AVARIAS")+"\n\n";
   texto+="Bom plantão a todos! "+dataStr+" "+horaStr+"\n";
@@ -988,7 +1073,6 @@ function buildWhatsAppText(registros,cfg,now){
   return texto;
 }
 
-// ✅ MODELO ATUALIZADO — RELATÓRIO INDIVIDUAL (WhatsApp / Share)
 function buildSingleOcorrenciaText(grupo, cfg) {
   var texto = "RELATÓRIO DE DESLOCAMENTO (INDIVIDUAL)\n\n";
   texto += "CONDUTOR: " + ((grupo.condutor || cfg.condutor || "").toUpperCase()) + "\n";
@@ -1006,7 +1090,6 @@ function buildSingleOcorrenciaText(grupo, cfg) {
   return texto;
 }
 
-// ✅ NOVA FUNÇÃO: COMPARTILHAR APENAS UMA OCORRÊNCIA
 function handleCompartilharOcorrencia(ocorrenciaId) {
   try {
     var grupos = agruparPorOcorrencia(state.registros);
@@ -1015,16 +1098,12 @@ function handleCompartilharOcorrencia(ocorrenciaId) {
     
     var texto = buildSingleOcorrenciaText(grupo, state.config);
     
-    // Usa a API nativa de compartilhamento se disponível (ótimo para celular)
     if (navigator.share) {
       navigator.share({
         title: 'Deslocamento VTR',
         text: texto
-      }).catch(function() {
-        // Se o usuário cancelar, não faz nada. Se der erro, tenta copiar.
-      });
+      }).catch(function() {});
     } else {
-      // Fallback para copiar e colar (desktop ou navegadores antigos)
       navigator.clipboard.writeText(texto).then(function() {
         toast.success("📋 Dados da ocorrência copiados!");
       }).catch(function() {
@@ -1086,61 +1165,49 @@ var REPORT_BASE_CSS =
 " .rodape { margin-top:26px; border-top:2px solid #0e5a77; padding-top:16px; display:flex; justify-content:space-between; align-items:center; gap:20px; }"+
 " .ass { display:flex; align-items:center; gap:14px; font-size:9pt; }"+
 " .ass img { height:56px; border:1px solid #cfd9e2; border-radius:6px; background:#fff; }"+
-" @media print { body { padding:8px 4px; } .no-print { display:none; } }";
+" @media print { body { padding:8px 4px; } .no-print { display:none; } }"+
+" table.check { width:100%; border-collapse:collapse; font-size:8pt; margin-bottom:14px; }"+
+" table.check th { background:#0e5a77; color:#fff; padding:6px 8px; border:1px solid #0e5a77; text-align:center; }"+
+" table.check td { border:1px solid #cfd9e2; padding:6px 8px; text-align:center; }"+
+" table.check td.item { text-align:left; font-weight:600; }"+
+" .status-bom { color:#15803d; font-weight:800; }"+
+" .status-ruim { color:#b45309; font-weight:800; }"+
+" .status-ntem { color:#dc2626; font-weight:800; }";
 
-function buildRelatorioPlantaoHTML(registros,cfg,assinaturaImg,mes,ano){
-  var grupos=agruparPorOcorrencia(registros);
-  var resumo=computeResumo(registros);
-  var fichasHTML="";
-  if(grupos.length===0){
-    fichasHTML='<div class="obs" style="text-align:center;font-weight:700;color:#5a6b78;">PLANTÃO SEM OCORRÊNCIAS</div>';
-  }else{
-    grupos.forEach(function(g){
-      var dataInicio=formatDateBR(g.data);
-      var dataFim=formatDateBR(g.dataFim);
-      var tituloData = dataInicio===dataFim ? ("DATA: "+dataInicio) : ("INÍCIO: "+dataInicio+" • FIM: "+dataFim);
-      var linhas=g.timeline.map(function(l){
-        var cls = l.tag==="INICIO"?"inicio" : l.tag==="SAÍDA"?"saida" : l.tag==="FIM"?"fim" : "chegada";
-        return '<div class="linha"><span class="tag '+cls+'">'+l.tag+':</span><span class="loc">'+escapeHtml(l.local)+'</span><span class="hora">H: '+l.hora+'</span><span class="km">KM: '+l.km+'</span></div>';
-      }).join("");
-      fichasHTML+='<div class="ficha">'+
-        '<div class="ficha-head"><span>'+tituloData+' | '+escapeHtml(g.shift)+'</span><small>'+escapeHtml(g.veiculo+((g.condutor&&cfg.condutor&&g.condutor!==cfg.condutor.toUpperCase())?(" • "+g.condutor):""))+'</small></div>'+
-        '<div class="ficha-body">'+linhas+'</div>'+
-        '<div class="ficha-foot"><span>'+tituloData+'</span><span class="km">KM RODADO: '+g.kmRodado.toFixed(1)+'</span></div>'+
-        '</div>';
-    });
+function buildChecklistHTML(checkData) {
+  var esqRows = "";
+  var dirRows = "";
+  
+  function renderRow(item) {
+    var status = checkData.itens[item] || "-";
+    var cls = status==="BOM" ? "status-bom" : status==="RUIM" ? "status-ruim" : status==="N TEM" ? "status-ntem" : "";
+    return `<tr><td class="item">${item}</td><td class="${cls}">${status}</td></tr>`;
   }
-  var solicitantesHTML = resumo.solicitantes.length
-    ? resumo.solicitantes.map(function(s){
-        return '<div class="linha" style="border:none;"><span class="loc">'+escapeHtml(s.local)+'</span><span class="km" style="width:auto;">'+s.total+'</span></div>';
-      }).join("")
-    : '<div style="color:#5a6b78;font-size:8.5pt;">Nenhuma</div>';
-  var obsHTML = cfg.observacao ? '<div class="obs"><strong>OBSERVAÇÕES:</strong><br>'+escapeHtml(cfg.observacao.toUpperCase())+'</div>' : "";
-  var assinatura = (assinaturaImg && assinaturaImg.length>40)
-    ? '<img src="'+assinaturaImg+'" alt="Assinatura do condutor" />'
-    : '<img src="data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'160\' height=\'40\'><rect width=\'100%\' height=\'100%\' fill=\'white\'/><text x=\'50%\' y=\'52%\' font-size=\'10\' fill=\'%2394a3b8\' text-anchor=\'middle\'>sem assinatura</text></svg>" alt="Sem assinatura" />';
 
-  return '<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><title>Relatório de Deslocamento</title>'+
+  CHECKLIST_ITENS_ESQ.forEach(function(it) { esqRows += renderRow(it); });
+  CHECKLIST_ITENS_DIR.forEach(function(it) { dirRows += renderRow(it); });
+
+  return '<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><title>Check List VTR</title>'+
     '<style>'+REPORT_BASE_CSS+'</style></head><body><div class="container">'+
-    '<div class="titulo">Relatório de Deslocamento <span>VTR</span></div>'+
-    '<div class="sub">Controle de Frota • '+nomeMes(mes)+' / '+ano+' • '+escapeHtml(cfg.unidade.toUpperCase())+'</div>'+
+    '<div class="titulo">Check List de VTR <span>Ambulância</span></div>'+
+    '<div class="sub">Controle de Frota • '+escapeHtml(checkData.unidade.toUpperCase())+' • gerado em '+dataHoraAgoraBR()+'</div>'+
     '<table class="info">'+
-    '<tr><td class="k">Condutor</td><td>'+escapeHtml(cfg.condutor.toUpperCase())+'</td><td class="k">Plantão</td><td>'+escapeHtml(cfg.plantao.toUpperCase())+'</td></tr>'+
-    '<tr><td class="k">Ambulância</td><td>'+escapeHtml(cfg.ambulancia.toUpperCase())+'</td><td class="k">Placa</td><td>'+escapeHtml(cfg.placa.toUpperCase())+'</td></tr>'+
-    '<tr><td class="k">KM Inicial</td><td>'+escapeHtml(cfg.kmInicial||"-")+'</td><td class="k">Base</td><td>'+escapeHtml(cfg.unidade.toUpperCase())+'</td></tr>'+
-    '<tr><td class="k">O2 Portátil</td><td>'+escapeHtml(formatPct(cfg.o2Portatil))+'</td><td class="k">O2 Fixo</td><td>'+escapeHtml(formatPct(cfg.o2Fixo))+'</td></tr>'+
-    '<tr><td class="k">Abastecim.</td><td>'+escapeHtml(formatPct(cfg.abastecimento))+'</td><td class="k">Cartão</td><td>'+escapeHtml(cfg.cartao||"-")+'</td></tr>'+
-    '<tr><td class="k">Gerado em</td><td colspan="3">'+dataHoraAgoraBR()+'</td></tr>'+
+    '<tr><td class="k">Condutor</td><td>'+escapeHtml(checkData.condutor.toUpperCase())+'</td><td class="k">VTR</td><td>'+escapeHtml(checkData.veiculo)+'</td></tr>'+
+    '<tr><td class="k">Cartão</td><td>'+escapeHtml(checkData.cartao||"-")+'</td><td class="k">CRV</td><td>'+escapeHtml(checkData.crv||"-")+'</td></tr>'+
+    '<tr><td class="k">Data Abast.</td><td>'+formatDateBR(checkData.dataAbast)+'</td><td class="k">KM Abast.</td><td>'+escapeHtml(checkData.kmAbast||"-")+'</td></tr>'+
+    '<tr><td class="k">Litros</td><td>'+escapeHtml(checkData.litros||"-")+'</td><td class="k">Forma Pagto.</td><td>'+escapeHtml(checkData.pagamento||"-")+'</td></tr>'+
+    '<tr><td class="k">Nível Comb.</td><td>'+escapeHtml(checkData.nivelCombustivel||"-")+'</td><td class="k">Data</td><td>'+dataHoraAgoraBR()+'</td></tr>'+
     '</table>'+
-    '<div class="box"><h3>Resumo do Plantão</h3><div class="stats">'+
-    '<div><span>Total de Ocorrências</span><strong>'+grupos.length+'</strong></div>'+
-    '<div><span>KM Total Rodado</span><strong>'+resumo.totalKm.toFixed(1)+'</strong></div>'+
-    '</div><div style="margin-top:10px; font-size:8.5pt; font-weight:700; color:#0e5a77; text-transform:uppercase; letter-spacing:0.5px;">Unidades Solicitantes</div>'+
-    solicitantesHTML+'</div>'+
-    fichasHTML+obsHTML+
-    '<div class="rodape"><div class="ass"><span>Assinatura:</span>'+assinatura+'</div>'+
-    '<div style="text-align:right;"><strong>Condutor:</strong> '+escapeHtml(cfg.nomeLegivel.toUpperCase())+'</div></div>'+
-    '</div></body></html>';
+    '<div class="box">'+
+    '<table class="check"><tr><th style="width:40%">ITEM (LADO ESQ)</th><th style="width:10%">STATUS</th><th style="width:40%">ITEM (LADO DIR)</th><th style="width:10%">STATUS</th></tr>'+
+    '<tr><td style="padding:0;border:none;"><table style="width:100%">'+esqRows+'</table></td>'+
+    '<td style="padding:0;border:none;"><table style="width:100%">'+dirRows+'</table></td></tr>'+
+    '</table>'+
+    '</div>'+
+    (checkData.observacao ? '<div class="obs"><strong>OBSERVAÇÕES:</strong><br>'+escapeHtml(checkData.observacao.toUpperCase())+'</div>' : "")+
+    '<div class="rodape">'+
+    '<div class="ass"><span>Assinatura do Condutor:</span><div style="border-bottom:1px solid #000;width:200px;"></div></div>'+
+    '</div></div></body></html>';
 }
 
 function computeResumoMensal(registros,mes,ano,cfg){
@@ -1187,13 +1254,7 @@ function computeResumoMensal(registros,mes,ano,cfg){
     var v=vtrMap[k];
     var ini = (v.kmMin !== Infinity) ? v.kmMin : 0;
     var fim = (v.kmMax !== -Infinity) ? v.kmMax : ini;
-    return {
-      veiculo:k,
-      ocorrencias:v.ocorrencias,
-      kmInicial:ini,
-      kmFinal:fim,
-      totalKm:Math.max(0, fim - ini)
-    };
+    return { veiculo:k, ocorrencias:v.ocorrencias, kmInicial:ini, kmFinal:fim, totalKm:Math.max(0, fim - ini) };
   });
   vtrs.sort(function(a,b){ return b.totalKm-a.totalKm; });
 
@@ -1430,11 +1491,11 @@ function exportarFechamentoXLSX(rm,cfg,mes,ano){
 
 function $(id){ return document.getElementById(id); }
 
-var state={ registros:[], config:Object.assign({},DEFAULT_CONFIG), assinaturaImg:"", currentOcorrenciaId:"", mes:1, ano:2026 };
+var state={ registros:[], config:Object.assign({},DEFAULT_CONFIG), assinaturaImg:"", currentOcorrenciaId:"", mes:1, ano:2026, checklist:{} };
 var form={ data:"", hora:"", km:"", local:"" };
 var editingRecordId=null;
 var headerCollapsed=false;
-var tab="plantao";
+var tab="checklist"; // ✅ Inicia no checklist
 var alertaKm={ open:false, hora:"", km:0 };
 var pendenteTipo=null;
 var confirmExcluir={ open:false, id:"" };
@@ -1449,10 +1510,10 @@ var CAMPOS=[
   { field:"ambulancia",    label:"Ambulância",    icon:"🚑" },
   { field:"placa",         label:"Placa",         icon:"🚗" },
   { field:"kmInicial",     label:"KM Inicial",    icon:"🛞", type:"number" },
-  { field:"o2Portatil",    label:"O₂ Portátil",   icon:"💨" },
-  { field:"o2Fixo",        label:"O₂ Fixo",       icon:"💨" },
+  { field:"O²Portatil",    label:"O₂ Portátil",   icon:"💨" },
+  { field:"O²Fixo",        label:"O₂ Fixo",       icon:"💨" },
   { field:"abastecimento", label:"Abastecimento", icon:"⛽" },
-  { field:"cartao",        label:"Cartão",        icon:"💳" }
+  { field:"crv",           label:"CRV",           icon:"📄" }
 ];
 
 function toast(msg,type){
@@ -1482,7 +1543,8 @@ function saveNow(){
       assinaturaImg:state.assinaturaImg,
       currentOcorrenciaId:state.currentOcorrenciaId,
       mes:state.mes,
-      ano:state.ano
+      ano:state.ano,
+      checklist:state.checklist
     }));
   }catch(e){
     toast.error("⚠️ Não foi possível salvar (armazenamento cheio?). Exporte um backup.");
@@ -1549,13 +1611,6 @@ function setCollapsed(v){
   b.setAttribute("aria-label", v?"Expandir cabeçalho":"Recolher cabeçalho");
   b.setAttribute("aria-expanded", String(!v));
   b.title=v?"Expandir dados do plantão":"Recolher dados do plantão";
-}
-function checkAndCollapse(cfg){
-  if(window.innerWidth<=768){
-    if(cfg.unidade.trim() && cfg.condutor.trim() && cfg.ambulancia.trim() && cfg.placa.trim()){
-      setCollapsed(true);
-    }
-  }
 }
 function syncHeaderFields(){
   CAMPOS.forEach(function(c){
@@ -1640,7 +1695,6 @@ function handleCampoBlur(field){
     updateFormBadges();
     preparar(state.registros,state.config,state.currentOcorrenciaId,state.mes,state.ano);
   }
-  checkAndCollapse(state.config);
 }
 function handleMesAnoChange(novoMes,novoAno){
   state.mes=novoMes;
@@ -1661,7 +1715,6 @@ function handleNovoDeslocamento(){
   save(true);
   preparar(state.registros,state.config,state.currentOcorrenciaId,state.mes,state.ano);
   alertasParaZero();
-  // ✅ CHECAR O FIM DE PLANTÃO AO INICIAR NOVO DESLOCAMENTO
   checkShiftUpdate();
 }
 
@@ -1787,7 +1840,6 @@ function executarRegistro(tipo){
     save(true);
     preparar(next,state.config,state.currentOcorrenciaId,state.mes,state.ano);
     renderDerived();
-    checkAndCollapse(state.config);
     return;
   }
 
@@ -1813,7 +1865,6 @@ function executarRegistro(tipo){
     });
 
     if(tipo === "base" && idxAberto !== -1) {
-        // CORREÇÃO: Apenas cria o registro de Fim. Não altera a saída em aberto (não adiciona horaChegada a ela).
         next.unshift({
           id:String(Date.now()),
           ocorrenciaId:state.currentOcorrenciaId,
@@ -1870,7 +1921,6 @@ function executarRegistro(tipo){
     elLocal.value=local;
     form.local=local;
     renderDerived();
-    checkAndCollapse(state.config);
     setTimeout(function(){
       preparar(next,state.config,proximaOcorrencia,state.mes,state.ano);
       setBaseOk(false);
@@ -1878,7 +1928,6 @@ function executarRegistro(tipo){
   }else{
     preparar(next,state.config,proximaOcorrencia,state.mes,state.ano);
     renderDerived();
-    checkAndCollapse(state.config);
   }
 }
 
@@ -1952,11 +2001,9 @@ function ignorarAlerta(){
   if(pendenteTipo){ executarRegistro(pendenteTipo); }
 }
 
-// ✅ FUNÇÃO DE COMPARTILHAMENTO GERAL ATUALIZADA
 function handleCompartilhar(plataforma){
   try{
     var veic = veiculoKey(state.config);
-    // Usa a nova função que inclui ocorrências que atravessam a meia-noite
     var registrosFiltrados = getOcorrenciasDoMes(state.registros, state.mes, state.ano).filter(function(r){
       return r.veiculo === veic;
     });
@@ -1972,10 +2019,72 @@ function handleCompartilhar(plataforma){
   }
 }
 
+function handleCompartilharChecklist() {
+  try {
+    var hoje = new Date();
+    var dataStr = pad(hoje.getDate()) + "/" + pad(hoje.getMonth() + 1) + "/" + hoje.getFullYear();
+    var plantaoSigla = (state.config.plantao || "SD").split(" ")[0];
+    
+    var text = "*CHECK LIST DA VTR*\n\n";
+    text += "CONDUTOR: " + (state.config.condutor || "").toUpperCase() + "\n";
+    text += "UNIDADE: " + (state.config.unidade || "").toUpperCase() + "   PLANTÃO: " + plantaoSigla + "\n";
+    text += "VTR: " + veiculoKey(state.config) + "\n";
+    text += "CARTÃO: " + (state.checklist.cartao || "NÃO") + " CRV: " + (state.config.crv || "NÃO") + "\n";
+    text += "O² PORTÁTIL: " + formatPct(state.config.O²Portatil) + " FIXO: " + formatPct(state.config.O²Fixo) + "\n";
+    text += "-----------------------------------\n";
+    
+    text += "ABASTECIMENTO: " + (state.checklist.pagamento || "Não informado") + "\n";
+    
+    var dtAbast = state.checklist.dataAbast ? formatDateBR(state.checklist.dataAbast) : "";
+    var kmAbast = state.checklist.kmAbast || "-";
+    var litros = state.checklist.litros || "-";
+    var nivel = state.checklist.nivelCombustivel || "Não informado";
+    
+    text += "Data: " + dtAbast + "  | KM: " + kmAbast + "\n";
+    text += "Litros: " + litros + "\n";
+    text += "Nível: " + nivel + "\n";
+    text += "-----------------------------------\n";
+    
+    var itensRuins = [];
+    var itensNTem = [];
+    var itensBons = 0;
+
+    TODOS_ITENS.forEach(function(item) {
+      var st = state.checklist.itens ? state.checklist.itens[item] : null;
+      if (st === "BOM") itensBons++;
+      else if (st === "RUIM") itensRuins.push(item);
+      else if (st === "N TEM") itensNTem.push(item);
+    });
+
+    text += "VERIFICAÇÃO: ✅ BOM: " + itensBons + " itens\n";
+    
+    if (itensNTem.length > 0) {
+      text += "❌ NÃO TEM 👇🏻:\n";
+      itensNTem.forEach(function(i) { text += " - " + i + "\n"; });
+    }
+    
+    if (itensRuins.length > 0) {
+      text += "⚠️ RUIM 👇🏻:\n";
+      itensRuins.forEach(function(i) { text += " - " + i + "\n"; });
+    }
+
+    if (itensRuins.length === 0 && itensNTem.length === 0 && itensBons > 0) {
+      text += "✅ TODOS OS ITENS VERIFICADOS ESTÃO BONS.\n";
+    }
+
+    text += "\nDATA: " + dataStr + "\n\n";
+    text += "OBS: " + (state.config.observacao ? state.config.observacao.toUpperCase() : "VTR SEM NOVAS AVARIAS");
+
+    var url = "https://api.whatsapp.com/send?text=" + encodeURIComponent(text);
+    window.open(url, "_blank");
+  } catch(e) {
+    toast.error("Erro ao tentar enviar o Check List.");
+  }
+}
+
 function handleGerarPDF(){
   try{
     var veic = veiculoKey(state.config);
-    // Usa a nova função que inclui ocorrências que atravessam a meia-noite
     var registrosFiltrados = getOcorrenciasDoMes(state.registros, state.mes, state.ano).filter(function(r){
       return r.veiculo === veic;
     });
@@ -2004,7 +2113,6 @@ function exportarExcel(){
   }
 }
 
-// ✅ BACKUP: EXPORTAR / IMPORTAR DADOS (.json)
 function exportarBackup(){
   try{
     var payload={
@@ -2015,7 +2123,8 @@ function exportarBackup(){
       assinaturaImg:state.assinaturaImg,
       currentOcorrenciaId:state.currentOcorrenciaId,
       mes:state.mes,
-      ano:state.ano
+      ano:state.ano,
+      checklist:state.checklist
     };
     var blob=new Blob([JSON.stringify(payload,null,2)],{type:"application/json"});
     var url=URL.createObjectURL(blob);
@@ -2045,6 +2154,7 @@ function importarBackup(file){
         state.currentOcorrenciaId=d.currentOcorrenciaId||String(Date.now());
         state.mes=d.mes||(new Date().getMonth()+1);
         state.ano=d.ano||new Date().getFullYear();
+        state.checklist=d.checklist||{};
         if(!state.config.kmInicial) state.config.kmInicial=kmInicialSugerido(state.config);
         updateFrotaKms(state.registros);
         save(true);
@@ -2065,6 +2175,7 @@ function importarBackup(file){
         alertasParaZero();
         preparar(state.registros,state.config,state.currentOcorrenciaId,state.mes,state.ano);
         renderDerived();
+        renderChecklist();
         toast.success("♻️ Backup restaurado com sucesso!");
       }catch(err){
         toast.error("Arquivo de backup inválido.");
@@ -2200,7 +2311,7 @@ function renderMensal(){
   $("paneMensal").innerHTML=
     '<section class="card" aria-label="Período do fechamento">'+
     '<h2 class="sec-title">📊 Fechamento Mensal</h2>'+
-    '<div class="periodo2">'+
+    '<div class="periodO²">'+
     '<div class="f-field"><label class="lbl-mini" for="pmMes">📅 Mês</label>'+
     '<select id="pmMes" class="sel-lg">'+MESES.map(function(m,i){
       return '<option value="'+(i+1)+'"'+((i+1)===state.mes?" selected":"")+'>'+m+'</option>';
@@ -2231,6 +2342,100 @@ function renderMensal(){
   });
   $("btnExcel").addEventListener("click",exportarExcel);
   $("btnPdfMensal").addEventListener("click",gerarPdfMensal);
+}
+
+function renderChecklist() {
+  if(!state.checklist.itens) state.checklist.itens = {};
+  
+  $("ckData").value = state.checklist.dataAbast || "";
+  $("ckKm").value = state.checklist.kmAbast || "";
+  $("ckLitros").value = state.checklist.litros || "";
+  $("ckNivel").value = state.checklist.nivelCombustivel || "";
+  $("ckPagamento").value = state.checklist.pagamento || "";
+  $("ckCartao").value = state.checklist.cartao || "SIM";
+
+  var html = "";
+  TODOS_ITENS.forEach(function(item) {
+    var statusAtual = state.checklist.itens[item] || "";
+    html += '<div class="check-row">';
+    html += '<span class="check-label">' + item + '</span>';
+    html += '<div class="check-options">';
+    
+    html += '<div class="check-opt">';
+    html += '<input type="radio" id="ck_bom_'+item.replace(/[^a-zA-Z0-9]/g,'')+'" name="ck_'+item.replace(/[^a-zA-Z0-9]/g,'')+'" value="BOM" ' + (statusAtual==="BOM"?"checked":"") + ' onchange="setCheckItem(\''+item+'\', \'BOM\')">';
+    html += '<label for="ck_bom_'+item.replace(/[^a-zA-Z0-9]/g,'')+'">BOM</label>';
+    html += '</div>';
+    
+    html += '<div class="check-opt">';
+    html += '<input type="radio" id="ck_ruim_'+item.replace(/[^a-zA-Z0-9]/g,'')+'" name="ck_'+item.replace(/[^a-zA-Z0-9]/g,'')+'" value="RUIM" ' + (statusAtual==="RUIM"?"checked":"") + ' onchange="setCheckItem(\''+item+'\', \'RUIM\')">';
+    html += '<label for="ck_ruim_'+item.replace(/[^a-zA-Z0-9]/g,'')+'">RUIM</label>';
+    html += '</div>';
+    
+    html += '<div class="check-opt">';
+    html += '<input type="radio" id="ck_ntem_'+item.replace(/[^a-zA-Z0-9]/g,'')+'" name="ck_'+item.replace(/[^a-zA-Z0-9]/g,'')+'" value="N TEM" ' + (statusAtual==="N TEM"?"checked":"") + ' onchange="setCheckItem(\''+item+'\', \'N TEM\')">';
+    html += '<label for="ck_ntem_'+item.replace(/[^a-zA-Z0-9]/g,'')+'">N TEM</label>';
+    html += '</div>';
+    
+    html += '</div></div>';
+  });
+  
+  $("checkListContent").innerHTML = html;
+}
+
+function setCheckItem(item, status) {
+  if(!state.checklist.itens) state.checklist.itens = {};
+  state.checklist.itens[item] = status;
+  save();
+}
+
+function limparChecklist() {
+  if(confirm("Tem certeza que deseja limpar todas as marcações do Check List?")) {
+    state.checklist.itens = {};
+    $("ckData").value = "";
+    $("ckKm").value = "";
+    $("ckLitros").value = "";
+    $("ckNivel").value = "";
+    $("ckPagamento").value = "";
+    $("ckCartao").value = "SIM";
+    state.checklist.dataAbast = "";
+    state.checklist.kmAbast = "";
+    state.checklist.litros = "";
+    state.checklist.nivelCombustivel = "";
+    state.checklist.pagamento = "";
+    state.checklist.cartao = "SIM";
+    save(true);
+    renderChecklist();
+    toast.success("Check List limpo!");
+  }
+}
+
+function concluirChecklist() {
+  switchTab("plantao");
+  window.scrollTo({ top: 0, behavior: "smooth" });
+  toast.success("Check List concluído! Bom plantão.");
+}
+
+function gerarPdfChecklist() {
+  try {
+    var checkData = {
+      unidade: state.config.unidade,
+      condutor: state.config.condutor,
+      veiculo: veiculoKey(state.config),
+      dataAbast: $("ckData").value,
+      kmAbast: $("ckKm").value,
+      litros: $("ckLitros").value,
+      nivelCombustivel: $("ckNivel").value,
+      pagamento: $("ckPagamento").value,
+      cartao: $("ckCartao").value,
+      crv: state.config.crv,
+      observacao: state.config.observacao,
+      itens: state.checklist.itens || {}
+    };
+    printHTML(buildChecklistHTML(checkData));
+    toast.success("✅ Check List pronto para impressão/PDF!");
+  } catch(e) {
+    toast.error("Não foi possível gerar o PDF do Check List.");
+  }
 }
 
 var CANVAS_HEIGHT=120;
@@ -2353,14 +2558,12 @@ function buildHeaderGrid(){
   $("inpAno").value=state.ano;
 }
 
-// ✅ CHECAGEM DE FIM DE PLANTÃO
 function checkShiftUpdate() {
   if (!state.registros.length) return;
   var lastRecord = state.registros[0];
   var shiftEnd = getShiftEndTime(lastRecord.data, lastRecord.shift);
   
   if (shiftEnd && new Date().getTime() > shiftEnd.getTime()) {
-    // Evita mostrar repetidamente na mesma sessão para o mesmo plantão
     var sessionKey = "shiftWarn_" + lastRecord.data + "_" + lastRecord.shift;
     if (!sessionStorage.getItem(sessionKey)) {
       $("ovTurno").hidden = false;
@@ -2384,17 +2587,24 @@ function wireEvents(){
     try{ localStorage.setItem("vtr-theme",now); }catch(e){}
     $("btnTheme").textContent=now==="dark"?"☀️":"🌙";
   });
+
+  // ✅ LÓGICA DA SETA: Se estiver colapsado, expande e vai pro checklist. Se estiver aberto, apenas colapsa.
   $("btnCollapse").addEventListener("click",function(){
-    setCollapsed(!headerCollapsed);
+    if (headerCollapsed) {
+      switchTab("checklist");
+    } else {
+      setCollapsed(true);
+    }
   });
+
   $("tabPlantao").addEventListener("click",function(){ switchTab("plantao"); });
+  $("tabChecklist").addEventListener("click",function(){ switchTab("checklist"); });
   $("tabMensal").addEventListener("click",function(){ switchTab("mensal"); });
 
   $("fData").addEventListener("input",function(e){ form.data=e.target.value; });
   $("fHora").addEventListener("input",function(e){ form.hora=e.target.value; setAlert("hora",false); });
   $("fKm").addEventListener("input",function(e){ form.km=e.target.value; setAlert("km",false); });
   
-  // ✅ NOVOS EVENTOS PARA O CAMPO DE DESTINO
   $("fLocal").addEventListener("input",function(e){ 
     form.local=e.target.value; 
     setAlert("local",false); 
@@ -2422,9 +2632,6 @@ function wireEvents(){
     if(btn.dataset.action==="excluir") handleExcluir(btn.dataset.id);
     if(btn.dataset.action==="compartilhar-oc") handleCompartilharOcorrencia(btn.dataset.id);
   });
-  
-  // Antigo btnWhats, agora usando a nova função via onclick no HTML para os dois botões.
-  // $("btnWhats").addEventListener("click",handleCompartilhar); // Removido, agora usa onclick no HTML
 
   $("obsTxt").value=state.config.observacao;
   $("obsTxt").addEventListener("input",function(e){ state.config.observacao=e.target.value; save(); });
@@ -2432,6 +2639,13 @@ function wireEvents(){
   $("nomeLegivel").addEventListener("input",function(e){ state.config.nomeLegivel=e.target.value; save(); });
 
   $("btnPDF").addEventListener("click",handleGerarPDF);
+
+  $("ckData").addEventListener("change", function(e) { state.checklist.dataAbast = e.target.value; save(); });
+  $("ckKm").addEventListener("input", function(e) { state.checklist.kmAbast = e.target.value; save(); });
+  $("ckLitros").addEventListener("input", function(e) { state.checklist.litros = e.target.value; save(); });
+  $("ckNivel").addEventListener("change", function(e) { state.checklist.nivelCombustivel = e.target.value; save(); });
+  $("ckPagamento").addEventListener("change", function(e) { state.checklist.pagamento = e.target.value; save(); });
+  $("ckCartao").addEventListener("change", function(e) { state.checklist.cartao = e.target.value; save(); });
 
   $("btnInstall").addEventListener("click",handleInstallClick);
   $("btnBackup").addEventListener("click",exportarBackup);
@@ -2450,16 +2664,13 @@ function wireEvents(){
   $("btnConfirmarExc").addEventListener("click",confirmarExclusao);
   $("ovExcluir").addEventListener("click",function(e){ if(e.target===this){ this.hidden=true; confirmExcluir={open:false,id:""}; restaurarFoco(); } });
 
-  // ✅ EVENTOS DO NOVO MODAL DE TROCA DE TURNO
   $("btnAtualizarTurno").addEventListener("click", function() {
     $("ovTurno").hidden = true;
-    setCollapsed(false); // Expande o cabeçalho
+    setCollapsed(false);
     var target = document.querySelector('.app-header');
     if(target && target.scrollIntoView) target.scrollIntoView({ behavior: "smooth", block: "start" });
     var plantaoSelect = $("cfg-plantao");
-    if(plantaoSelect) {
-      setTimeout(function() { plantaoSelect.focus(); }, 300); // Foca no campo Plantão
-    }
+    if(plantaoSelect) setTimeout(function() { plantaoSelect.focus(); }, 300);
   });
   
   $("btnIgnorarTurno").addEventListener("click", function() {
@@ -2481,12 +2692,26 @@ function wireEvents(){
 function switchTab(t){
   tab=t;
   $("tabPlantao").classList.toggle("active",t==="plantao");
+  $("tabChecklist").classList.toggle("active",t==="checklist");
   $("tabMensal").classList.toggle("active",t==="mensal");
+  
   $("tabPlantao").setAttribute("aria-selected",String(t==="plantao"));
+  $("tabChecklist").setAttribute("aria-selected",String(t==="checklist"));
   $("tabMensal").setAttribute("aria-selected",String(t==="mensal"));
+  
   $("panePlantao").hidden=(t!=="plantao");
+  $("paneChecklist").hidden=(t!=="checklist");
   $("paneMensal").hidden=(t!=="mensal");
+  
+  // ✅ Fecha o cabeçalho ao ir para Plantão ou Mensal, e Abre ao ir para Check List
+  if (t === "plantao" || t === "mensal") {
+    setCollapsed(true);
+  } else if (t === "checklist") {
+    setCollapsed(false);
+  }
+
   if(t==="mensal") renderMensal();
+  if(t==="checklist") renderChecklist();
 }
 
 function init(){
@@ -2497,16 +2722,19 @@ function init(){
   state.currentOcorrenciaId=store.currentOcorrenciaId;
   state.mes=store.mes;
   state.ano=store.ano;
+  state.checklist=store.checklist || {};
   updateFrotaKms(store.registros);
 
   if(!state.config.kmInicial.trim()){
     state.config.kmInicial=kmInicialSugerido(state.config);
   }
 
+  if (!state.config.crv) state.config.crv = "SIM";
+
   buildHeaderGrid();
   wireEvents();
   updateFormBadges();
-  setCollapsed(window.innerWidth<=768 && store.registros.length>0);
+  
   $("btnTheme").textContent=(document.documentElement.dataset.theme==="dark")?"☀️":"🌙";
   setEditingVisual(false);
 
@@ -2514,18 +2742,20 @@ function init(){
   renderHistorico();
   renderResumo();
   renderMensal();
+  renderChecklist();
   setupCanvas();
   loaded=true;
   
-  // ✅ VERIFICA O FIM DE PLANTÃO NA ABERTURA DO APP
   checkShiftUpdate();
+
+  // Garantir que a aba checklist está ativa visualmente
+  switchTab("checklist");
 
   window.addEventListener("pagehide",function(){
     if(saveTimer){ clearTimeout(saveTimer); saveTimer=null; saveNow(); }
   });
 }
 
-// ✅ SERVICE WORKER — MODO OFFLINE
 if("serviceWorker" in navigator){
   var swOk=(location.protocol==="https:"||location.hostname==="localhost"||location.hostname==="127.0.0.1");
   if(swOk){
@@ -2535,7 +2765,6 @@ if("serviceWorker" in navigator){
   }
 }
 
-// ✅ BOTÃO DE INSTALAÇÃO DO PWA
 var deferredInstall=null;
 window.addEventListener("beforeinstallprompt",function(e){
   e.preventDefault();
