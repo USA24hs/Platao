@@ -1302,25 +1302,25 @@ function buildWhatsAppText(registros, cfg, platform) {
   else saudacao = "Boa Noite!";
 
   var texto = saudacao + "\n\n";
-  texto += "CONDUTOR: " + cfg.condutor.toUpperCase() + "\n";
-  texto += "PLANTÃO: " + plantaoSigla + " | " + cfg.unidade.toUpperCase() + "\n";
+  texto += "CONDUTOR: " + cfg.condutor.toUpperCase() + " \n";
+  texto += "PLANTÃO: " + plantaoSigla + " | " + cfg.unidade.toUpperCase() + " \n";
   texto += "VTR: " + cfg.ambulancia.toUpperCase() + " PLACA: " + cfg.placa.toUpperCase() + "\n";
   texto += "O² PORTÁTIL: " + formatPct(cfg.o2Portatil) + " FIXO: " + formatPct(cfg.o2Fixo) + "\n";
-  texto += "CARTÃO: " + (cfg.cartao ? cfg.cartao.toUpperCase() : "NÃO") + " CRLV: " + (cfg.crv ? cfg.crv.toUpperCase() : "NÃO") + "\n";
+  texto += "CARTÃO: " + (cfg.cartao ? cfg.cartao.toUpperCase() : "SEM") + " CRLV: " + (cfg.crv ? cfg.crv.toUpperCase() : "SIM") + "\n";
   texto += "-----------------------------------\n";
 
-  var kmExibir = cfg.kmInicial || "-";
-  if (kmExibir !== "-" && !isNaN(parseFloat(kmExibir))) kmExibir = parseFloat(kmExibir).toString();
-  var nivelComb = cfg.abastecimento || "-";
-  if (nivelComb !== "-" && nivelComb.indexOf("%") === -1 && nivelComb.indexOf("E") === -1) {
-      var match = nivelComb.match(/(\d+)/);
-      if (match) nivelComb = match[1] + "%";
+  var kmTopo = cfg.kmInicial || "-";
+  if (kmTopo !== "-" && !isNaN(parseFloat(kmTopo))) kmTopo = parseFloat(kmTopo).toString();
+  var combTopo = cfg.abastecimento || "-";
+  if (combTopo !== "-" && combTopo.indexOf("%") === -1 && combTopo.indexOf("E") === -1) {
+      var match = combTopo.match(/(\d+)/);
+      if (match) combTopo = match[1] + "%";
   }
 
-  texto += "KM: " + kmExibir + "  COMBUSTÍVEL: " + nivelComb + "\n";
+  texto += "KM: " + kmTopo + " COMBUSTÍVEL: " + combTopo + "\n";
   texto += "-----------------------------------\n";
 
-  texto += "OBS: " + (cfg.observacao ? cfg.observacao.toUpperCase() : "VTR SEM NOVAS AVARIAS") + "\n\n";
+  texto += "OBS: " + (cfg.observacao ? cfg.observacao.toUpperCase() : "VTR SEM NOVAS AVARIAS") + " \n\n";
   texto += "Bom plantão a todos! " + dataStr + " " + horaStr + "\n";
   texto += "-----------------------------------\n";
   texto += bold + "🚑💭 RELATÓRIO DE DESLOCAMENTO" + bold + "\n\n";
@@ -1346,7 +1346,19 @@ function buildWhatsAppText(registros, cfg, platform) {
 
   texto += "RESUMO DO PLANTÃO\n";
   texto += "Total de Deslocamentos: " + grupos.length + "\n";
-  texto += "Total KM Rodado: " + resumo.totalKm.toFixed(1) + " km\n\n";
+  texto += "Total KM Rodado: " + resumo.totalKm.toFixed(1) + " km\n";
+  
+  var ativo = state.checklist.abastecimentoAtivo !== false;
+  var temAbast = ativo && (state.checklist.pagamento || state.checklist.kmAbast || state.checklist.litros || state.checklist.nivelCombustivel);
+
+  if (temAbast) {
+    texto += "-----------------------------------\n";
+    texto += "FORMA DE ABASTECIMENTO: " + (state.checklist.pagamento || "NÃO INFORMADO").toUpperCase() + " \n";
+    texto += "KM: " + (state.checklist.kmAbast || "-") + "  LITROS: " + (state.checklist.litros || "-") + "\n";
+    texto += "COMBUSTÍVEL: " + (state.checklist.nivelCombustivel || "-") + "\n";
+  }
+  
+  texto += "-----------------------------------\n";
   texto += "UNIDADES SOLICITANTES:\n";
   if (solicitantes.length > 0) {
     solicitantes.forEach(function(s){ texto += "• " + s.local + ": " + s.total + "\n"; });
@@ -2406,30 +2418,34 @@ function buildChecklistText(platform) {
   var plantaoCompleto = state.config.plantao || "SD 12hs";
   var vtrNome = (state.config.ambulancia || "").toUpperCase();
 
-  var text = bold + "🚑💭 CHECK LIST DA VTR " + vtrNome + bold + "\n\n";
+  var text = bold + "🚑💭 CHECK LIST VTR " + vtrNome + bold + "\n\n";
 
   var hora = hoje.getHours();
   if (hora < 12) text += "Bom dia!\n\n";
   else if (hora < 18) text += "Boa Tarde!\n\n";
   else text += "Boa Noite!\n\n";
 
-  text += "CONDUTOR: " + (state.config.condutor || "").toUpperCase() + "\n";
-  text += "UNIDADE: " + (state.config.unidade || "").toUpperCase() + "    PLANTÃO: " + plantaoCompleto + "\n";
+  text += "CONDUTOR: " + (state.config.condutor || "").toUpperCase() + " \n";
+  text += "UNIDADE: " + (state.config.unidade || "").toUpperCase() + " PLANTÃO: " + plantaoCompleto + "\n";
   text += "VTR: " + veiculoKey(state.config) + "\n";
-  text += "CARTÃO: " + (state.checklist.cartao || "NÃO") + " CRLV: " + (state.config.crv || "NÃO") + "\n";
+  
+  var kmTopo = state.config.kmInicial || "-";
+  var combTopo = state.config.abastecimento || "-";
+  text += "KM: " + kmTopo + " COMBUSTÍVEL: " + combTopo + "\n";
+  
+  text += "CARTÃO: " + (state.config.cartao || "NÃO") + "  CRLV: " + (state.config.crv || "SIM") + "\n";
   text += "O² PORTÁTIL: " + formatPct(state.config.o2Portatil) + " FIXO: " + formatPct(state.config.o2Fixo) + "\n";
   text += "-----------------------------------\n";
 
-  var kmExibir = state.checklist.kmAbast || state.config.kmInicial || "-";
-  if (kmExibir !== "-" && !isNaN(parseFloat(kmExibir))) kmExibir = parseFloat(kmExibir).toString();
-  var nivelComb = state.checklist.nivelCombustivel || state.config.abastecimento || "-";
-  if (nivelComb !== "-" && nivelComb.indexOf("%") === -1 && nivelComb.indexOf("E") === -1) {
-      var match = nivelComb.match(/(\d+)/);
-      if (match) nivelComb = match[1] + "%";
-  }
+  var ativo = state.checklist.abastecimentoAtivo !== false;
+  var temAbast = ativo && (state.checklist.pagamento || state.checklist.kmAbast || state.checklist.litros || state.checklist.nivelCombustivel);
 
-  text += "KM: " + kmExibir + "  COMBUSTÍVEL: " + nivelComb + "\n";
-  text += "-----------------------------------\n";
+  if (temAbast) {
+    text += "FORMA DE ABASTECIMENTO: " + (state.checklist.pagamento || "NÃO INFORMADO").toUpperCase() + " \n";
+    text += "KM: " + (state.checklist.kmAbast || "-") + "  LITROS: " + (state.checklist.litros || "-") + "\n";
+    text += "COMBUSTÍVEL: " + (state.checklist.nivelCombustivel || "-") + "\n";
+    text += "-----------------------------------\n";
+  }
 
   var itensRuins = [];
   var itensNTem = [];
