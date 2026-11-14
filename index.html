@@ -326,6 +326,7 @@ html[data-theme="dark"] .td-em{color:#34d399}
 
 .app-footer{margin-top:auto;border-top:1px solid var(--border);background:var(--muted-soft);text-align:center;padding:.75rem 1rem;font-size:.68rem;font-weight:600;color:var(--muted-foreground)}
 
+/* ✅ OVERLAYS E MODAIS */
 .overlay{position:fixed;inset:0;background:rgba(2,6,23,.55);backdrop-filter:blur(2px);display:flex;align-items:center;justify-content:center;z-index:80;padding:1rem;animation:fadeIn .2s ease}
 .modal{background:var(--card);color:var(--foreground);border:1px solid var(--border);border-radius:1rem;max-width:24rem;width:100%;padding:1.25rem;box-shadow:0 20px 50px -12px rgba(0,0,0,.45);animation:modalIn .25s ease}
 .modal h3{margin:0 0 .35rem;font-size:1rem;font-weight:800}
@@ -337,8 +338,14 @@ html[data-theme="dark"] .dlg-icon{background:rgba(127,29,29,.5)}
 html[data-theme="dark"] .dlg-head h3{color:#f87171}
 .dlg-box{border:1px solid #fecaca;background:#fef2f2;border-radius:.75rem;padding:.75rem 1rem;text-align:center;font-weight:800;line-height:1.6;color:#b91c1c;margin-bottom:1rem}
 html[data-theme="dark"] .dlg-box{border-color:rgba(127,29,29,.6);background:rgba(127,29,29,.3);color:#fca5a5}
-.dlg-actions{display:flex;flex-direction:column;gap:.5rem}
+.dlg-actions{display:flex;flex-direction:column;gap:.5rem;margin-top: 1rem;}
 .dlg-actions .btn{width:100%}
+
+/* Customização do Modal de Confirmação Genérico */
+#ovConfirm .dlg-icon { background: #e0f2fe; color: #0369a1; }
+html[data-theme="dark"] #ovConfirm .dlg-icon { background: rgba(12,74,110,.6); color: #7dd3fc; }
+#ovConfirm .dlg-head h3 { color: var(--primary); }
+html[data-theme="dark"] #ovConfirm .dlg-head h3 { color: var(--primary); }
 
 #ovTurno .dlg-icon{background:#fef08a;color:#854d0e}
 html[data-theme="dark"] #ovTurno .dlg-icon{background:rgba(113,63,18,.6);color:#fde047}
@@ -742,6 +749,23 @@ html[data-theme="dark"] #ovTurno .dlg-head h3{color:#fde047}
   </div>
 </div>
 
+<!-- ✅ NOVO MODAL DE CONFIRMAÇÃO CUSTOMIZADO -->
+<div class="overlay" id="ovConfirm" hidden>
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="confirmTitle">
+    <div class="dlg-head">
+      <div class="dlg-icon" id="confirmIcon">❓</div>
+      <div>
+        <h3 id="confirmTitle">Confirmação</h3>
+        <p id="confirmMsg">Mensagem aqui.</p>
+      </div>
+    </div>
+    <div class="dlg-actions">
+      <button class="btn btn-gray" id="btnConfirmCancel">Cancelar</button>
+      <button class="btn btn-chegada" id="btnConfirmOk">OK</button>
+    </div>
+  </div>
+</div>
+
 <div id="toasts" aria-live="polite"></div>
 <script>
 "use strict";
@@ -876,8 +900,6 @@ function getOcorrenciasDoMes(registros, mes, ano) {
   });
 }
 
-/* ✅ NOVO — Retorna todos os registros do PLANTÃO ATUAL
-   (mesmo VTR + mesmo shift + mesmo dia; SN/DN inclui dia anterior) */
 function getRegistrosDoPlantaoAtual() {
   var veic = veiculoKey(state.config);
 
@@ -893,7 +915,6 @@ function getRegistrosDoPlantaoAtual() {
   var datas = {};
   datas[dataRef] = true;
 
-  // Plantões noturnos cruzam meia-noite → inclui dia anterior
   if (shiftRef === "SN 12hs" || shiftRef === "DN 24hs") {
     try {
       var d = new Date(dataRef + "T12:00:00");
@@ -1706,6 +1727,7 @@ var lastFocusEl=null;
 var loginAttempts=0;
 var loginBlockedUntil=0;
 var pendingUserForPasswordChange = null;
+var confirmCallback = null; // Armazena o callback do modal de confirmação
 function restaurarFoco(){ if(lastFocusEl && lastFocusEl.focus){ try{ lastFocusEl.focus(); }catch(e){} } lastFocusEl=null; }
 
 var CAMPOS=[
@@ -1736,6 +1758,24 @@ function toast(msg,type){
 toast.success=function(m){ toast(m,"success"); };
 toast.warning=function(m){ toast(m,"warning"); };
 toast.error  =function(m){ toast(m,"error"); };
+
+/* ✅ NOVA FUNÇÃO DE CONFIRMAÇÃO CUSTOMIZADA */
+function showConfirm(opts) {
+  $("confirmIcon").textContent = opts.icon || "❓";
+  $("confirmTitle").textContent = opts.title || "Confirmação";
+  $("confirmMsg").textContent = opts.message || "";
+  
+  var btnOk = $("btnConfirmOk");
+  var btnCancel = $("btnConfirmCancel");
+  
+  btnOk.textContent = opts.okText || "Confirmar";
+  btnOk.className = "btn " + (opts.okClass || "btn-chegada");
+  btnCancel.textContent = opts.cancelText || "Cancelar";
+  
+  confirmCallback = opts.onConfirm || null;
+  
+  $("ovConfirm").hidden = false;
+}
 
 var saveTimer=null;
 function saveNow(){
@@ -2225,7 +2265,6 @@ function ignorarAlerta(){
   if(pendenteTipo){ executarRegistro(pendenteTipo); }
 }
 
-/* ✅ TELEGRAM — abre app nativo; só cai pro navegador se o app NÃO abriu em 2,5s */
 function abrirAppTelegram(appUrl, webUrl){
   var appAbriu = false;
   var timeoutMs = 2500;
@@ -2259,8 +2298,6 @@ function abrirAppTelegram(appUrl, webUrl){
   }, timeoutMs);
 }
 
-/* ✅ PLANTÃO — agora envia TODOS os deslocamentos do plantão atual
-   (mesmo VTR + mesmo dia + mesmo turno SD/SN/DN) */
 function handleCompartilhar(plataforma){
   try{
     var registrosFiltrados = getRegistrosDoPlantaoAtual();
@@ -2286,7 +2323,6 @@ function handleCompartilhar(plataforma){
   }
 }
 
-/* ✅ CHECK LIST — monta o texto do check list (reutilizado por WhatsApp e Telegram) */
 function buildChecklistText() {
   var hoje = new Date();
   var hora = hoje.getHours();
@@ -2441,37 +2477,47 @@ function importarBackup(file){
       try{
         var d=JSON.parse(reader.result);
         if(!d || !Array.isArray(d.registros)) throw new Error("formato");
-        if(!window.confirm("Restaurar backup com "+d.registros.length+" registro(s)? Os dados atuais deste aparelho serão substituídos.")) return;
-        state.registros=d.registros;
-        state.config=Object.assign({},DEFAULT_CONFIG,d.config||{});
-        state.assinaturaImg=d.assinaturaImg||"";
-        state.currentOcorrenciaId=d.currentOcorrenciaId||String(Date.now());
-        state.mes=d.mes||(new Date().getMonth()+1);
-        state.ano=d.ano||new Date().getFullYear();
-        state.checklist=d.checklist||{};
-        if(!state.config.kmInicial) state.config.kmInicial=kmInicialSugerido(state.config);
-        updateFrotaKms(state.registros);
-        save(true);
-        syncHeaderFields();
-        syncPeriodo();
-        updateFormBadges();
-        $("obsTxt").value=state.config.observacao;
-        $("ckObsTxt").value=state.config.observacao;
-        $("nomeLegivel").value=state.config.nomeLegivel;
-        if(signCanvas && signCtx){
-          signCtx.fillStyle="#ffffff";
-          signCtx.fillRect(0,0,signCanvas.width,signCanvas.height);
-          if(state.assinaturaImg && state.assinaturaImg.length>100){
-            var img=new Image();
-            img.onload=function(){ signCtx.drawImage(img,0,0,signCanvas.width,signCanvas.height); };
-            img.src=state.assinaturaImg;
+        
+        showConfirm({
+          icon: "♻️",
+          title: "Restaurar Backup",
+          message: "Restaurar backup com "+d.registros.length+" registro(s)? Os dados atuais deste aparelho serão substituídos.",
+          okText: "Restaurar",
+          okClass: "btn-chegada",
+          onConfirm: function() {
+            state.registros=d.registros;
+            state.config=Object.assign({},DEFAULT_CONFIG,d.config||{});
+            state.assinaturaImg=d.assinaturaImg||"";
+            state.currentOcorrenciaId=d.currentOcorrenciaId||String(Date.now());
+            state.mes=d.mes||(new Date().getMonth()+1);
+            state.ano=d.ano||new Date().getFullYear();
+            state.checklist=d.checklist||{};
+            if(!state.config.kmInicial) state.config.kmInicial=kmInicialSugerido(state.config);
+            updateFrotaKms(state.registros);
+            save(true);
+            syncHeaderFields();
+            syncPeriodo();
+            updateFormBadges();
+            $("obsTxt").value=state.config.observacao;
+            $("ckObsTxt").value=state.config.observacao;
+            $("nomeLegivel").value=state.config.nomeLegivel;
+            if(signCanvas && signCtx){
+              signCtx.fillStyle="#ffffff";
+              signCtx.fillRect(0,0,signCanvas.width,signCanvas.height);
+              if(state.assinaturaImg && state.assinaturaImg.length>100){
+                var img=new Image();
+                img.onload=function(){ signCtx.drawImage(img,0,0,signCanvas.width,signCanvas.height); };
+                img.src=state.assinaturaImg;
+              }
+            }
+            alertasParaZero();
+            preparar(state.registros,state.config,state.currentOcorrenciaId,state.mes,state.ano);
+            renderDerived();
+            renderChecklist();
+            toast.success("♻️ Backup restaurado com sucesso!");
           }
-        }
-        alertasParaZero();
-        preparar(state.registros,state.config,state.currentOcorrenciaId,state.mes,state.ano);
-        renderDerived();
-        renderChecklist();
-        toast.success("♻️ Backup restaurado com sucesso!");
+        });
+
       }catch(err){
         toast.error("Arquivo de backup inválido.");
       }
@@ -2686,25 +2732,32 @@ function setCheckItem(item, status) {
 }
 
 function limparChecklist() {
-  if(confirm("Tem certeza que deseja limpar todas as marcações do Check List?")) {
-    state.checklist.itens = {};
-    $("ckData").value = "";
-    $("ckKm").value = "";
-    $("ckLitros").value = "";
-    $("ckNivel").value = "";
-    $("ckPagamento").value = "";
-    $("ckCartao").value = "SIM";
-    $("ckCrv").value = "SIM";
-    state.checklist.dataAbast = "";
-    state.checklist.kmAbast = "";
-    state.checklist.litros = "";
-    state.checklist.nivelCombustivel = "";
-    state.checklist.pagamento = "";
-    state.checklist.cartao = "SIM";
-    save(true);
-    renderChecklist();
-    toast.success("Check List limpo!");
-  }
+  showConfirm({
+    icon: "🧽",
+    title: "Limpar Check List",
+    message: "Tem certeza que deseja limpar todas as marcações do Check List?",
+    okText: "Limpar",
+    okClass: "btn-red",
+    onConfirm: function() {
+      state.checklist.itens = {};
+      $("ckData").value = "";
+      $("ckKm").value = "";
+      $("ckLitros").value = "";
+      $("ckNivel").value = "";
+      $("ckPagamento").value = "";
+      $("ckCartao").value = "SIM";
+      $("ckCrv").value = "SIM";
+      state.checklist.dataAbast = "";
+      state.checklist.kmAbast = "";
+      state.checklist.litros = "";
+      state.checklist.nivelCombustivel = "";
+      state.checklist.pagamento = "";
+      state.checklist.cartao = "SIM";
+      save(true);
+      renderChecklist();
+      toast.success("Check List limpo!");
+    }
+  });
 }
 
 function concluirChecklist() {
@@ -3047,26 +3100,40 @@ window.adminToggleBlock = function(username) {
 };
 
 window.adminDeleteUser = function(username) {
-  if (confirm("Tem certeza que deseja excluir o usuário " + username + "?")) {
-    var users = getUsers().filter(function(u) { return u.username !== username; });
-    saveUsers(users);
-    renderUsersList();
-    toast.success("Usuário excluído.");
-  }
+  showConfirm({
+    icon: "🗑️",
+    title: "Excluir Usuário",
+    message: "Tem certeza que deseja excluir o usuário " + username + "?",
+    okText: "Excluir",
+    okClass: "btn-red",
+    onConfirm: function() {
+      var users = getUsers().filter(function(u) { return u.username !== username; });
+      saveUsers(users);
+      renderUsersList();
+      toast.success("Usuário excluído.");
+    }
+  });
 };
 
 window.adminResetPassword = function(username) {
-  if (confirm("Resetar a senha de " + username + " para '123456'?")) {
-    var users = getUsers();
-    var user = users.find(function(u) { return u.username === username; });
-    if (user) {
-      user.password = btoa("123456");
-      user.requiresPasswordChange = true;
-      saveUsers(users);
-      renderUsersList();
-      toast.success("Senha resetada. O usuário deverá trocá-la no próximo acesso.");
+  showConfirm({
+    icon: "🔑",
+    title: "Resetar Senha",
+    message: "Resetar a senha de " + username + " para '123456'?",
+    okText: "Resetar",
+    okClass: "btn-red",
+    onConfirm: function() {
+      var users = getUsers();
+      var user = users.find(function(u) { return u.username === username; });
+      if (user) {
+        user.password = btoa("123456");
+        user.requiresPasswordChange = true;
+        saveUsers(users);
+        renderUsersList();
+        toast.success("Senha resetada. O usuário deverá trocá-la no próximo acesso.");
+      }
     }
-  }
+  });
 };
 
 function handleAddUser() {
@@ -3104,10 +3171,17 @@ function handleAddUser() {
 }
 
 function handleLogout() {
-  if (confirm("Deseja sair do sistema? O plantão atual não será perdido.")) {
-    localStorage.removeItem(AUTH_KEY);
-    location.reload();
-  }
+  showConfirm({
+    icon: "🚪",
+    title: "Sair do Sistema",
+    message: "Deseja sair do sistema? O plantão atual não será perdido.",
+    okText: "Sair",
+    okClass: "btn-red",
+    onConfirm: function() {
+      localStorage.removeItem(AUTH_KEY);
+      location.reload();
+    }
+  });
 }
 
 function wireEvents(){
@@ -3252,11 +3326,31 @@ function wireEvents(){
     if(e.target === this) this.hidden = true; 
   });
 
+  // ✅ Wiring dos botões do novo Modal de Confirmação
+  $("btnConfirmCancel").addEventListener("click", function() {
+    $("ovConfirm").hidden = true;
+    confirmCallback = null;
+    restaurarFoco();
+  });
+  $("btnConfirmOk").addEventListener("click", function() {
+    $("ovConfirm").hidden = true;
+    if (confirmCallback) confirmCallback();
+    confirmCallback = null;
+  });
+  $("ovConfirm").addEventListener("click", function(e) {
+    if(e.target === this) {
+      $("ovConfirm").hidden = true;
+      confirmCallback = null;
+      restaurarFoco();
+    }
+  });
+
   document.addEventListener("keydown",function(e){
     if(e.key==="Escape"){
       if(!$("ovAlerta").hidden) corrigirAlerta();
       if(!$("ovExcluir").hidden){ $("ovExcluir").hidden=true; confirmExcluir={open:false,id:""}; restaurarFoco(); }
       if(!$("ovTurno").hidden) $("ovTurno").hidden=true;
+      if(!$("ovConfirm").hidden){ $("ovConfirm").hidden=true; confirmCallback=null; restaurarFoco(); }
     }
   });
 }
