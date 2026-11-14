@@ -8,7 +8,6 @@
 <title>Sistema de Deslocamento VTR</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%9A%91%3C/text%3E%3C/svg%3E">
 
-<!-- ✅ CONFIGURAÇÃO PWA (INSTALAR NO CELULAR) -->
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -322,6 +321,10 @@ html[data-theme="dark"] .td-em{color:#34d399}
 .export-grid{display:grid;grid-template-columns:1fr;gap:.65rem}
 @media (min-width:640px){.export-grid{grid-template-columns:1fr 1fr}}
 
+/* ✅ GRID DE 3 COLUNAS — usada no Check List */
+.export-grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:.55rem}
+@media (max-width: 480px){ .export-grid-3{gap:.35rem} .export-grid-3 .btn{font-size:.72rem!important;gap:.2rem} }
+
 .app-footer{margin-top:auto;border-top:1px solid var(--border);background:var(--muted-soft);text-align:center;padding:.75rem 1rem;font-size:.68rem;font-weight:600;color:var(--muted-foreground)}
 
 .overlay{position:fixed;inset:0;background:rgba(2,6,23,.55);backdrop-filter:blur(2px);display:flex;align-items:center;justify-content:center;z-index:80;padding:1rem;animation:fadeIn .2s ease}
@@ -376,7 +379,6 @@ html[data-theme="dark"] #ovTurno .dlg-head h3{color:#fde047}
 .check-opt input[value="RUIM"]:checked + label { background: #d97706; border-color: #d97706; }
 .check-opt input[value="N TEM"]:checked + label { background: #dc2626; border-color: #dc2626; }
 
-/* ✅ CSS DA TELA DE LOGIN E TROCA DE SENHA */
 #loginScreen, #changePasswordScreen {
   position: fixed; inset: 0; background: var(--background);
   display: flex; align-items: center; justify-content: center; z-index: 9999;
@@ -399,7 +401,6 @@ html[data-theme="dark"] #ovTurno .dlg-head h3{color:#fde047}
   75% { transform: translateX(10px); }
 }
 
-/* ✅ CSS DOS USUÁRIOS */
 .user-card {
   display: flex; justify-content: space-between; align-items: center;
   padding: 10px; border: 1px solid var(--border); border-radius: 8px;
@@ -414,7 +415,6 @@ html[data-theme="dark"] #ovTurno .dlg-head h3{color:#fde047}
 </head>
 <body>
 
-<!-- ✅ TELA DE LOGIN -->
 <div id="loginScreen">
   <div class="login-box" id="loginBox">
     <span class="login-icon">🔐</span>
@@ -441,7 +441,6 @@ html[data-theme="dark"] #ovTurno .dlg-head h3{color:#fde047}
   </div>
 </div>
 
-<!-- ✅ TELA DE TROCA DE SENHA -->
 <div id="changePasswordScreen" hidden>
   <div class="login-box" id="changePasswordBox">
     <span class="login-icon">🔑</span>
@@ -655,9 +654,11 @@ html[data-theme="dark"] #ovTurno .dlg-head h3{color:#fde047}
       <textarea class="textarea field-upper" id="ckObsTxt" rows="3" placeholder="INTERCORRÊNCIAS / AVARIAS..." aria-label="Observações do check list"></textarea>
     </section>
 
-    <div class="export-grid" style="grid-template-columns: 1fr 1fr;">
-      <button class="btn btn-pdf" onclick="gerarPdfChecklist()" style="height:3rem;">📄 Gerar PDF</button>
-      <button class="btn" style="background:#25D366; color:#fff; height:3rem; font-size:0.85rem; box-shadow:0 6px 16px -6px rgba(37,211,102,.5);" onclick="handleCompartilharChecklist()">💬 Enviar WhatsApp</button>
+    <!-- ✅ CHECK LIST — 3 BOTÕES NA MESMA LINHA (PDF / WHATSAPP / TELEGRAM) -->
+    <div class="export-grid-3" style="margin-top:10px;">
+      <button class="btn btn-pdf" onclick="gerarPdfChecklist()" style="height:3rem; box-shadow:0 6px 16px -6px rgba(220,38,38,.5);">📄 PDF</button>
+      <button class="btn" style="background:#25D366; color:#fff; height:3rem; font-size:0.85rem; box-shadow:0 6px 16px -6px rgba(37,211,102,.5);" onclick="handleCompartilharChecklist('whatsapp')">💬 WhatsApp</button>
+      <button class="btn" style="background:#0088cc; color:#fff; height:3rem; font-size:0.85rem; box-shadow:0 6px 16px -6px rgba(0,136,204,.5);" onclick="handleCompartilharChecklist('telegram')">✈️ Telegram</button>
     </div>
     
     <div style="margin-top: 10px;">
@@ -2192,7 +2193,43 @@ function ignorarAlerta(){
   if(pendenteTipo){ executarRegistro(pendenteTipo); }
 }
 
-/* ✅ TELEGRAM — compartilhamento NATIVO com fallback */
+/* ✅ TELEGRAM — abre app nativo; só cai pro navegador se o app NÃO abriu em 2,5s */
+function abrirAppTelegram(appUrl, webUrl){
+  var appAbriu = false;
+  var timeoutMs = 2500;
+  var t0 = Date.now();
+
+  function marcarAppAbriu(){
+    if (appAbriu) return;
+    appAbriu = true;
+    limparListeners();
+  }
+  function onVisivel(){
+    if (document.hidden) marcarAppAbriu();
+  }
+  function onBlur(){ marcarAppAbriu(); }
+  function limparListeners(){
+    document.removeEventListener("visibilitychange", onVisivel);
+    window.removeEventListener("blur", onBlur);
+  }
+
+  document.addEventListener("visibilitychange", onVisivel);
+  window.addEventListener("blur", onBlur);
+
+  // Tenta abrir o app nativo via protocolo tg://
+  try{ window.location.href = appUrl; }catch(e){}
+
+  // Após 2,5s: só abre o navegador se a página NUNCA perdeu foco/hidden
+  setTimeout(function(){
+    limparListeners();
+    var aindaFocado = document.visibilityState === "visible" && (typeof document.hasFocus === "function" ? document.hasFocus() : true);
+    if (!appAbriu && aindaFocado && (Date.now() - t0) < 4000) {
+      window.open(webUrl, "_blank");
+    }
+  }, timeoutMs);
+}
+
+/* ✅ PLANTÃO — compartilha o relatório do plantão */
 function handleCompartilhar(plataforma){
   try{
     var veic = veiculoKey(state.config);
@@ -2203,13 +2240,11 @@ function handleCompartilhar(plataforma){
     var encodedText = encodeURIComponent(texto);
 
     if (plataforma === 'telegram') {
-      // Deep link NATIVO — abre o app do Telegram direto na tela de escolha de contato
-      var appUrl = "tg://msg_url?url=&text=" + encodedText;
-      // Fallback (caso o app não esteja instalado)
-      var webUrl = "https://t.me/share/url?url=&text=" + encodedText;
-      abrirAppTelegram(appUrl, webUrl);
+      abrirAppTelegram(
+        "tg://msg_url?url=&text=" + encodedText,
+        "https://t.me/share/url?url=&text=" + encodedText
+      );
     } else {
-      // WhatsApp (continua funcionando normalmente)
       window.open("https://api.whatsapp.com/send?text=" + encodedText, "_blank");
     }
   }catch(e){
@@ -2217,95 +2252,84 @@ function handleCompartilhar(plataforma){
   }
 }
 
-// ✅ TELEGRAM — abre app nativo; se falhar em 1,5s, abre versão web
-function abrirAppTelegram(appUrl, webUrl){
-  var agora = Date.now();
-  var timeoutMs = 1500;
-  var appAbriu = false;
+/* ✅ CHECK LIST — monta o texto do check list (reutilizado por WhatsApp e Telegram) */
+function buildChecklistText() {
+  var hoje = new Date();
+  var hora = hoje.getHours();
+  var saudacao = "";
+  if (hora < 12) saudacao = "Bom dia!";
+  else if (hora < 18) saudacao = "Boa Tarde!";
+  else saudacao = "Boa Noite!";
 
-  function aoSairDaPagina(){
-    appAbriu = true;
-    document.removeEventListener("visibilitychange", aoSairDaPagina);
+  var dataStr = pad(hoje.getDate()) + "/" + pad(hoje.getMonth() + 1) + "/" + hoje.getFullYear();
+  var plantaoCompleto = state.config.plantao || "SD 12hs";
+
+  var text = "*🚑💭 CHECK LIST DA VTR*\n\n";
+  text += saudacao + "\n\n";
+  text += "CONDUTOR: " + (state.config.condutor || "").toUpperCase() + "\n";
+  text += "UNIDADE: " + (state.config.unidade || "").toUpperCase() + "   PLANTÃO: " + plantaoCompleto + "\n";
+  text += "VTR: " + veiculoKey(state.config) + "\n";
+  text += "CARTÃO: " + (state.checklist.cartao || "NÃO") + " CRV: " + (state.config.crv || "NÃO") + "\n";
+  text += "O² PORTÁTIL: " + formatPct(state.config.o2Portatil) + " FIXO: " + formatPct(state.config.o2Fixo) + "\n";
+  text += "-----------------------------------\n";
+
+  text += "ABASTECIMENTO: " + (state.checklist.pagamento || "Não informado") + "\n";
+
+  var dtAbast = state.checklist.dataAbast ? formatDateBR(state.checklist.dataAbast) : "";
+  var kmAbast = state.checklist.kmAbast || "-";
+  var litros = state.checklist.litros || "-";
+  var nivel = state.checklist.nivelCombustivel || "Não informado";
+
+  text += "Data: " + dtAbast + "  | KM: " + kmAbast + "\n";
+  text += "Litros: " + litros + "  Nível: " + nivel + "\n";
+  text += "-----------------------------------\n";
+
+  var itensRuins = [];
+  var itensNTem = [];
+  var itensBons = 0;
+
+  TODOS_ITENS.forEach(function(item) {
+    var st = state.checklist.itens ? state.checklist.itens[item] : null;
+    if (st === "BOM") itensBons++;
+    else if (st === "RUIM") itensRuins.push(item);
+    else if (st === "N TEM") itensNTem.push(item);
+  });
+
+  text += "VERIFICAÇÃO: ✅ BOM: " + itensBons + " itens\n";
+
+  if (itensNTem.length > 0) {
+    text += "❌ NÃO TEM 👇🏻:\n";
+    itensNTem.forEach(function(i) { text += " - " + i + "\n"; });
   }
-  document.addEventListener("visibilitychange", aoSairDaPagina);
 
-  try{
-    window.location.href = appUrl;
-  }catch(e){}
+  if (itensRuins.length > 0) {
+    text += "⚠️ RUIM 👇🏻:\n";
+    itensRuins.forEach(function(i) { text += " - " + i + "\n"; });
+  }
 
-  setTimeout(function(){
-    document.removeEventListener("visibilitychange", aoSairDaPagina);
-    if (!appAbriu && document.visibilityState === "visible" && (Date.now() - agora) < 2500) {
-      window.open(webUrl, "_blank");
-    }
-  }, timeoutMs);
+  if (itensRuins.length === 0 && itensNTem.length === 0 && itensBons > 0) {
+    text += "✅ TODOS OS ITENS VERIFICADOS ESTÃO BONS.\n";
+  }
+
+  text += "\nDATA: " + dataStr + "\n\n";
+  text += "OBS: " + (state.config.observacao ? state.config.observacao.toUpperCase() : "VTR SEM NOVAS AVARIAS");
+  return text;
 }
 
-function handleCompartilharChecklist() {
+/* ✅ CHECK LIST — envia por WhatsApp OU Telegram */
+function handleCompartilharChecklist(plataforma) {
   try {
-    var hoje = new Date();
-    var hora = hoje.getHours();
-    var saudacao = "";
-    
-    if (hora < 12) saudacao = "Bom dia!";
-    else if (hora < 18) saudacao = "Boa Tarde!";
-    else saudacao = "Boa Noite!";
+    var text = buildChecklistText();
+    var encoded = encodeURIComponent(text);
 
-    var dataStr = pad(hoje.getDate()) + "/" + pad(hoje.getMonth() + 1) + "/" + hoje.getFullYear();
-    var plantaoCompleto = state.config.plantao || "SD 12hs";
-    
-    var text = "*🚑💭 CHECK LIST DA VTR*\n\n";
-    text += saudacao + "\n\n";
-    text += "CONDUTOR: " + (state.config.condutor || "").toUpperCase() + "\n";
-    text += "UNIDADE: " + (state.config.unidade || "").toUpperCase() + "   PLANTÃO: " + plantaoCompleto + "\n";
-    text += "VTR: " + veiculoKey(state.config) + "\n";
-    text += "CARTÃO: " + (state.checklist.cartao || "NÃO") + " CRV: " + (state.config.crv || "NÃO") + "\n";
-    text += "O² PORTÁTIL: " + formatPct(state.config.o2Portatil) + " FIXO: " + formatPct(state.config.o2Fixo) + "\n";
-    text += "-----------------------------------\n";
-    
-    text += "ABASTECIMENTO: " + (state.checklist.pagamento || "Não informado") + "\n";
-    
-    var dtAbast = state.checklist.dataAbast ? formatDateBR(state.checklist.dataAbast) : "";
-    var kmAbast = state.checklist.kmAbast || "-";
-    var litros = state.checklist.litros || "-";
-    var nivel = state.checklist.nivelCombustivel || "Não informado";
-    
-    text += "Data: " + dtAbast + "  | KM: " + kmAbast + "\n";
-    text += "Litros: " + litros + "  Nível: " + nivel + "\n";
-    text += "-----------------------------------\n";
-    
-    var itensRuins = [];
-    var itensNTem = [];
-    var itensBons = 0;
-
-    TODOS_ITENS.forEach(function(item) {
-      var st = state.checklist.itens ? state.checklist.itens[item] : null;
-      if (st === "BOM") itensBons++;
-      else if (st === "RUIM") itensRuins.push(item);
-      else if (st === "N TEM") itensNTem.push(item);
-    });
-
-    text += "VERIFICAÇÃO: ✅ BOM: " + itensBons + " itens\n";
-    
-    if (itensNTem.length > 0) {
-      text += "❌ NÃO TEM 👇🏻:\n";
-      itensNTem.forEach(function(i) { text += " - " + i + "\n"; });
+    if (plataforma === 'telegram') {
+      abrirAppTelegram(
+        "tg://msg_url?url=&text=" + encoded,
+        "https://t.me/share/url?url=&text=" + encoded
+      );
+    } else {
+      window.open("https://api.whatsapp.com/send?text=" + encoded, "_blank");
     }
-    
-    if (itensRuins.length > 0) {
-      text += "⚠️ RUIM 👇🏻:\n";
-      itensRuins.forEach(function(i) { text += " - " + i + "\n"; });
-    }
-
-    if (itensRuins.length === 0 && itensNTem.length === 0 && itensBons > 0) {
-      text += "✅ TODOS OS ITENS VERIFICADOS ESTÃO BONS.\n";
-    }
-
-    text += "\nDATA: " + dataStr + "\n\n";
-    text += "OBS: " + (state.config.observacao ? state.config.observacao.toUpperCase() : "VTR SEM NOVAS AVARIAS");
-
-    var url = "https://api.whatsapp.com/send?text=" + encodeURIComponent(text);
-    window.open(url, "_blank");
   } catch(e) {
     toast.error("Erro ao tentar enviar o Check List.");
   }
