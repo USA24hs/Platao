@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -636,8 +635,8 @@ html[data-theme="dark"] #ovTurno .dlg-head h3{color:#fde047}
               </select>
             </div>
             <div class="f-field" style="flex: 1;">
-              <label class="f-label" for="ckCRLV">CRLV</label>
-              <select class="f-input" id="ckCRLV" style="height:2.5rem">
+              <label class="f-label" for="ckCrv">CRLV</label>
+              <select class="f-input" id="ckCrv" style="height:2.5rem">
                 <option value="SIM">SIM</option>
                 <option value="NÃO">NÃO</option>
               </select>
@@ -750,7 +749,6 @@ html[data-theme="dark"] #ovTurno .dlg-head h3{color:#fde047}
   </div>
 </div>
 
-<!-- ✅ NOVO MODAL DE CONFIRMAÇÃO CUSTOMIZADO -->
 <div class="overlay" id="ovConfirm" hidden>
   <div class="modal" role="dialog" aria-modal="true" aria-labelledby="confirmTitle">
     <div class="dlg-head">
@@ -778,7 +776,6 @@ var FROTA_KEY   = "frotaKms_hci";
 var AUTH_KEY    = "sistemaDeslocamentoVTR_auth";
 var USERS_KEY   = "sistemaDeslocamentoVTR_users";
 
-/* ✅ CODIFICAÇÃO SEGURA BASE64 (suporta acentos, emojis, etc.) */
 function b64EncodeUnicode(str) {
   try {
     return btoa(encodeURIComponent(str).replace(/%([0-9A-F]{2})/g, function(match, p1) {
@@ -835,7 +832,7 @@ var DEFAULT_CONFIG = {
   plantao: "SD 12hs",
   kmInicial: "",
   cartao: "",
-  CRLV: "SIM",
+  crv: "SIM",
   o2Portatil: "125%",
   o2Fixo: "150%",
   abastecimento: "75%",
@@ -853,7 +850,7 @@ var CHECKLIST_ITENS_DIR = [
   "CHAVE DE RODAS", "TRIANGULO", "AR CONDICIONADO", "RÁDIO DE COMUNICAÇÃO", "GIRO FLEX",
   "SIRENE", "LUZES INTERNAS", "LUZ DE FREIO", "LUZ DE EMBARQUE", "SIRENE DE RÉ", "MACA",
   "CADEIRA DE RODAS", "CONES", "CILINDRO DE OXIGÊNIO PORTATIL", "CILINDRO DE AR COMPRIMIDO",
-  "CILINDRO DE OXIGÊNIO FIXO", "CABO DE FORÇA", "PRANCHA", "LIMPEZA EXTERNA", "LIMPADOR DE PARA BRISA"
+  "CILINDRO DE OXIGÊNIO FIXO", "CABO DE FORÇA", "PRANCHA", "LIMPEZA EXTERNA", "PARA-BRISA / LIMPADOR"
 ];
 var TODOS_ITENS = CHECKLIST_ITENS_ESQ.concat(CHECKLIST_ITENS_DIR);
 
@@ -1211,7 +1208,7 @@ function migrarLegado(raw){
       plantao: d.plantao||DEFAULT_CONFIG.plantao,
       kmInicial: d.kmInicial||"",
       cartao: d.cartao||DEFAULT_CONFIG.cartao,
-      CRLV: d.CRLV||DEFAULT_CONFIG.CRLV,
+      crv: d.crv||DEFAULT_CONFIG.crv,
       o2Portatil: d.o2Portatil||DEFAULT_CONFIG.o2Portatil,
       o2Fixo: d.o2Fixo||DEFAULT_CONFIG.o2Fixo,
       abastecimento: d.abastecimento||DEFAULT_CONFIG.abastecimento,
@@ -1446,7 +1443,7 @@ function buildChecklistHTML(checkData) {
     '<div class="sub">Controle de Frota • '+escapeHtml(checkData.unidade.toUpperCase())+' • gerado em '+dataHoraAgoraBR()+'</div>'+
     '<table class="info">'+
     '<tr><td class="k">Condutor</td><td>'+escapeHtml(checkData.condutor.toUpperCase())+'</td><td class="k">VTR</td><td>'+escapeHtml(checkData.veiculo)+'</td></tr>'+
-    '<tr><td class="k">Cartão</td><td>'+escapeHtml(checkData.cartao||"-")+'</td><td class="k">CRLV</td><td>'+escapeHtml(checkData.CRLV||"-")+'</td></tr>'+
+    '<tr><td class="k">Cartão</td><td>'+escapeHtml(checkData.cartao||"-")+'</td><td class="k">CRLV</td><td>'+escapeHtml(checkData.crv||"-")+'</td></tr>'+
     '<tr><td class="k">Data Abast.</td><td>'+formatDateBR(checkData.dataAbast)+'</td><td class="k">KM Abast.</td><td>'+escapeHtml(checkData.kmAbast||"-")+'</td></tr>'+
     '<tr><td class="k">Litros</td><td>'+escapeHtml(checkData.litros||"-")+'</td><td class="k">Forma Pagto.</td><td>'+escapeHtml(checkData.pagamento||"-")+'</td></tr>'+
     '<tr><td class="k">Nível Comb.</td><td>'+escapeHtml(checkData.nivelCombustivel||"-")+'</td><td class="k">Data</td><td>'+dataHoraAgoraBR()+'</td></tr>'+
@@ -1755,7 +1752,7 @@ var lastFocusEl=null;
 var loginAttempts=0;
 var loginBlockedUntil=0;
 var pendingUserForPasswordChange = null;
-var confirmCallback = null; // Armazena o callback do modal de confirmação
+var confirmCallback = null;
 function restaurarFoco(){ if(lastFocusEl && lastFocusEl.focus){ try{ lastFocusEl.focus(); }catch(e){} } lastFocusEl=null; }
 
 var CAMPOS=[
@@ -1768,7 +1765,7 @@ var CAMPOS=[
   { field:"o2Portatil",    label:"O² Portátil",   icon:"💨", placeholder:"Ex: 125%" },
   { field:"o2Fixo",        label:"O² Fixo",       icon:"💨", placeholder:"Ex: 150%" },
   { field:"abastecimento", label:"Abastecimento", icon:"⛽", placeholder:"Ex: 75%" },
-  { field:"CRLV",           label:"CRLV",           icon:"📄", placeholder:"Ex: SIM" }
+  { field:"crv",           label:"CRLV",          icon:"📄", placeholder:"Ex: SIM" }
 ];
 
 function toast(msg,type){
@@ -1787,7 +1784,6 @@ toast.success=function(m){ toast(m,"success"); };
 toast.warning=function(m){ toast(m,"warning"); };
 toast.error  =function(m){ toast(m,"error"); };
 
-/* ✅ NOVA FUNÇÃO DE CONFIRMAÇÃO CUSTOMIZADA */
 function showConfirm(opts) {
   $("confirmIcon").textContent = opts.icon || "❓";
   $("confirmTitle").textContent = opts.title || "Confirmação";
@@ -1961,10 +1957,10 @@ function handleConfigChange(field,value){
     }
   }
 
-  if(field==="CRLV"){
-    var ckCRLV = $("ckCRLV");
-    if (ckCRLV) {
-      ckCRLV.value = value;
+  if(field==="crv"){
+    var ckCrv = $("ckCrv");
+    if (ckCrv) {
+      ckCrv.value = value;
     }
   }
 
@@ -2359,7 +2355,9 @@ function handleCompartilhar(plataforma){
   }
 }
 
-function buildChecklistText() {
+/* ✅ ATUALIZAÇÃO DE FORMATAÇÃO E CRLV NO CHECKLIST */
+function buildChecklistText(platform) {
+  var bold = (platform === 'telegram') ? '**' : '*';
   var hoje = new Date();
   var hora = hoje.getHours();
   var saudacao = "";
@@ -2370,12 +2368,12 @@ function buildChecklistText() {
   var dataStr = pad(hoje.getDate()) + "/" + pad(hoje.getMonth() + 1) + "/" + hoje.getFullYear();
   var plantaoCompleto = state.config.plantao || "SD 12hs";
 
-  var text = "*🚑💭 CHECK LIST DA VTR*\n\n";
+  var text = bold + "🚑💭 CHECK LIST DA VTR" + bold + "\n\n";
   text += saudacao + "\n\n";
   text += "CONDUTOR: " + (state.config.condutor || "").toUpperCase() + "\n";
   text += "UNIDADE: " + (state.config.unidade || "").toUpperCase() + "   PLANTÃO: " + plantaoCompleto + "\n";
   text += "VTR: " + veiculoKey(state.config) + "\n";
-  text += "CARTÃO: " + (state.checklist.cartao || "NÃO") + " CRLV: " + (state.config.CRLV || "NÃO") + "\n";
+  text += "CARTÃO: " + (state.checklist.cartao || "NÃO") + " CRLV: " + (state.config.crv || "NÃO") + "\n";
   text += "O² PORTÁTIL: " + formatPct(state.config.o2Portatil) + " FIXO: " + formatPct(state.config.o2Fixo) + "\n";
   text += "-----------------------------------\n";
 
@@ -2424,7 +2422,7 @@ function buildChecklistText() {
 
 function handleCompartilharChecklist(plataforma) {
   try {
-    var text = buildChecklistText();
+    var text = buildChecklistText(plataforma);
     var encoded = encodeURIComponent(text);
 
     if (plataforma === 'telegram') {
@@ -2730,7 +2728,7 @@ function renderChecklist() {
   $("ckNivel").value = state.checklist.nivelCombustivel || "";
   $("ckPagamento").value = state.checklist.pagamento || "";
   $("ckCartao").value = state.checklist.cartao || "SIM";
-  if ($("ckCRLV")) $("ckCRLV").value = state.config.CRLV || "SIM";
+  if ($("ckCrv")) $("ckCrv").value = state.config.crv || "SIM";
   if ($("ckObsTxt")) $("ckObsTxt").value = state.config.observacao || "";
 
   var html = "";
@@ -2782,7 +2780,7 @@ function limparChecklist() {
       $("ckNivel").value = "";
       $("ckPagamento").value = "";
       $("ckCartao").value = "SIM";
-      $("ckCRLV").value = "SIM";
+      $("ckCrv").value = "SIM";
       state.checklist.dataAbast = "";
       state.checklist.kmAbast = "";
       state.checklist.litros = "";
@@ -2814,7 +2812,7 @@ function gerarPdfChecklist() {
       nivelCombustivel: $("ckNivel").value,
       pagamento: $("ckPagamento").value,
       cartao: $("ckCartao").value,
-      CRLV: $("ckCRLV").value,
+      crv: $("ckCrv").value,
       observacao: state.config.observacao,
       itens: state.checklist.itens || {}
     };
@@ -2994,7 +2992,6 @@ function initAuthSystem() {
 
     var passMatch = false;
     if (userFound) {
-      // Compara com a nova codificação segura, com fallback para btoa antigo
       passMatch = (b64EncodeUnicode(p) === userFound.password) || (btoa(p) === userFound.password);
     }
 
@@ -3346,10 +3343,10 @@ function wireEvents(){
     save();
   });
 
-  $("ckCRLV").addEventListener("change", function(e) {
-    state.config.CRLV = e.target.value;
-    var cfgCRLV = $("cfg-CRLV");
-    if (cfgCRLV) cfgCRLV.value = state.config.CRLV;
+  $("ckCrv").addEventListener("change", function(e) {
+    state.config.crv = e.target.value;
+    var cfgCrv = $("cfg-crv");
+    if (cfgCrv) cfgCrv.value = state.config.crv;
     save();
   });
 
@@ -3386,7 +3383,6 @@ function wireEvents(){
     if(e.target === this) this.hidden = true; 
   });
 
-  // ✅ Wiring dos botões do novo Modal de Confirmação
   $("btnConfirmCancel").addEventListener("click", function() {
     $("ovConfirm").hidden = true;
     confirmCallback = null;
@@ -3458,7 +3454,7 @@ function init(){
     state.config.kmInicial=kmInicialSugerido(state.config);
   }
 
-  if (!state.config.CRLV) state.config.CRLV = "SIM";
+  if (!state.config.crv) state.config.crv = "SIM";
 
   buildHeaderGrid();
   wireEvents();
