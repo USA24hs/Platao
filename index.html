@@ -511,7 +511,8 @@ html[data-theme="dark"] #ovTurno .dlg-head h3{color:#fde047}
         </div>
         <div class="f-field">
           <label class="f-label" for="fKm">🛞 KM (Odômetro)</label>
-          <input class="f-input no-spinner" id="fKm" type="number" step="0.1" inputmode="decimal" placeholder="0.0">
+          <!-- ✅ PLACEHOLDER ATUALIZADO -->
+          <input class="f-input no-spinner" id="fKm" type="number" step="0.1" inputmode="decimal" placeholder="Ex: 125000">
         </div>
         
         <div class="f-field">
@@ -521,7 +522,8 @@ html[data-theme="dark"] #ovTurno .dlg-head h3{color:#fde047}
 
         <div class="f-field full" style="position: relative;">
           <label class="f-label" for="fLocal">📍 Local / Destino (Origem → Destino)</label>
-          <input class="f-input field-upper" id="fLocal" type="text" placeholder="DIGITE O DESTINO AQUI" autocomplete="off">
+          <!-- ✅ PLACEHOLDER ATUALIZADO -->
+          <input class="f-input field-upper" id="fLocal" type="text" placeholder="Ex: SÓ SAÚDE → HOSPITAL CENTRAL" autocomplete="off">
           <div id="sugestoesDestinoBox" class="sugestoes-box"></div>
         </div>
       </div>
@@ -556,7 +558,8 @@ html[data-theme="dark"] #ovTurno .dlg-head h3{color:#fde047}
         <canvas class="sign-canvas" id="signCanvas" height="120" aria-label="Área de assinatura — desenhe com o dedo ou mouse"></canvas>
         <div class="nome-field">
           <label class="lbl-mini" for="nomeLegivel">Nome completo</label>
-          <input class="inp-lg field-upper" id="nomeLegivel" type="text" placeholder="Nome completo">
+          <!-- ✅ PLACEHOLDER ATUALIZADO -->
+          <input class="inp-lg field-upper" id="nomeLegivel" type="text" placeholder="Ex: Anderson Martins">
         </div>
       </section>
     </div>
@@ -582,7 +585,8 @@ html[data-theme="dark"] #ovTurno .dlg-head h3{color:#fde047}
         </div>
         <div class="f-field">
           <label class="f-label" for="ckKm">KM Abast.</label>
-          <input class="f-input no-spinner" id="ckKm" type="number" step="0.1" placeholder="0.0" style="height:2.5rem">
+          <!-- ✅ PLACEHOLDER ATUALIZADO -->
+          <input class="f-input no-spinner" id="ckKm" type="number" step="0.1" placeholder="Ex: 125000" style="height:2.5rem">
         </div>
         <div class="f-field">
           <label class="f-label" for="ckNivel">Nível Combustível</label>
@@ -623,7 +627,8 @@ html[data-theme="dark"] #ovTurno .dlg-head h3{color:#fde047}
           <div style="display: flex; gap: 8px; width: 100%;">
             <div class="f-field" style="flex: 1;">
               <label class="f-label" for="ckLitros">Litros</label>
-              <input class="f-input no-spinner" id="ckLitros" type="number" step="0.1" placeholder="0.0" style="height:2.5rem">
+              <!-- ✅ PLACEHOLDER ATUALIZADO -->
+              <input class="f-input no-spinner" id="ckLitros" type="number" step="0.1" placeholder="Ex: 30.5" style="height:2.5rem">
             </div>
             <div class="f-field" style="flex: 1;">
               <label class="f-label" for="ckCartao">Cartão</label>
@@ -677,11 +682,13 @@ html[data-theme="dark"] #ovTurno .dlg-head h3{color:#fde047}
       <div class="form-grid">
         <div class="f-field">
           <label class="f-label" for="newUserUsername">Usuário</label>
-          <input class="f-input" id="newUserUsername" type="text" placeholder="Ex: Joao">
+          <!-- ✅ PLACEHOLDER ATUALIZADO -->
+          <input class="f-input" id="newUserUsername" type="text" placeholder="Ex: Joao Silva" autocomplete="off">
         </div>
         <div class="f-field">
           <label class="f-label" for="newUserPassword">Senha Inicial</label>
-          <input class="f-input" id="newUserPassword" type="text" placeholder="Ex: Senha123">
+          <!-- ✅ PLACEHOLDER ATUALIZADO -->
+          <input class="f-input" id="newUserPassword" type="text" placeholder="Ex: Senha@2026" autocomplete="new-password">
         </div>
         <div class="f-field full">
           <label class="f-label" for="newUserRole">Perfil</label>
@@ -1680,17 +1687,18 @@ var loginBlockedUntil=0;
 var pendingUserForPasswordChange = null;
 function restaurarFoco(){ if(lastFocusEl && lastFocusEl.focus){ try{ lastFocusEl.focus(); }catch(e){} } lastFocusEl=null; }
 
+// ✅ CAMPOS COM PLACEHOLDERS ADICIONADOS
 var CAMPOS=[
-  { field:"unidade",       label:"Base",          icon:"🏠" },
-  { field:"condutor",      label:"Condutor",      icon:"👤" },
+  { field:"unidade",       label:"Base",          icon:"🏠", placeholder:"Ex: SÓ SAÚDE" },
+  { field:"condutor",      label:"Condutor",      icon:"👤", placeholder:"Ex: Anderson Martins" },
   { field:"plantao",       label:"Plantão",       icon:"📅", select:PLANTOES },
-  { field:"ambulancia",    label:"Ambulância",    icon:"🚑" },
-  { field:"placa",         label:"Placa",         icon:"🚗" },
-  { field:"kmInicial",     label:"KM Inicial",    icon:"🛞", type:"number" },
-  { field:"o2Portatil",    label:"O² Portátil",   icon:"💨" },
-  { field:"o2Fixo",        label:"O² Fixo",       icon:"💨" },
-  { field:"abastecimento", label:"Abastecimento", icon:"⛽" },
-  { field:"crv",           label:"CRV",           icon:"📄" }
+  { field:"ambulancia",    label:"Ambulância",    icon:"🚑", placeholder:"Ex: MASTER" },
+  { field:"placa",         label:"Placa",         icon:"🚗", placeholder:"Ex: TGP5G55" },
+  { field:"kmInicial",     label:"KM Inicial",    icon:"🛞", type:"number", placeholder:"Ex: 125000" },
+  { field:"o2Portatil",    label:"O² Portátil",   icon:"💨", placeholder:"Ex: 125%" },
+  { field:"o2Fixo",        label:"O² Fixo",       icon:"💨", placeholder:"Ex: 150%" },
+  { field:"abastecimento", label:"Abastecimento", icon:"⛽", placeholder:"Ex: 75%" },
+  { field:"crv",           label:"CRV",           icon:"📄", placeholder:"Ex: SIM" }
 ];
 
 function toast(msg,type){
@@ -2747,6 +2755,7 @@ function handleLocalFocus(){
   },50);
 }
 
+// ✅ FUNÇÃO buildHeaderGrid COM SUPORTE A PLACEHOLDER
 function buildHeaderGrid(){
   $("cfgGrid").innerHTML=CAMPOS.map(function(c){
     var control;
@@ -2755,8 +2764,9 @@ function buildHeaderGrid(){
         return '<option value="'+escapeHtml(o)+'"'+(o===state.config[c.field]?" selected":"")+'>'+escapeHtml(o)+'</option>';
       }).join("")+'</select>';
     }else{
+      var ph = c.placeholder ? ' placeholder="'+escapeHtml(c.placeholder)+'"' : '';
       control='<input id="cfg-'+c.field+'"'+(c.type?' type="'+c.type+'"':' type="text"')+
-        (c.type==="number"?' inputmode="decimal"':'')+
+        (c.type==="number"?' inputmode="decimal"':'')+ph+
         ' value="'+escapeHtml(state.config[c.field])+'">';
     }
     return '<div class="hh-field"><label for="cfg-'+c.field+'">'+c.icon+' '+escapeHtml(c.label)+'</label>'+control+'</div>';
