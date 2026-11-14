@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -635,8 +636,8 @@ html[data-theme="dark"] #ovTurno .dlg-head h3{color:#fde047}
               </select>
             </div>
             <div class="f-field" style="flex: 1;">
-              <label class="f-label" for="ckCrv">CRV</label>
-              <select class="f-input" id="ckCrv" style="height:2.5rem">
+              <label class="f-label" for="ckCRLV">CRLV</label>
+              <select class="f-input" id="ckCRLV" style="height:2.5rem">
                 <option value="SIM">SIM</option>
                 <option value="NÃO">NÃO</option>
               </select>
@@ -834,7 +835,7 @@ var DEFAULT_CONFIG = {
   plantao: "SD 12hs",
   kmInicial: "",
   cartao: "",
-  crv: "SIM",
+  CRLV: "SIM",
   o2Portatil: "125%",
   o2Fixo: "150%",
   abastecimento: "75%",
@@ -1210,7 +1211,7 @@ function migrarLegado(raw){
       plantao: d.plantao||DEFAULT_CONFIG.plantao,
       kmInicial: d.kmInicial||"",
       cartao: d.cartao||DEFAULT_CONFIG.cartao,
-      crv: d.crv||DEFAULT_CONFIG.crv,
+      CRLV: d.CRLV||DEFAULT_CONFIG.CRLV,
       o2Portatil: d.o2Portatil||DEFAULT_CONFIG.o2Portatil,
       o2Fixo: d.o2Fixo||DEFAULT_CONFIG.o2Fixo,
       abastecimento: d.abastecimento||DEFAULT_CONFIG.abastecimento,
@@ -1445,7 +1446,7 @@ function buildChecklistHTML(checkData) {
     '<div class="sub">Controle de Frota • '+escapeHtml(checkData.unidade.toUpperCase())+' • gerado em '+dataHoraAgoraBR()+'</div>'+
     '<table class="info">'+
     '<tr><td class="k">Condutor</td><td>'+escapeHtml(checkData.condutor.toUpperCase())+'</td><td class="k">VTR</td><td>'+escapeHtml(checkData.veiculo)+'</td></tr>'+
-    '<tr><td class="k">Cartão</td><td>'+escapeHtml(checkData.cartao||"-")+'</td><td class="k">CRV</td><td>'+escapeHtml(checkData.crv||"-")+'</td></tr>'+
+    '<tr><td class="k">Cartão</td><td>'+escapeHtml(checkData.cartao||"-")+'</td><td class="k">CRLV</td><td>'+escapeHtml(checkData.CRLV||"-")+'</td></tr>'+
     '<tr><td class="k">Data Abast.</td><td>'+formatDateBR(checkData.dataAbast)+'</td><td class="k">KM Abast.</td><td>'+escapeHtml(checkData.kmAbast||"-")+'</td></tr>'+
     '<tr><td class="k">Litros</td><td>'+escapeHtml(checkData.litros||"-")+'</td><td class="k">Forma Pagto.</td><td>'+escapeHtml(checkData.pagamento||"-")+'</td></tr>'+
     '<tr><td class="k">Nível Comb.</td><td>'+escapeHtml(checkData.nivelCombustivel||"-")+'</td><td class="k">Data</td><td>'+dataHoraAgoraBR()+'</td></tr>'+
@@ -1767,7 +1768,7 @@ var CAMPOS=[
   { field:"o2Portatil",    label:"O² Portátil",   icon:"💨", placeholder:"Ex: 125%" },
   { field:"o2Fixo",        label:"O² Fixo",       icon:"💨", placeholder:"Ex: 150%" },
   { field:"abastecimento", label:"Abastecimento", icon:"⛽", placeholder:"Ex: 75%" },
-  { field:"crv",           label:"CRV",           icon:"📄", placeholder:"Ex: SIM" }
+  { field:"CRLV",           label:"CRLV",           icon:"📄", placeholder:"Ex: SIM" }
 ];
 
 function toast(msg,type){
@@ -1960,10 +1961,10 @@ function handleConfigChange(field,value){
     }
   }
 
-  if(field==="crv"){
-    var ckCrv = $("ckCrv");
-    if (ckCrv) {
-      ckCrv.value = value;
+  if(field==="CRLV"){
+    var ckCRLV = $("ckCRLV");
+    if (ckCRLV) {
+      ckCRLV.value = value;
     }
   }
 
@@ -2374,7 +2375,7 @@ function buildChecklistText() {
   text += "CONDUTOR: " + (state.config.condutor || "").toUpperCase() + "\n";
   text += "UNIDADE: " + (state.config.unidade || "").toUpperCase() + "   PLANTÃO: " + plantaoCompleto + "\n";
   text += "VTR: " + veiculoKey(state.config) + "\n";
-  text += "CARTÃO: " + (state.checklist.cartao || "NÃO") + " CRV: " + (state.config.crv || "NÃO") + "\n";
+  text += "CARTÃO: " + (state.checklist.cartao || "NÃO") + " CRLV: " + (state.config.CRLV || "NÃO") + "\n";
   text += "O² PORTÁTIL: " + formatPct(state.config.o2Portatil) + " FIXO: " + formatPct(state.config.o2Fixo) + "\n";
   text += "-----------------------------------\n";
 
@@ -2729,7 +2730,7 @@ function renderChecklist() {
   $("ckNivel").value = state.checklist.nivelCombustivel || "";
   $("ckPagamento").value = state.checklist.pagamento || "";
   $("ckCartao").value = state.checklist.cartao || "SIM";
-  if ($("ckCrv")) $("ckCrv").value = state.config.crv || "SIM";
+  if ($("ckCRLV")) $("ckCRLV").value = state.config.CRLV || "SIM";
   if ($("ckObsTxt")) $("ckObsTxt").value = state.config.observacao || "";
 
   var html = "";
@@ -2781,7 +2782,7 @@ function limparChecklist() {
       $("ckNivel").value = "";
       $("ckPagamento").value = "";
       $("ckCartao").value = "SIM";
-      $("ckCrv").value = "SIM";
+      $("ckCRLV").value = "SIM";
       state.checklist.dataAbast = "";
       state.checklist.kmAbast = "";
       state.checklist.litros = "";
@@ -2813,7 +2814,7 @@ function gerarPdfChecklist() {
       nivelCombustivel: $("ckNivel").value,
       pagamento: $("ckPagamento").value,
       cartao: $("ckCartao").value,
-      crv: $("ckCrv").value,
+      CRLV: $("ckCRLV").value,
       observacao: state.config.observacao,
       itens: state.checklist.itens || {}
     };
@@ -3345,10 +3346,10 @@ function wireEvents(){
     save();
   });
 
-  $("ckCrv").addEventListener("change", function(e) {
-    state.config.crv = e.target.value;
-    var cfgCrv = $("cfg-crv");
-    if (cfgCrv) cfgCrv.value = state.config.crv;
+  $("ckCRLV").addEventListener("change", function(e) {
+    state.config.CRLV = e.target.value;
+    var cfgCRLV = $("cfg-CRLV");
+    if (cfgCRLV) cfgCRLV.value = state.config.CRLV;
     save();
   });
 
@@ -3457,7 +3458,7 @@ function init(){
     state.config.kmInicial=kmInicialSugerido(state.config);
   }
 
-  if (!state.config.crv) state.config.crv = "SIM";
+  if (!state.config.CRLV) state.config.CRLV = "SIM";
 
   buildHeaderGrid();
   wireEvents();
