@@ -142,6 +142,16 @@ html[data-theme="dark"] .f-input.base-ok{border-color:#10b981;background:rgba(2,
 .btn-ghost-sm{height:1.75rem;border:none;background:transparent;color:var(--muted-foreground);font-size:.7rem;font-weight:700;border-radius:.5rem;padding:0 .5rem;cursor:pointer;display:inline-flex;align-items:center;gap:.25rem}
 .btn-ghost-sm:hover{color:var(--foreground);background:var(--muted)}
 
+/* ✅ ESTILO DO BOTÃO SWITCH ON/OFF */
+.switch { position: relative; display: inline-block; width: 46px; height: 26px; }
+.switch input { opacity: 0; width: 0; height: 0; }
+.slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 26px; }
+.slider:before { position: absolute; content: ""; height: 20px; width: 20px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; box-shadow: 0 1px 3px rgba(0,0,0,.3); }
+input:checked + .slider { background-color: #059669; }
+input:checked + .slider:before { transform: translateX(20px); }
+html[data-theme="dark"] .slider { background-color: #475569; }
+html[data-theme="dark"] input:checked + .slider { background-color: #10b981; }
+
 .hist-list{display:flex;flex-direction:column;gap:.75rem;max-height:560px;overflow-y:auto;padding-right:2px;padding-bottom:8px;}
 .ficha{border:1px solid var(--border);border-radius:.75rem;background:var(--card);overflow:visible;box-shadow:0 1px 3px rgba(2,8,20,.06);animation:cardIn .28s ease both;margin-bottom:2px;}
 .ficha-head{display:flex;justify-content:space-between;align-items:center;gap:.5rem;background:var(--muted-soft);border-bottom:1px solid var(--border);padding:.5rem .75rem;border-radius:.75rem .75rem 0 0;}
@@ -574,16 +584,39 @@ html[data-theme="dark"] #ovTurno .dlg-head h3{color:#fde047}
 
   <div id="paneChecklist" class="tab-pane" role="tabpanel" aria-label="Check List">
     <section class="card" aria-label="Dados de Abastecimento">
-      <h2 class="sec-title">⛽ Abastecimento e Nível</h2>
+      
+      <!-- ✅ CABEÇALHO DO ABASTECIMENTO COM BOTÃO SWITCH -->
+      <div class="card-head-row">
+        <h2 class="sec-title" style="margin:0;">⛽ Abastecimento e Nível</h2>
+        <div style="display:flex; align-items:center; gap:8px;">
+          <span style="font-size:0.7rem; font-weight:800; color:var(--muted-foreground); text-transform:uppercase;">Ativo</span>
+          <label class="switch">
+            <input type="checkbox" id="ckAbastecimentoAtivo" checked>
+            <span class="slider round"></span>
+          </label>
+        </div>
+      </div>
+
       <div class="form-grid" style="grid-template-columns: 1fr 1fr;">
-        <div class="f-field">
+        <!-- Campos que ficam ocultos se o switch estiver OFF -->
+        <div class="f-field" id="field-ckData">
           <label class="f-label" for="ckData">Data Abast.</label>
           <input class="f-input" id="ckData" type="date" style="height:2.5rem">
         </div>
-        <div class="f-field">
+        <div class="f-field" id="field-ckKm">
           <label class="f-label" for="ckKm">KM Abast.</label>
           <input class="f-input no-spinner" id="ckKm" type="number" step="0.1" placeholder="Ex: 125000" style="height:2.5rem">
         </div>
+        <div class="f-field" id="field-ckPagamento">
+          <label class="f-label" for="ckPagamento">Forma de Abastecimento</label>
+          <select class="f-input" id="ckPagamento" style="height:2.5rem">
+            <option value="">Selecione...</option>
+            <option value="Cartão">Cartão</option>
+            <option value="Nota">Nota</option>
+          </select>
+        </div>
+        
+        <!-- Campos que continuam visíveis -->
         <div class="f-field">
           <label class="f-label" for="ckNivel">Nível Combustível</label>
           <select class="f-input" id="ckNivel" style="height:2.5rem">
@@ -610,18 +643,10 @@ html[data-theme="dark"] #ovTurno .dlg-head h3{color:#fde047}
             <option value="E - Reserva">⛽ E - Reserva</option>
           </select>
         </div>
-        <div class="f-field">
-          <label class="f-label" for="ckPagamento">Forma de Abastecimento</label>
-          <select class="f-input" id="ckPagamento" style="height:2.5rem">
-            <option value="">Selecione...</option>
-            <option value="Cartão">Cartão</option>
-            <option value="Nota">Nota</option>
-          </select>
-        </div>
         
         <div class="f-field full">
           <div style="display: flex; gap: 8px; width: 100%;">
-            <div class="f-field" style="flex: 1;">
+            <div class="f-field" style="flex: 1;" id="field-ckLitros">
               <label class="f-label" for="ckLitros">Litros</label>
               <input class="f-input no-spinner" id="ckLitros" type="number" step="0.1" placeholder="Ex: 30.5" style="height:2.5rem">
             </div>
@@ -838,7 +863,6 @@ var DEFAULT_CONFIG = {
   observacao: ""
 };
 
-// ✅ LISTA EM ORDEM ALFABÉTICA (20 ESQ / 20 DIR)
 var CHECKLIST_ITENS_ESQ = [
   "AR CONDICIONADO", "BANCOS", "BUZINA", "CABO DE FORÇA", "CADEIRA DE RODAS",
   "CAPA PARA CHUVA", "CHAVE DE RODAS", "CHAVE DE TROCA DO O²", "CILINDRO DE AR COMPRIMIDO",
@@ -1231,7 +1255,7 @@ function defaultStore(){
     version:3, registros:[], config:Object.assign({},DEFAULT_CONFIG),
     assinaturaImg:"", currentOcorrenciaId:String(Date.now()),
     mes:agora.getMonth()+1, ano:agora.getFullYear(),
-    checklist: {}
+    checklist: { abastecimentoAtivo: true }
   };
 }
 function loadStore(){
@@ -1247,7 +1271,7 @@ function loadStore(){
         currentOcorrenciaId: d.currentOcorrenciaId||String(Date.now()),
         mes: d.mes||(new Date().getMonth()+1),
         ano: d.ano||new Date().getFullYear(),
-        checklist: d.checklist||{}
+        checklist: d.checklist || { abastecimentoAtivo: true }
       };
     }
     var legacy=localStorage.getItem(LEGACY_KEY);
@@ -1279,7 +1303,7 @@ function buildWhatsAppText(registros,cfg,now){
   texto+="PLANTÃO: "+plantaoSigla+" | "+cfg.unidade.toUpperCase()+"\n";
   texto+="VTR: "+cfg.ambulancia.toUpperCase()+" PLACA: "+cfg.placa.toUpperCase()+"\n";
   texto+="O² PORTÁTIL: "+formatPct(cfg.o2Portatil)+" FIXO: "+formatPct(cfg.o2Fixo)+"\n";
-  texto+="ABASTECIMENTO: "+formatPct(cfg.abastecimento)+" CARTÃO: "+(cfg.cartao?cfg.cartao.toUpperCase():"SEM")+"\n";
+  texto+="COMBUSTÍVEL: "+formatPct(cfg.abastecimento)+" CARTÃO: "+(cfg.cartao?cfg.cartao.toUpperCase():"SEM")+"\n";
   texto+="OBS: "+(cfg.observacao?cfg.observacao.toUpperCase():"SEM NOVAS AVARIAS")+"\n\n";
   texto+="Bom plantão a todos! "+dataStr+" "+horaStr+"\n";
   texto+="-----------------------------------\n";
@@ -1764,7 +1788,7 @@ var CAMPOS=[
   { field:"kmInicial",     label:"KM Inicial",    icon:"🛞", type:"number", placeholder:"Ex: 125000" },
   { field:"o2Portatil",    label:"O² Portátil",   icon:"💨", placeholder:"Ex: 125%" },
   { field:"o2Fixo",        label:"O² Fixo",       icon:"💨", placeholder:"Ex: 150%" },
-  { field:"abastecimento", label:"Abastecimento", icon:"⛽", placeholder:"Ex: 75%" },
+  { field:"abastecimento", label:"Combustível",   icon:"⛽", placeholder:"Ex: 75%" },
   { field:"crv",           label:"CRLV",          icon:"📄", placeholder:"Ex: SIM" }
 ];
 
@@ -2376,15 +2400,21 @@ function buildChecklistText(platform) {
   text += "O² PORTÁTIL: " + formatPct(state.config.o2Portatil) + " FIXO: " + formatPct(state.config.o2Fixo) + "\n";
   text += "-----------------------------------\n";
 
-  text += "ABASTECIMENTO: " + (state.checklist.pagamento || "Não informado") + "\n";
+  var ativo = state.checklist.abastecimentoAtivo !== false;
 
-  var dtAbast = state.checklist.dataAbast ? formatDateBR(state.checklist.dataAbast) : "";
-  var kmAbast = state.checklist.kmAbast || "-";
-  var litros = state.checklist.litros || "-";
-  var nivel = state.checklist.nivelCombustivel || "Não informado";
-
-  text += "Data: " + dtAbast + "  | KM: " + kmAbast + "\n";
-  text += "Litros: " + litros + "  Nível: " + nivel + "\n";
+  if (ativo) {
+    text += "ABASTECIMENTO: " + (state.checklist.pagamento || "Não informado") + "\n";
+    var dtAbast = state.checklist.dataAbast ? formatDateBR(state.checklist.dataAbast) : "";
+    var kmAbast = state.checklist.kmAbast || "-";
+    var litros = state.checklist.litros || "-";
+    var nivel = state.checklist.nivelCombustivel || "Não informado";
+    text += "Data: " + dtAbast + "  | KM: " + kmAbast + "\n";
+    text += "Litros: " + litros + "  Nível: " + nivel + "\n";
+  } else {
+    var nivel = state.checklist.nivelCombustivel || "Não informado";
+    text += "NÍVEL COMBUSTÍVEL: " + nivel + "\n";
+  }
+  
   text += "-----------------------------------\n";
 
   var itensRuins = [];
@@ -2398,7 +2428,7 @@ function buildChecklistText(platform) {
     else if (st === "N TEM") itensNTem.push(item);
   });
 
-  text += "VERIFICAÇÃO: ✅ BOM: " + itensBons + " itens\n";
+  text += "VERIFICAÇÃO: ✅ BOM: " + itensBons + "/" + TODOS_ITENS.length + " itens\n";
 
   if (itensNTem.length > 0) {
     text += "❌ NÃO TEM 👇🏻:\n";
@@ -2524,7 +2554,7 @@ function importarBackup(file){
             state.currentOcorrenciaId=d.currentOcorrenciaId||String(Date.now());
             state.mes=d.mes||(new Date().getMonth()+1);
             state.ano=d.ano||new Date().getFullYear();
-            state.checklist=d.checklist||{};
+            state.checklist=d.checklist||{ abastecimentoAtivo: true };
             if(!state.config.kmInicial) state.config.kmInicial=kmInicialSugerido(state.config);
             updateFrotaKms(state.registros);
             save(true);
@@ -2720,8 +2750,21 @@ function renderMensal(){
 
 function renderChecklist() {
   if(!state.checklist.itens) state.checklist.itens = {};
+  if(state.checklist.abastecimentoAtivo === undefined) state.checklist.abastecimentoAtivo = true;
   
-  $("ckData").value = state.checklist.dataAbast || "";
+  if (!state.checklist.dataAbast) state.checklist.dataAbast = hojeStr();
+  
+  var ativo = state.checklist.abastecimentoAtivo;
+  if ($("ckAbastecimentoAtivo")) $("ckAbastecimentoAtivo").checked = ativo;
+  
+  // Mostra/Oculta campos de abastecimento
+  var displayStyle = ativo ? "" : "none";
+  if ($("field-ckData")) $("field-ckData").style.display = displayStyle;
+  if ($("field-ckKm")) $("field-ckKm").style.display = displayStyle;
+  if ($("field-ckPagamento")) $("field-ckPagamento").style.display = displayStyle;
+  if ($("field-ckLitros")) $("field-ckLitros").style.display = displayStyle;
+  
+  $("ckData").value = state.checklist.dataAbast;
   $("ckKm").value = state.checklist.kmAbast || "";
   $("ckLitros").value = state.checklist.litros || "";
   $("ckNivel").value = state.checklist.nivelCombustivel || "";
@@ -2773,14 +2816,16 @@ function limparChecklist() {
     okClass: "btn-red",
     onConfirm: function() {
       state.checklist.itens = {};
-      $("ckData").value = "";
+      state.checklist.abastecimentoAtivo = true;
+      $("ckAbastecimentoAtivo").checked = true;
+      $("ckData").value = hojeStr();
       $("ckKm").value = "";
       $("ckLitros").value = "";
       $("ckNivel").value = "";
       $("ckPagamento").value = "";
       $("ckCartao").value = "SIM";
       $("ckCrv").value = "SIM";
-      state.checklist.dataAbast = "";
+      state.checklist.dataAbast = hojeStr();
       state.checklist.kmAbast = "";
       state.checklist.litros = "";
       state.checklist.nivelCombustivel = "";
@@ -3273,6 +3318,13 @@ function wireEvents(){
 
   $("btnAddUser").addEventListener("click", handleAddUser);
 
+  // Switch de Abastecimento
+  $("ckAbastecimentoAtivo").addEventListener("change", function(e) {
+    state.checklist.abastecimentoAtivo = e.target.checked;
+    save();
+    renderChecklist();
+  });
+
   $("fData").addEventListener("input",function(e){ form.data=e.target.value; });
   $("fHora").addEventListener("input",function(e){ form.hora=e.target.value; setAlert("hora",false); });
   $("fKm").addEventListener("input",function(e){ form.km=e.target.value; setAlert("km",false); });
@@ -3447,6 +3499,8 @@ function init(){
   state.mes=store.mes;
   state.ano=store.ano;
   state.checklist=store.checklist || {};
+  if (state.checklist.abastecimentoAtivo === undefined) state.checklist.abastecimentoAtivo = true;
+  
   updateFrotaKms(store.registros);
 
   if(!state.config.kmInicial.trim()){
