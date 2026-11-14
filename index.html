@@ -84,8 +84,8 @@ main{flex:1;width:100%;max-width:768px;margin:0 auto;padding:8px 8px;display:fle
 .hh-field label{display:flex;align-items:center;gap:.25rem;font-size:.6rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:rgba(255,255,255,.62);margin-bottom:.2rem}
 .hh-field input,.hh-field select{width:100%;height:2rem;border:none;border-radius:.5rem;padding:0 .5rem;font-size:.8rem;font-weight:700;color:#0a3d4f;background:#fff}
 
-.tabs{display:flex;gap:.25rem;background:var(--muted);border-radius:.75rem;padding:.25rem;height:2.75rem;box-shadow:inset 0 1px 2px rgba(0,0,0,.06)}
-.tab-btn{flex:1;border:none;background:transparent;border-radius:.55rem;font-size:.8rem;font-weight:700;color:var(--muted-foreground);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:.4rem;transition:all .2s}
+.tabs{display:flex;gap:.25rem;background:var(--muted);border-radius:.75rem;padding:.25rem;height:2.75rem;box-shadow:inset 0 1px 2px rgba(0,0,0,.06); overflow-x: auto;}
+.tab-btn{flex:1;min-width: 80px; border:none;background:transparent;border-radius:.55rem;font-size:.8rem;font-weight:700;color:var(--muted-foreground);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:.4rem;transition:all .2s}
 .tab-btn.active{background:#fde047;color:#000;box-shadow:0 2px 8px -2px rgba(0,0,0,.25)}
 .tab-pane{display:flex;flex-direction:column;gap:8px}
 
@@ -304,7 +304,7 @@ html[data-theme="dark"] .stat-value.em{color:#34d399}
   .hh-grid{padding:.55rem;gap:.4rem;}
 
   .tabs { height: 2.5rem; padding: 0.2rem; }
-  .tab-btn { font-size: 0.72rem; gap: 0.2rem; }
+  .tab-btn { font-size: 0.72rem; gap: 0.2rem; min-width: auto; padding: 0 0.3rem;}
 }
 
 .vtr-table{width:100%;border-collapse:collapse;font-size:.78rem}
@@ -375,9 +375,96 @@ html[data-theme="dark"] #ovTurno .dlg-head h3{color:#fde047}
 .check-opt input[value="BOM"]:checked + label { background: #059669; border-color: #059669; }
 .check-opt input[value="RUIM"]:checked + label { background: #d97706; border-color: #d97706; }
 .check-opt input[value="N TEM"]:checked + label { background: #dc2626; border-color: #dc2626; }
+
+/* ✅ CSS DA TELA DE LOGIN E TROCA DE SENHA */
+#loginScreen, #changePasswordScreen {
+  position: fixed; inset: 0; background: var(--background);
+  display: flex; align-items: center; justify-content: center; z-index: 9999;
+}
+.login-box {
+  background: var(--card); padding: 2rem 1.5rem; border-radius: 1rem;
+  border: 1px solid var(--border); text-align: center; width: 90%; max-width: 340px;
+  box-shadow: 0 10px 40px -10px rgba(0,0,0,0.3); animation: popIn .3s ease;
+}
+.login-icon { font-size: 3rem; margin-bottom: 0.5rem; display: block; }
+.login-box h2 { margin: 0 0 0.5rem; font-size: 1.2rem; color: var(--foreground); font-weight: 800; }
+.login-box p { font-size: 0.85rem; color: var(--muted-foreground); margin-bottom: 1.5rem; }
+.input-group { margin-bottom: 12px; text-align: left; }
+.input-group label { font-size: 0.7rem; font-weight: 700; color: var(--muted-foreground); margin-bottom: 4px; display: block; }
+.error-msg { color: var(--destructive); font-size: 0.75rem; margin-top: 0.75rem; font-weight: 700; animation: fadeIn .2s; }
+.shake { animation: shake .4s; }
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-10px); }
+  75% { transform: translateX(10px); }
+}
+
+/* ✅ CSS DOS USUÁRIOS */
+.user-card {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 10px; border: 1px solid var(--border); border-radius: 8px;
+  margin-bottom: 8px; background: var(--card);
+}
+.user-info { display: flex; flex-direction: column; gap: 2px; }
+.user-name { font-weight: 800; font-size: 0.9rem; }
+.user-role { font-size: 0.7rem; font-weight: 700; color: var(--primary); text-transform: uppercase; }
+.user-actions { display: flex; gap: 4px; }
+.blocked { background: #fee2e2; color: #b91c1c; padding: 2px 6px; border-radius: 4px; font-size: 0.65rem; font-weight: 800; }
 </style>
 </head>
 <body>
+
+<!-- ✅ TELA DE LOGIN -->
+<div id="loginScreen">
+  <div class="login-box" id="loginBox">
+    <span class="login-icon">🔐</span>
+    <h2>Sistema VTR</h2>
+    <p>Acesso Restrito</p>
+    
+    <div class="input-group">
+      <label for="usernameInput">Usuário</label>
+      <input type="text" id="usernameInput" class="f-input" style="height:2.5rem;" placeholder="Ex: Martins" autocomplete="username">
+    </div>
+    
+    <div class="input-group">
+      <label for="passwordInput">Senha</label>
+      <input type="password" id="passwordInput" class="f-input" style="height:2.5rem;" placeholder="••••••••" autocomplete="current-password">
+    </div>
+    
+    <div id="loginError" class="error-msg" hidden></div>
+    
+    <button id="btnLogin" class="btn btn-chegada" style="width:100%; height:3rem; margin-top:1rem; font-size:1rem;">Entrar</button>
+    
+    <!-- ✅ BOTÃO DE SUPORTE WHATSAPP -->
+    <a href="https://wa.me/5598988248877?text=Ol%C3%A1,%20estou%20com%20problemas%20para%20acessar%20o%20sistema%20VTR." target="_blank" class="btn" style="width:100%; height:2.5rem; margin-top:0.75rem; background:#25D366; color:#fff; font-size:0.85rem; text-decoration:none;">
+      💬 Suporte via WhatsApp
+    </a>
+  </div>
+</div>
+
+<!-- ✅ TELA DE TROCA DE SENHA -->
+<div id="changePasswordScreen" hidden>
+  <div class="login-box" id="changePasswordBox">
+    <span class="login-icon">🔑</span>
+    <h2>Nova Senha Obrigatória</h2>
+    <p>Por segurança, altere sua senha no primeiro acesso ou após um reset.</p>
+    
+    <div class="input-group">
+      <label for="newPasswordInput">Nova Senha (mín. 6 caracteres)</label>
+      <input type="password" id="newPasswordInput" class="f-input" style="height:2.5rem;" placeholder="••••••••">
+    </div>
+    
+    <div class="input-group">
+      <label for="confirmPasswordInput">Confirmar Nova Senha</label>
+      <input type="password" id="confirmPasswordInput" class="f-input" style="height:2.5rem;" placeholder="••••••••">
+    </div>
+    
+    <div id="changePassError" class="error-msg" hidden></div>
+    
+    <button id="btnSavePassword" class="btn btn-chegada" style="width:100%; height:3rem; margin-top:1rem; font-size:1rem;">Salvar e Entrar</button>
+  </div>
+</div>
+
 <main>
   <header class="app-header">
     <div class="hh-top">
@@ -389,6 +476,8 @@ html[data-theme="dark"] #ovTurno .dlg-head h3{color:#fde047}
           <input id="inpAno" type="number" min="2000" max="2100" aria-label="Ano">
         </div>
         <button class="icon-btn" id="btnInstall" title="Instalar aplicativo no celular" aria-label="Instalar aplicativo no celular" hidden>📥</button>
+        <!-- ✅ BOTÃO DE LOGOUT -->
+        <button class="icon-btn" id="btnLogout" title="Sair do sistema" aria-label="Sair do sistema">🚪</button>
         <button class="icon-btn" id="btnTheme" title="Alternar tema claro/escuro" aria-label="Alternar tema claro/escuro">🌙</button>
         <button class="icon-btn" id="btnCollapse" aria-label="Expandir cabeçalho" aria-expanded="true" title="Expandir dados do plantão">▲</button>
       </div>
@@ -400,6 +489,8 @@ html[data-theme="dark"] #ovTurno .dlg-head h3{color:#fde047}
     <button class="tab-btn" id="tabPlantao" role="tab" aria-controls="panePlantao" aria-selected="false">📋 Plantão</button>
     <button class="tab-btn active" id="tabChecklist" role="tab" aria-controls="paneChecklist" aria-selected="true">🧰 Check List</button>
     <button class="tab-btn" id="tabMensal" role="tab" aria-controls="paneMensal" aria-selected="false">📊 Mensal</button>
+    <!-- ✅ NOVA ABA DE USUÁRIOS (SÓ ADMIN VÊ) -->
+    <button class="tab-btn" id="tabUsuarios" role="tab" aria-controls="paneUsuarios" aria-selected="false" hidden>👥 Usuários</button>
   </div>
 
   <div id="panePlantao" class="tab-pane" role="tabpanel" aria-label="Plantão" hidden>
@@ -474,7 +565,7 @@ html[data-theme="dark"] #ovTurno .dlg-head h3{color:#fde047}
 
     <button class="btn btn-pdf" id="btnPDF">📄 Gerar Relatório (PDF)</button>
 
-    <div class="export-grid" aria-label="Backup dos dados">
+    <div class="export-grid" aria-label="Backup dos dados" id="adminBackupArea">
       <button class="btn btn-gray" id="btnBackup">💾 Exportar Backup (.json)</button>
       <button class="btn btn-gray" id="btnRestore">♻️ Importar Backup</button>
     </div>
@@ -562,13 +653,11 @@ html[data-theme="dark"] #ovTurno .dlg-head h3{color:#fde047}
       <div id="checkListContent"></div>
     </section>
 
-    <!-- ✅ NOVO CAMPO DE OBSERVAÇÃO NO CHECKLIST -->
     <section class="card" aria-label="Observações do Checklist">
       <h2 class="sec-title">📋 Observações</h2>
       <textarea class="textarea field-upper" id="ckObsTxt" rows="3" placeholder="INTERCORRÊNCIAS / AVARIAS..." aria-label="Observações do check list"></textarea>
     </section>
 
-    <!-- ✅ BOTÕES PDF E WHATSAPP -->
     <div class="export-grid" style="grid-template-columns: 1fr 1fr;">
       <button class="btn btn-pdf" onclick="gerarPdfChecklist()" style="height:3rem;">📄 Gerar PDF</button>
       <button class="btn" style="background:#25D366; color:#fff; height:3rem; font-size:0.85rem; box-shadow:0 6px 16px -6px rgba(37,211,102,.5);" onclick="handleCompartilharChecklist()">💬 Enviar WhatsApp</button>
@@ -580,9 +669,39 @@ html[data-theme="dark"] #ovTurno .dlg-head h3{color:#fde047}
   </div>
 
   <div id="paneMensal" class="tab-pane" role="tabpanel" aria-label="Painel mensal" hidden></div>
+  
+  <!-- ✅ NOVA ABA DE USUÁRIOS -->
+  <div id="paneUsuarios" class="tab-pane" role="tabpanel" aria-label="Gerenciamento de Usuários" hidden>
+    <section class="card">
+      <h2 class="sec-title">👥 Cadastrar Novo Usuário</h2>
+      <div class="form-grid">
+        <div class="f-field">
+          <label class="f-label" for="newUserUsername">Usuário</label>
+          <input class="f-input" id="newUserUsername" type="text" placeholder="Ex: Joao">
+        </div>
+        <div class="f-field">
+          <label class="f-label" for="newUserPassword">Senha Inicial</label>
+          <input class="f-input" id="newUserPassword" type="text" placeholder="Ex: Senha123">
+        </div>
+        <div class="f-field full">
+          <label class="f-label" for="newUserRole">Perfil</label>
+          <select class="f-input" id="newUserRole">
+            <option value="condutor">Condutor</option>
+            <option value="admin">Administrador</option>
+          </select>
+        </div>
+      </div>
+      <button class="btn btn-chegada" id="btnAddUser" style="width:100%; margin-top:0.5rem; height:2.5rem;">Cadastrar Usuário</button>
+    </section>
+
+    <section class="card">
+      <h2 class="sec-title">👥 Usuários Cadastrados</h2>
+      <div id="userList"></div>
+    </section>
+  </div>
 </main>
 
-<footer class="app-footer">💾 Sistema de Deslocamento VTR v2.4 — dados salvos localmente neste dispositivo</footer>
+<footer class="app-footer">💾 Sistema de Deslocamento VTR v2.7 — dados salvos localmente neste dispositivo</footer>
 
 <div class="overlay" id="ovAlerta" hidden>
   <div class="modal" role="dialog" aria-modal="true" aria-labelledby="alertaTitle">
@@ -636,6 +755,31 @@ var MESES = ["Janeiro","Fevereiro","Março","Abril","Maio","Junho","Julho","Agos
 var STORAGE_KEY = "sistemaDeslocamentoVTR_v2";
 var LEGACY_KEY  = "sistemaDeslocamentoHCI_v57";
 var FROTA_KEY   = "frotaKms_hci";
+var AUTH_KEY    = "sistemaDeslocamentoVTR_auth";
+var USERS_KEY   = "sistemaDeslocamentoVTR_users";
+
+// ✅ USUÁRIOS PADRÃO (Só usados se não houver nenhum salvo no celular)
+var DEFAULT_USERS = [
+  { username: "Martins", password: btoa("B@lu4891"), role: "admin", name: "Martins", blocked: false, requiresPasswordChange: true },
+  { username: "Anderson", password: btoa("AdS&4891"), role: "condutor", name: "Anderson", blocked: false, requiresPasswordChange: true }
+];
+
+function getUsers() {
+  try {
+    var u = localStorage.getItem(USERS_KEY);
+    if (!u) {
+      localStorage.setItem(USERS_KEY, JSON.stringify(DEFAULT_USERS));
+      return DEFAULT_USERS;
+    }
+    return JSON.parse(u);
+  } catch(e) {
+    return DEFAULT_USERS;
+  }
+}
+
+function saveUsers(users) {
+  localStorage.setItem(USERS_KEY, JSON.stringify(users));
+}
 
 var DEFAULT_CONFIG = {
   condutor: "Anderson Martins",
@@ -655,7 +799,7 @@ var DEFAULT_CONFIG = {
 
 var CHECKLIST_ITENS_ESQ = [
   "ÓLEO DO MOTOR", "ÓLEO DIREÇÃO HIDRÁULICA", "ÓLEO DE FREIO", "TOMADAS INTERNAS",
-  "CHAVE DE TROCA DO O²", "FAROL BAIXO", "FAROL ALTO", "LIMPADOR DE PARA BRISA", "SINALERAS",
+  "CHAVE DE TROCA DO O²", "FAROL BAIXO", "FAROL ALTO", "LIMPEZA INTERNA", "SINALERAS",
   "RETROVISORES", "EXTINTOR DE INCÊNDIO", "PNEUS", "PNEU ESTEPE", "LATARIA", "BUZINA",
   "FREIO DE MÃO", "BANCOS", "ESCADA PARA MACA", "MACACO", "CAPA PARA CHUVA"
 ];
@@ -663,7 +807,7 @@ var CHECKLIST_ITENS_DIR = [
   "CHAVE DE RODAS", "TRIANGULO", "AR CONDICIONADO", "RÁDIO DE COMUNICAÇÃO", "GIRO FLEX",
   "SIRENE", "LUZES INTERNAS", "LUZ DE FREIO", "LUZ DE EMBARQUE", "SIRENE DE RÉ", "MACA",
   "CADEIRA DE RODAS", "CONES", "CILINDRO DE OXIGÊNIO PORTATIL", "CILINDRO DE AR COMPRIMIDO",
-  "CILINDRO DE OXIGÊNIO FIXO", "CABO DE FORÇA", "PRANCHA", "LIMPEZA INTERNA", "LIMPEZA EXTERNA"
+  "CILINDRO DE OXIGÊNIO FIXO", "CABO DE FORÇA", "PRANCHA", "LIMPEZA EXTERNA", "LIMPADOR DE PARA BRISA"
 ];
 var TODOS_ITENS = CHECKLIST_ITENS_ESQ.concat(CHECKLIST_ITENS_DIR);
 
@@ -1521,7 +1665,7 @@ function exportarFechamentoXLSX(rm,cfg,mes,ano){
 
 function $(id){ return document.getElementById(id); }
 
-var state={ registros:[], config:Object.assign({},DEFAULT_CONFIG), assinaturaImg:"", currentOcorrenciaId:"", mes:1, ano:2026, checklist:{} };
+var state={ registros:[], config:Object.assign({},DEFAULT_CONFIG), assinaturaImg:"", currentOcorrenciaId:"", mes:1, ano:2026, checklist:{}, user:null };
 var form={ data:"", hora:"", km:"", local:"" };
 var editingRecordId=null;
 var headerCollapsed=false;
@@ -1531,6 +1675,9 @@ var pendenteTipo=null;
 var confirmExcluir={ open:false, id:"" };
 var loaded=false;
 var lastFocusEl=null;
+var loginAttempts=0;
+var loginBlockedUntil=0;
+var pendingUserForPasswordChange = null;
 function restaurarFoco(){ if(lastFocusEl && lastFocusEl.focus){ try{ lastFocusEl.focus(); }catch(e){} } lastFocusEl=null; }
 
 var CAMPOS=[
@@ -2171,6 +2318,10 @@ function exportarExcel(){
 
 function exportarBackup(){
   try{
+    if(state.user && state.user.role !== "admin") {
+      toast.warning("Apenas administradores podem exportar o backup.");
+      return;
+    }
     var payload={
       version:3,
       exportadoEm:new Date().toISOString(),
@@ -2198,6 +2349,10 @@ function exportarBackup(){
 }
 function importarBackup(file){
   try{
+    if(state.user && state.user.role !== "admin") {
+      toast.warning("Apenas administradores podem importar o backup.");
+      return;
+    }
     var reader=new FileReader();
     reader.onload=function(){
       try{
@@ -2632,6 +2787,257 @@ function checkShiftUpdate() {
   }
 }
 
+// ✅ SISTEMA DE AUTENTICAÇÃO E LOGIN
+function initAuthSystem() {
+  var loginScreen = $("loginScreen");
+  var usernameInput = $("usernameInput");
+  var passwordInput = $("passwordInput");
+  var btnLogin = $("btnLogin");
+  var loginError = $("loginError");
+  var loginBox = $("loginBox");
+
+  function attemptLogin() {
+    if (Date.now() < loginBlockedUntil) {
+      var secs = Math.ceil((loginBlockedUntil - Date.now()) / 1000);
+      loginError.textContent = "Muitas tentativas. Aguarde " + secs + "s.";
+      loginError.hidden = false;
+      return;
+    }
+
+    var u = usernameInput.value.trim();
+    var p = passwordInput.value;
+
+    var users = getUsers();
+    var userFound = users.find(function(user) {
+      return user.username.toLowerCase() === u.toLowerCase();
+    });
+
+    if (userFound && userFound.blocked) {
+      loginError.textContent = "Este usuário está bloqueado. Contate o administrador.";
+      loginError.hidden = false;
+      loginBox.classList.add("shake");
+      setTimeout(function() { loginBox.classList.remove("shake"); }, 400);
+      return;
+    }
+
+    if (userFound && btoa(p) === userFound.password) {
+      // Sucesso
+      state.user = userFound;
+      loginAttempts = 0;
+      
+      if (userFound.requiresPasswordChange) {
+        // Força a troca de senha antes de entrar no app
+        pendingUserForPasswordChange = userFound;
+        loginScreen.style.display = "none";
+        $("changePasswordScreen").hidden = false;
+        $("newPasswordInput").focus();
+      } else {
+        // Login normal
+        localStorage.setItem(AUTH_KEY, JSON.stringify({ user: state.user, timestamp: Date.now() }));
+        loginScreen.style.display = "none";
+        applyUserPermissions();
+        toast.success("Bem-vindo, " + state.user.name + "!");
+      }
+    } else {
+      // Falha
+      loginAttempts++;
+      if (loginAttempts >= 5) {
+        loginBlockedUntil = Date.now() + 60000;
+        loginAttempts = 0;
+      }
+      
+      loginError.textContent = "Usuário ou senha incorretos.";
+      loginError.hidden = false;
+      passwordInput.value = "";
+      passwordInput.focus();
+      loginBox.classList.add("shake");
+      setTimeout(function() { loginBox.classList.remove("shake"); }, 400);
+    }
+  }
+
+  btnLogin.addEventListener("click", attemptLogin);
+  passwordInput.addEventListener("keypress", function(e) {
+    if (e.key === "Enter") attemptLogin();
+  });
+  usernameInput.addEventListener("keypress", function(e) {
+    if (e.key === "Enter") passwordInput.focus();
+  });
+
+  // Lógica da Tela de Troca de Senha
+  var changePassScreen = $("changePasswordScreen");
+  var newPasswordInput = $("newPasswordInput");
+  var confirmPasswordInput = $("confirmPasswordInput");
+  var btnSavePassword = $("btnSavePassword");
+  var changePassError = $("changePassError");
+
+  btnSavePassword.addEventListener("click", function() {
+    var newPass = newPasswordInput.value;
+    var confPass = confirmPasswordInput.value;
+
+    if (newPass.length < 6) {
+      changePassError.textContent = "A senha deve ter no mínimo 6 caracteres.";
+      changePassError.hidden = false;
+      return;
+    }
+
+    if (newPass !== confPass) {
+      changePassError.textContent = "As senhas não coincidem.";
+      changePassError.hidden = false;
+      return;
+    }
+
+    // Atualiza a senha no banco local
+    var users = getUsers();
+    var idx = users.findIndex(function(u) { return u.username === pendingUserForPasswordChange.username; });
+    if (idx !== -1) {
+      users[idx].password = btoa(newPass);
+      users[idx].requiresPasswordChange = false;
+      saveUsers(users);
+      
+      // Loga o usuário
+      state.user = users[idx];
+      localStorage.setItem(AUTH_KEY, JSON.stringify({ user: state.user, timestamp: Date.now() }));
+      
+      changePassScreen.hidden = true;
+      applyUserPermissions();
+      toast.success("Senha alterada com sucesso! Bem-vindo.");
+    }
+  });
+
+  // Verifica se já existe uma sessão válida (12 horas)
+  var savedAuth = localStorage.getItem(AUTH_KEY);
+  if (savedAuth) {
+    try {
+      var authData = JSON.parse(savedAuth);
+      // 12 horas = 12 * 60 * 60 * 1000 = 43200000
+      if (Date.now() - authData.timestamp < 43200000) {
+        state.user = authData.user;
+        loginScreen.style.display = "none";
+        applyUserPermissions();
+        return;
+      } else {
+        localStorage.removeItem(AUTH_KEY);
+      }
+    } catch(e) {}
+  }
+
+  // Se não estiver logado, foca no input
+  loginScreen.style.display = "flex";
+  usernameInput.focus();
+}
+
+function applyUserPermissions() {
+  var isAdmin = state.user && state.user.role === "admin";
+  
+  // Mostra aba de usuários só para admin
+  if ($("tabUsuarios")) $("tabUsuarios").hidden = !isAdmin;
+  if ($("adminBackupArea")) $("adminBackupArea").style.display = isAdmin ? "grid" : "none";
+  
+  if (isAdmin) {
+    renderUsersList();
+  }
+}
+
+function renderUsersList() {
+  var users = getUsers();
+  var html = "";
+  
+  users.forEach(function(u) {
+    var isBlocked = u.blocked;
+    var statusClass = isBlocked ? "blocked" : "";
+    var statusText = isBlocked ? "BLOQUEADO" : "";
+    
+    html += '<div class="user-card">' +
+      '<div class="user-info">' +
+        '<span class="user-name">' + escapeHtml(u.name) + ' ' + (statusText ? '<span class="'+statusClass+'">'+statusText+'</span>' : '') + '</span>' +
+        '<span class="user-role">' + (u.role === 'admin' ? 'Administrador' : 'Condutor') + ' • @' + escapeHtml(u.username) + '</span>' +
+      '</div>' +
+      '<div class="user-actions">' +
+        '<button class="mini-btn '+(u.requiresPasswordChange ? 'edit' : 'locked')+'" onclick="adminResetPassword(\''+u.username+'\')" title="Forçar troca de senha">🔑</button>' +
+        '<button class="mini-btn '+(isBlocked ? 'del' : 'edit')+'" onclick="adminToggleBlock(\''+u.username+'\')" title="'+(isBlocked ? 'Desbloquear' : 'Bloquear')+'">'+(isBlocked ? '🔓' : '🔒')+'</button>' +
+        (u.username !== 'Martins' ? '<button class="mini-btn del" onclick="adminDeleteUser(\''+u.username+'\')" title="Excluir usuário">🗑️</button>' : '') +
+      '</div>' +
+    '</div>';
+  });
+  
+  $("userList").innerHTML = html;
+}
+
+window.adminToggleBlock = function(username) {
+  var users = getUsers();
+  var user = users.find(function(u) { return u.username === username; });
+  if (user) {
+    user.blocked = !user.blocked;
+    saveUsers(users);
+    renderUsersList();
+    toast.success("Status do usuário alterado.");
+  }
+};
+
+window.adminDeleteUser = function(username) {
+  if (confirm("Tem certeza que deseja excluir o usuário " + username + "?")) {
+    var users = getUsers().filter(function(u) { return u.username !== username; });
+    saveUsers(users);
+    renderUsersList();
+    toast.success("Usuário excluído.");
+  }
+};
+
+window.adminResetPassword = function(username) {
+  if (confirm("Resetar a senha de " + username + " para '123456'?")) {
+    var users = getUsers();
+    var user = users.find(function(u) { return u.username === username; });
+    if (user) {
+      user.password = btoa("123456");
+      user.requiresPasswordChange = true;
+      saveUsers(users);
+      renderUsersList();
+      toast.success("Senha resetada. O usuário deverá trocá-la no próximo acesso.");
+    }
+  }
+};
+
+function handleAddUser() {
+  var u = $("newUserUsername").value.trim();
+  var p = $("newUserPassword").value.trim();
+  var r = $("newUserRole").value;
+
+  if (!u || !p) {
+    toast.warning("Preencha usuário e senha.");
+    return;
+  }
+
+  var users = getUsers();
+  if (users.find(function(user) { return user.username.toLowerCase() === u.toLowerCase(); })) {
+    toast.warning("Este usuário já existe.");
+    return;
+  }
+
+  users.push({
+    username: u,
+    password: btoa(p),
+    role: r,
+    name: u,
+    blocked: false,
+    requiresPasswordChange: true
+  });
+  saveUsers(users);
+  
+  $("newUserUsername").value = "";
+  $("newUserPassword").value = "";
+  $("newUserRole").value = "condutor";
+  
+  renderUsersList();
+  toast.success("Usuário cadastrado com sucesso!");
+}
+
+function handleLogout() {
+  if (confirm("Deseja sair do sistema? O plantão atual não será perdido.")) {
+    localStorage.removeItem(AUTH_KEY);
+    location.reload();
+  }
+}
+
 function wireEvents(){
   $("selMes").addEventListener("change",function(e){
     handleMesAnoChange(Number(e.target.value),state.ano);
@@ -2648,6 +3054,8 @@ function wireEvents(){
     $("btnTheme").textContent=now==="dark"?"☀️":"🌙";
   });
 
+  $("btnLogout").addEventListener("click", handleLogout);
+
   $("btnCollapse").addEventListener("click",function(){
     if (headerCollapsed) {
       switchTab("checklist");
@@ -2659,6 +3067,9 @@ function wireEvents(){
   $("tabPlantao").addEventListener("click",function(){ switchTab("plantao"); });
   $("tabChecklist").addEventListener("click",function(){ switchTab("checklist"); });
   $("tabMensal").addEventListener("click",function(){ switchTab("mensal"); });
+  $("tabUsuarios").addEventListener("click",function(){ switchTab("usuarios"); });
+
+  $("btnAddUser").addEventListener("click", handleAddUser);
 
   $("fData").addEventListener("input",function(e){ form.data=e.target.value; });
   $("fHora").addEventListener("input",function(e){ form.hora=e.target.value; setAlert("hora",false); });
@@ -2692,7 +3103,6 @@ function wireEvents(){
     if(btn.dataset.action==="compartilhar-oc") handleCompartilharOcorrencia(btn.dataset.id);
   });
 
-  // ✅ SINCRONIZAÇÃO DAS OBSERVAÇÕES
   $("obsTxt").value=state.config.observacao;
   $("obsTxt").addEventListener("input",function(e){ 
     state.config.observacao=e.target.value; 
@@ -2784,16 +3194,19 @@ function switchTab(t){
   $("tabPlantao").classList.toggle("active",t==="plantao");
   $("tabChecklist").classList.toggle("active",t==="checklist");
   $("tabMensal").classList.toggle("active",t==="mensal");
+  $("tabUsuarios").classList.toggle("active",t==="usuarios");
   
   $("tabPlantao").setAttribute("aria-selected",String(t==="plantao"));
   $("tabChecklist").setAttribute("aria-selected",String(t==="checklist"));
   $("tabMensal").setAttribute("aria-selected",String(t==="mensal"));
+  $("tabUsuarios").setAttribute("aria-selected",String(t==="usuarios"));
   
   $("panePlantao").hidden=(t!=="plantao");
   $("paneChecklist").hidden=(t!=="checklist");
   $("paneMensal").hidden=(t!=="mensal");
+  $("paneUsuarios").hidden=(t!=="usuarios");
   
-  if (t === "plantao" || t === "mensal") {
+  if (t === "plantao" || t === "mensal" || t === "usuarios") {
     setCollapsed(true);
   } else if (t === "checklist") {
     setCollapsed(false);
@@ -2801,6 +3214,7 @@ function switchTab(t){
 
   if(t==="mensal") renderMensal();
   if(t==="checklist") renderChecklist();
+  if(t==="usuarios") renderUsersList();
 }
 
 function init(){
@@ -2838,6 +3252,9 @@ function init(){
   checkShiftUpdate();
 
   switchTab("checklist");
+
+  // Inicializa o sistema de login com usuário e senha
+  initAuthSystem();
 
   window.addEventListener("pagehide",function(){
     if(saveTimer){ clearTimeout(saveTimer); saveTimer=null; saveNow(); }
