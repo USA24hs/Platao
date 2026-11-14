@@ -415,7 +415,7 @@ html[data-theme="dark"] #ovTurno .dlg-head h3{color:#fde047}
 .user-info { display: flex; flex-direction: column; gap: 2px; }
 .user-name { font-weight: 800; font-size: 0.9rem; }
 .user-role { font-size: 0.7rem; font-weight: 700; color: var(--primary); text-transform: uppercase; }
-.user-actions { display: flex; gap: 4px; }
+.user-actions { display: flex; gap: 4px; flex-wrap: wrap; }
 .blocked { background: #fee2e2; color: #b91c1c; padding: 2px 6px; border-radius: 4px; font-size: 0.65rem; font-weight: 800; }
 </style>
 </head>
@@ -759,9 +759,9 @@ html[data-theme="dark"] #ovTurno .dlg-head h3{color:#fde047}
         <p id="confirmMsg">Mensagem aqui.</p>
       </div>
     </div>
-    <div class="dlg-actions">
-      <button class="btn btn-gray" id="btnConfirmCancel">Cancelar</button>
-      <button class="btn btn-chegada" id="btnConfirmOk">OK</button>
+    <div class="dlg-actions" style="flex-direction: row; gap: 10px;">
+      <button class="btn btn-gray" id="btnConfirmCancel" style="flex:1;">Cancelar</button>
+      <button class="btn btn-chegada" id="btnConfirmOk" style="flex:1;">OK</button>
     </div>
   </div>
 </div>
@@ -777,9 +777,29 @@ var FROTA_KEY   = "frotaKms_hci";
 var AUTH_KEY    = "sistemaDeslocamentoVTR_auth";
 var USERS_KEY   = "sistemaDeslocamentoVTR_users";
 
+/* ✅ CODIFICAÇÃO SEGURA BASE64 (suporta acentos, emojis, etc.) */
+function b64EncodeUnicode(str) {
+  try {
+    return btoa(encodeURIComponent(str).replace(/%([0-9A-F]{2})/g, function(match, p1) {
+      return String.fromCharCode('0x' + p1);
+    }));
+  } catch(e) {
+    return btoa(str);
+  }
+}
+function b64DecodeUnicode(str) {
+  try {
+    return decodeURIComponent(Array.prototype.map.call(atob(str), function(c) {
+      return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+    }).join(''));
+  } catch(e) {
+    try { return atob(str); } catch(err) { return str; }
+  }
+}
+
 var DEFAULT_USERS = [
-  { username: "Martins", password: btoa("B@lu4891"), role: "admin", name: "Martins", blocked: false, requiresPasswordChange: true },
-  { username: "Anderson", password: btoa("AdS&4891"), role: "condutor", name: "Anderson", blocked: false, requiresPasswordChange: true }
+  { username: "Martins", password: b64EncodeUnicode("B@lu4891"), role: "admin", name: "Martins", blocked: false, requiresPasswordChange: true },
+  { username: "Anderson", password: b64EncodeUnicode("AdS&4891"), role: "condutor", name: "Anderson", blocked: false, requiresPasswordChange: true }
 ];
 
 function getUsers() {
@@ -789,14 +809,21 @@ function getUsers() {
       localStorage.setItem(USERS_KEY, JSON.stringify(DEFAULT_USERS));
       return DEFAULT_USERS;
     }
-    return JSON.parse(u);
+    var parsed = JSON.parse(u);
+    if (!Array.isArray(parsed)) throw new Error("Not an array");
+    return parsed;
   } catch(e) {
+    localStorage.setItem(USERS_KEY, JSON.stringify(DEFAULT_USERS));
     return DEFAULT_USERS;
   }
 }
 
 function saveUsers(users) {
-  localStorage.setItem(USERS_KEY, JSON.stringify(users));
+  try {
+    localStorage.setItem(USERS_KEY, JSON.stringify(users));
+  } catch(e) {
+    toast.error("Erro ao salvar. Armazenamento cheio?");
+  }
 }
 
 var DEFAULT_CONFIG = {
@@ -1763,14 +1790,22 @@ toast.error  =function(m){ toast(m,"error"); };
 function showConfirm(opts) {
   $("confirmIcon").textContent = opts.icon || "❓";
   $("confirmTitle").textContent = opts.title || "Confirmação";
-  $("confirmMsg").textContent = opts.message || "";
+  $("confirmMsg").innerHTML = opts.message || "";
   
   var btnOk = $("btnConfirmOk");
   var btnCancel = $("btnConfirmCancel");
   
   btnOk.textContent = opts.okText || "Confirmar";
   btnOk.className = "btn " + (opts.okClass || "btn-chegada");
-  btnCancel.textContent = opts.cancelText || "Cancelar";
+  
+  if (opts.cancelText === "") {
+    btnCancel.style.display = "none";
+    btnOk.style.flex = "1";
+  } else {
+    btnCancel.style.display = "flex";
+    btnCancel.style.flex = "1";
+    btnCancel.textContent = opts.cancelText || "Cancelar";
+  }
   
   confirmCallback = opts.onConfirm || null;
   
@@ -2956,7 +2991,13 @@ function initAuthSystem() {
       return;
     }
 
-    if (userFound && btoa(p) === userFound.password) {
+    var passMatch = false;
+    if (userFound) {
+      // Compara com a nova codificação segura, com fallback para btoa antigo
+      passMatch = (b64EncodeUnicode(p) === userFound.password) || (btoa(p) === userFound.password);
+    }
+
+    if (userFound && passMatch) {
       state.user = userFound;
       loginAttempts = 0;
       
@@ -3020,7 +3061,7 @@ function initAuthSystem() {
     var users = getUsers();
     var idx = users.findIndex(function(u) { return u.username === pendingUserForPasswordChange.username; });
     if (idx !== -1) {
-      users[idx].password = btoa(newPass);
+      users[idx].password = b64EncodeUnicode(newPass);
       users[idx].requiresPasswordChange = false;
       saveUsers(users);
       
@@ -3078,7 +3119,8 @@ function renderUsersList() {
         '<span class="user-role">' + (u.role === 'admin' ? 'Administrador' : 'Condutor') + ' • @' + escapeHtml(u.username) + '</span>' +
       '</div>' +
       '<div class="user-actions">' +
-        '<button class="mini-btn '+(u.requiresPasswordChange ? 'edit' : 'locked')+'" onclick="adminResetPassword(\''+u.username+'\')" title="Forçar troca de senha">🔑</button>' +
+        '<button class="mini-btn edit" onclick="adminShowPassword(\''+u.username+'\')" title="Ver Senha Atual">🔑</button>' +
+        '<button class="mini-btn edit" style="background:#fef08a; color:#854d0e;" onclick="adminResetPassword(\''+u.username+'\')" title="Forçar troca de senha (Reset)">🔄</button>' +
         '<button class="mini-btn '+(isBlocked ? 'del' : 'edit')+'" onclick="adminToggleBlock(\''+u.username+'\')" title="'+(isBlocked ? 'Desbloquear' : 'Bloquear')+'">'+(isBlocked ? '🔓' : '🔒')+'</button>' +
         (u.username !== 'Martins' ? '<button class="mini-btn del" onclick="adminDeleteUser(\''+u.username+'\')" title="Excluir usuário">🗑️</button>' : '') +
       '</div>' +
@@ -3099,11 +3141,28 @@ window.adminToggleBlock = function(username) {
   }
 };
 
+window.adminShowPassword = function(username) {
+  var users = getUsers();
+  var user = users.find(function(u) { return u.username === username; });
+  if (user) {
+    var pass = b64DecodeUnicode(user.password);
+    pass = escapeHtml(pass);
+    showConfirm({
+      icon: "🔑",
+      title: "Senha do Usuário",
+      message: "A senha atual de <strong>" + escapeHtml(user.name) + "</strong> é:<br><br><span style='font-size: 1.4rem; font-weight: 800; color: #059669; letter-spacing: 1px;'>" + pass + "</span>",
+      okText: "Fechar",
+      cancelText: "",
+      okClass: "btn-chegada"
+    });
+  }
+};
+
 window.adminDeleteUser = function(username) {
   showConfirm({
     icon: "🗑️",
     title: "Excluir Usuário",
-    message: "Tem certeza que deseja excluir o usuário " + username + "?",
+    message: "Tem certeza que deseja excluir o usuário <strong>" + escapeHtml(username) + "</strong>?",
     okText: "Excluir",
     okClass: "btn-red",
     onConfirm: function() {
@@ -3117,16 +3176,16 @@ window.adminDeleteUser = function(username) {
 
 window.adminResetPassword = function(username) {
   showConfirm({
-    icon: "🔑",
+    icon: "🔄",
     title: "Resetar Senha",
-    message: "Resetar a senha de " + username + " para '123456'?",
+    message: "Resetar a senha de <strong>" + escapeHtml(username) + "</strong> para <strong>123456</strong>?",
     okText: "Resetar",
     okClass: "btn-red",
     onConfirm: function() {
       var users = getUsers();
       var user = users.find(function(u) { return u.username === username; });
       if (user) {
-        user.password = btoa("123456");
+        user.password = b64EncodeUnicode("123456");
         user.requiresPasswordChange = true;
         saveUsers(users);
         renderUsersList();
@@ -3154,7 +3213,7 @@ function handleAddUser() {
 
   users.push({
     username: u,
-    password: btoa(p),
+    password: b64EncodeUnicode(p),
     role: r,
     name: u,
     blocked: false,
