@@ -81,7 +81,7 @@ main{flex:1;width:100%;max-width:768px;margin:0 auto;padding:8px 8px;display:fle
 .hh-field{background:rgba(255,255,255,.07);border-radius:.75rem;padding:.4rem .55rem;transition:background .2s}
 .hh-field:focus-within{background:rgba(255,255,255,.16)}
 .hh-field label{display:flex;align-items:center;gap:.25rem;font-size:.6rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:rgba(255,255,255,.62);margin-bottom:.2rem}
-.hh-field input,.hh-field select{width:100%;height:2rem;border:none;border-radius:.5rem;padding:0 .5rem;font-size:.8rem;font-weight:700;color:#0a3d4f;background:#fff}
+.hh-field input,.hh-field select{width:100%;height:2rem;border:none;border-radius:.5rem;padding:0 .5rem;font-size:.8rem;font-weight:700;color:#0a3d4f;background:#fff;cursor:pointer;}
 
 .tabs{display:flex;gap:.25rem;background:var(--muted);border-radius:.75rem;padding:.25rem;height:2.75rem;box-shadow:inset 0 1px 2px rgba(0,0,0,.06); overflow-x: auto;}
 .tab-btn{flex:1;min-width: 80px; border:none;background:transparent;border-radius:.55rem;font-size:.8rem;font-weight:700;color:var(--muted-foreground);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:.4rem;transition:all .2s}
@@ -796,6 +796,11 @@ var FROTA_KEY   = "frotaKms_hci";
 var AUTH_KEY    = "sistemaDeslocamentoVTR_auth";
 var USERS_KEY   = "sistemaDeslocamentoVTR_users";
 
+var NIVEIS_COMBUSTIVEL = [
+  "100% (Cheio)", "95%", "90%", "85%", "80%", "75% (3/4)", "70%", "65%", "60%", "55%", 
+  "50% (1/2)", "45%", "40%", "35%", "30%", "25% (1/4)", "20%", "15%", "10%", "E - Reserva"
+];
+
 function b64EncodeUnicode(str) {
   try {
     return btoa(encodeURIComponent(str).replace(/%([0-9A-F]{2})/g, function(match, p1) {
@@ -855,7 +860,7 @@ var DEFAULT_CONFIG = {
   crv: "SIM",
   o2Portatil: "125%",
   o2Fixo: "150%",
-  abastecimento: "75%",
+  abastecimento: "75% (3/4)",
   nomeLegivel: "Anderson Martins",
   observacao: ""
 };
@@ -883,7 +888,14 @@ function hojeStr(){ var d=new Date(); return d.getFullYear()+"-"+pad(d.getMonth(
 function horaAtual(){ var d=new Date(); return pad(d.getHours())+":"+pad(d.getMinutes()); }
 function dataHoraAgoraBR(){ return new Date().toLocaleString("pt-BR",{dateStyle:"short",timeStyle:"short"}); }
 function veiculoKey(cfg){ return cfg.ambulancia.trim().toUpperCase()+" - "+cfg.placa.trim().toUpperCase(); }
-function formatPct(val){ if(!val) return "-"; var v=String(val).replace("%","").trim(); return v+"%"; }
+function formatPct(val){ 
+  if(!val) return "-"; 
+  var str = String(val).toUpperCase();
+  if (str.indexOf("E - RESERVA") !== -1 || str === "E") return "E";
+  var match = str.match(/(\d+)/);
+  if (match) return match[1] + "%";
+  return str;
+}
 function escapeHtml(s){
   return (s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
 }
@@ -1315,12 +1327,8 @@ function buildWhatsAppText(registros, cfg, platform) {
   var kmTopo = cfg.kmInicial || "-";
   if (kmTopo !== "-" && !isNaN(parseFloat(kmTopo))) kmTopo = parseFloat(kmTopo).toString();
   var combTopo = cfg.abastecimento || "-";
-  if (combTopo !== "-" && combTopo.indexOf("%") === -1 && combTopo.indexOf("E") === -1) {
-      var match = combTopo.match(/(\d+)/);
-      if (match) combTopo = match[1] + "%";
-  }
 
-  texto += "KM: " + kmTopo + " COMBUSTÍVEL: " + combTopo + "\n";
+  texto += "KM: " + kmTopo + " COMBUSTÍVEL: " + formatPct(combTopo) + "\n";
   texto += "-----------------------------------\n";
 
   texto += "OBS: " + (cfg.observacao ? cfg.observacao.toUpperCase() : "VTR SEM NOVAS AVARIAS") + " \n\n";
@@ -1358,7 +1366,7 @@ function buildWhatsAppText(registros, cfg, platform) {
     texto += "-----------------------------------\n";
     texto += "FORMA DE ABASTECIMENTO: " + (state.checklist.pagamento || "NÃO INFORMADO").toUpperCase() + " \n";
     texto += "KM: " + (state.checklist.kmAbast || "-") + "  LITROS: " + (state.checklist.litros || "-") + "\n";
-    texto += "COMBUSTÍVEL: " + (state.checklist.nivelCombustivel || "-") + "\n";
+    texto += "COMBUSTÍVEL: " + formatPct(state.checklist.nivelCombustivel) + "\n";
   }
   
   texto += "-----------------------------------\n";
@@ -1822,7 +1830,7 @@ var CAMPOS=[
   { field:"kmInicial",     label:"KM Inicial",    icon:"🛞", type:"number", placeholder:"Ex: 125000" },
   { field:"o2Portatil",    label:"O² Portátil",   icon:"💨", placeholder:"Ex: 125%" },
   { field:"o2Fixo",        label:"O² Fixo",       icon:"💨", placeholder:"Ex: 150%" },
-  { field:"abastecimento", label:"Combustível",   icon:"⛽", placeholder:"Ex: 75%" },
+  { field:"abastecimento", label:"Combustível",   icon:"⛽", select: NIVEIS_COMBUSTIVEL },
   { field:"crv",           label:"CRLV",          icon:"📄", placeholder:"Ex: SIM" }
 ];
 
@@ -2422,8 +2430,7 @@ function buildChecklistText(platform) {
   text += "VTR: " + veiculoKey(state.config) + "\n";
   
   var kmTopo = state.config.kmInicial || "-";
-  var combTopo = state.config.abastecimento || "-";
-  text += "KM: " + kmTopo + " COMBUSTÍVEL: " + combTopo + "\n";
+  text += "KM: " + kmTopo + " COMBUSTÍVEL: " + formatPct(state.config.abastecimento) + "\n";
   
   text += "CARTÃO: " + (state.config.cartao || "NÃO") + "  CRLV: " + (state.config.crv || "SIM") + "\n";
   text += "O² PORTÁTIL: " + formatPct(state.config.o2Portatil) + " FIXO: " + formatPct(state.config.o2Fixo) + "\n";
@@ -2435,7 +2442,7 @@ function buildChecklistText(platform) {
   if (temAbast) {
     text += "FORMA DE ABASTECIMENTO: " + (state.checklist.pagamento || "NÃO INFORMADO").toUpperCase() + " \n";
     text += "KM: " + (state.checklist.kmAbast || "-") + "  LITROS: " + (state.checklist.litros || "-") + "\n";
-    text += "COMBUSTÍVEL: " + (state.checklist.nivelCombustivel || "-") + "\n";
+    text += "COMBUSTÍVEL: " + formatPct(state.checklist.nivelCombustivel) + "\n";
     text += "-----------------------------------\n";
   }
 
@@ -2986,7 +2993,8 @@ function buildHeaderGrid(){
   $("cfgGrid").innerHTML=CAMPOS.map(function(c){
     var control;
     if(c.select){
-      control='<select id="cfg-'+c.field+'">'+c.select.map(function(o){
+      var defaultOption = (c.field === "abastecimento") ? '<option value="">Selecione...</option>' : '';
+      control='<select id="cfg-'+c.field+'">'+defaultOption+c.select.map(function(o){
         return '<option value="'+escapeHtml(o)+'"'+(o===state.config[c.field]?" selected":"")+'>'+escapeHtml(o)+'</option>';
       }).join("")+'</select>';
     }else{
