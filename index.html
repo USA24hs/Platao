@@ -562,6 +562,13 @@ html[data-theme="dark"] #ovTurno .dlg-head h3{color:#fde047}
       <div id="checkListContent"></div>
     </section>
 
+    <!-- ✅ NOVO CAMPO DE OBSERVAÇÃO NO CHECKLIST -->
+    <section class="card" aria-label="Observações do Checklist">
+      <h2 class="sec-title">📋 Observações</h2>
+      <textarea class="textarea field-upper" id="ckObsTxt" rows="3" placeholder="INTERCORRÊNCIAS / AVARIAS..." aria-label="Observações do check list"></textarea>
+    </section>
+
+    <!-- ✅ BOTÕES PDF E WHATSAPP -->
     <div class="export-grid" style="grid-template-columns: 1fr 1fr;">
       <button class="btn btn-pdf" onclick="gerarPdfChecklist()" style="height:3rem;">📄 Gerar PDF</button>
       <button class="btn" style="background:#25D366; color:#fff; height:3rem; font-size:0.85rem; box-shadow:0 6px 16px -6px rgba(37,211,102,.5);" onclick="handleCompartilharChecklist()">💬 Enviar WhatsApp</button>
@@ -646,7 +653,6 @@ var DEFAULT_CONFIG = {
   observacao: ""
 };
 
-// ✅ ITENS ATUALIZADOS
 var CHECKLIST_ITENS_ESQ = [
   "ÓLEO DO MOTOR", "ÓLEO DIREÇÃO HIDRÁULICA", "ÓLEO DE FREIO", "TOMADAS INTERNAS",
   "CHAVE DE TROCA DO O²", "FAROL BAIXO", "FAROL ALTO", "LIMPADOR DE PARA BRISA", "SINALERAS",
@@ -1148,7 +1154,6 @@ function printHTML(html){
   iframe.srcdoc=html;
 }
 
-// ✅ CSS OTIMIZADO PARA IMPRESSÃO EM A4
 var REPORT_BASE_CSS =
 " * { margin:0; padding:0; box-sizing:border-box; -webkit-print-color-adjust:exact; print-color-adjust:exact; }"+
 " body { font-family:'Inter','Segoe UI',Arial,sans-serif; background:#fff; color:#12212b; padding:15px; }"+
@@ -1184,7 +1189,6 @@ var REPORT_BASE_CSS =
 " .ass img { height:50px; border:1px solid #cfd9e2; border-radius:4px; background:#fff; }"+
 " @page { size: A4 portrait; margin: 10mm; }"+
 " @media print { body { padding:0; } .no-print { display:none; } }"+
-" /* CHECKLIST TABLE */"+
 " table.check { width:100%; border-collapse:collapse; font-size:8pt; margin-bottom:10px; page-break-inside:avoid; }"+
 " table.check th { background:#0e5a77; color:#fff; padding:5px 6px; border:1px solid #0e5a77; text-align:center; font-size:7.5pt; }"+
 " table.check td { border:1px solid #cfd9e2; padding:4px 6px; text-align:center; }"+
@@ -1193,7 +1197,6 @@ var REPORT_BASE_CSS =
 " .status-ruim { color:#b45309; font-weight:800; }"+
 " .status-ntem { color:#dc2626; font-weight:800; }";
 
-// ✅ NOVA FUNÇÃO PARA GERAR A TABELA CORRETA DE 4 COLUNAS
 function buildChecklistHTML(checkData) {
   var rows = "";
   var maxItems = Math.max(CHECKLIST_ITENS_ESQ.length, CHECKLIST_ITENS_DIR.length);
@@ -2215,6 +2218,7 @@ function importarBackup(file){
         syncPeriodo();
         updateFormBadges();
         $("obsTxt").value=state.config.observacao;
+        $("ckObsTxt").value=state.config.observacao;
         $("nomeLegivel").value=state.config.nomeLegivel;
         if(signCanvas && signCtx){
           signCtx.fillStyle="#ffffff";
@@ -2407,6 +2411,7 @@ function renderChecklist() {
   $("ckPagamento").value = state.checklist.pagamento || "";
   $("ckCartao").value = state.checklist.cartao || "SIM";
   if ($("ckCrv")) $("ckCrv").value = state.config.crv || "SIM";
+  if ($("ckObsTxt")) $("ckObsTxt").value = state.config.observacao || "";
 
   var html = "";
   TODOS_ITENS.forEach(function(item) {
@@ -2687,8 +2692,22 @@ function wireEvents(){
     if(btn.dataset.action==="compartilhar-oc") handleCompartilharOcorrencia(btn.dataset.id);
   });
 
+  // ✅ SINCRONIZAÇÃO DAS OBSERVAÇÕES
   $("obsTxt").value=state.config.observacao;
-  $("obsTxt").addEventListener("input",function(e){ state.config.observacao=e.target.value; save(); });
+  $("obsTxt").addEventListener("input",function(e){ 
+    state.config.observacao=e.target.value; 
+    if ($("ckObsTxt")) $("ckObsTxt").value = e.target.value;
+    save(); 
+  });
+  
+  if ($("ckObsTxt")) {
+    $("ckObsTxt").addEventListener("input",function(e){ 
+      state.config.observacao=e.target.value; 
+      $("obsTxt").value = e.target.value;
+      save(); 
+    });
+  }
+
   $("nomeLegivel").value=state.config.nomeLegivel;
   $("nomeLegivel").addEventListener("input",function(e){ state.config.nomeLegivel=e.target.value; save(); });
 
