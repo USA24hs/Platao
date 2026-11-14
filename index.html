@@ -326,7 +326,6 @@ html[data-theme="dark"] .td-em{color:#34d399}
 
 .app-footer{margin-top:auto;border-top:1px solid var(--border);background:var(--muted-soft);text-align:center;padding:.75rem 1rem;font-size:.68rem;font-weight:600;color:var(--muted-foreground)}
 
-/* ✅ OVERLAYS E MODAIS */
 .overlay{position:fixed;inset:0;background:rgba(2,6,23,.55);backdrop-filter:blur(2px);display:flex;align-items:center;justify-content:center;z-index:80;padding:1rem;animation:fadeIn .2s ease}
 .modal{background:var(--card);color:var(--foreground);border:1px solid var(--border);border-radius:1rem;max-width:24rem;width:100%;padding:1.25rem;box-shadow:0 20px 50px -12px rgba(0,0,0,.45);animation:modalIn .25s ease}
 .modal h3{margin:0 0 .35rem;font-size:1rem;font-weight:800}
@@ -341,7 +340,6 @@ html[data-theme="dark"] .dlg-box{border-color:rgba(127,29,29,.6);background:rgba
 .dlg-actions{display:flex;flex-direction:column;gap:.5rem;margin-top: 1rem;}
 .dlg-actions .btn{width:100%}
 
-/* Customização do Modal de Confirmação Genérico */
 #ovConfirm .dlg-icon { background: #e0f2fe; color: #0369a1; }
 html[data-theme="dark"] #ovConfirm .dlg-icon { background: rgba(12,74,110,.6); color: #7dd3fc; }
 #ovConfirm .dlg-head h3 { color: var(--primary); }
@@ -840,17 +838,19 @@ var DEFAULT_CONFIG = {
   observacao: ""
 };
 
+// ✅ LISTA EM ORDEM ALFABÉTICA (20 ESQ / 20 DIR)
 var CHECKLIST_ITENS_ESQ = [
-  "ÓLEO DO MOTOR", "ÓLEO DIREÇÃO HIDRÁULICA", "ÓLEO DE FREIO", "TOMADAS INTERNAS",
-  "CHAVE DE TROCA DO O²", "FAROL BAIXO", "FAROL ALTO", "LIMPEZA INTERNA", "SINALERAS",
-  "RETROVISORES", "EXTINTOR DE INCÊNDIO", "PNEUS", "PNEU ESTEPE", "LATARIA", "BUZINA",
-  "FREIO DE MÃO", "BANCOS", "ESCADA PARA MACA", "MACACO", "CAPA PARA CHUVA"
+  "AR CONDICIONADO", "BANCOS", "BUZINA", "CABO DE FORÇA", "CADEIRA DE RODAS",
+  "CAPA PARA CHUVA", "CHAVE DE RODAS", "CHAVE DE TROCA DO O²", "CILINDRO DE AR COMPRIMIDO",
+  "CILINDRO DE OXIGÊNIO FIXO", "CILINDRO DE OXIGÊNIO PORTATIL", "CONES", "ESCADA PARA MACA",
+  "EXTINTOR DE INCÊNDIO", "FAROL ALTO", "FAROL BAIXO", "FREIO DE MÃO", "GIRO FLEX",
+  "LATARIA", "LIMPEZA EXTERNA"
 ];
 var CHECKLIST_ITENS_DIR = [
-  "CHAVE DE RODAS", "TRIANGULO", "AR CONDICIONADO", "RÁDIO DE COMUNICAÇÃO", "GIRO FLEX",
-  "SIRENE", "LUZES INTERNAS", "LUZ DE FREIO", "LUZ DE EMBARQUE", "SIRENE DE RÉ", "MACA",
-  "CADEIRA DE RODAS", "CONES", "CILINDRO DE OXIGÊNIO PORTATIL", "CILINDRO DE AR COMPRIMIDO",
-  "CILINDRO DE OXIGÊNIO FIXO", "CABO DE FORÇA", "PRANCHA", "LIMPEZA EXTERNA", "PARA-BRISA / LIMPADOR"
+  "LIMPEZA INTERNA", "LUZ DE EMBARQUE", "LUZ DE FREIO", "LUZES INTERNAS", "MACA",
+  "MACACO", "ÓLEO DE FREIO", "ÓLEO DIREÇÃO HIDRÁULICA", "ÓLEO DO MOTOR", "PARA-BRISA DA VTR",
+  "PNEU ESTEPE", "PNEUS", "PRANCHA", "RÁDIO DE COMUNICAÇÃO", "RETROVISORES",
+  "SINALERAS", "SIRENE", "SIRENE DE RÉ", "TOMADAS INTERNAS", "TRIANGULO"
 ];
 var TODOS_ITENS = CHECKLIST_ITENS_ESQ.concat(CHECKLIST_ITENS_DIR);
 
@@ -2355,7 +2355,6 @@ function handleCompartilhar(plataforma){
   }
 }
 
-/* ✅ ATUALIZAÇÃO DE FORMATAÇÃO E CRLV NO CHECKLIST */
 function buildChecklistText(platform) {
   var bold = (platform === 'telegram') ? '**' : '*';
   var hoje = new Date();
