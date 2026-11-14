@@ -1242,7 +1242,8 @@ function migrarLegado(raw){
       currentOcorrenciaId: d.currentOcorrenciaId || String(Date.now()),
       mes: d.mes || (new Date().getMonth()+1),
       ano: d.ano || new Date().getFullYear(),
-      checklist: {}
+      checklist: {},
+      tab: "checklist"
     };
   }catch(e){ return null; }
 }
@@ -1252,7 +1253,8 @@ function defaultStore(){
     version:3, registros:[], config:Object.assign({},DEFAULT_CONFIG),
     assinaturaImg:"", currentOcorrenciaId:String(Date.now()),
     mes:agora.getMonth()+1, ano:agora.getFullYear(),
-    checklist: { abastecimentoAtivo: true }
+    checklist: { abastecimentoAtivo: true },
+    tab: "checklist"
   };
 }
 function loadStore(){
@@ -1268,7 +1270,8 @@ function loadStore(){
         currentOcorrenciaId: d.currentOcorrenciaId||String(Date.now()),
         mes: d.mes||(new Date().getMonth()+1),
         ano: d.ano||new Date().getFullYear(),
-        checklist: d.checklist || { abastecimentoAtivo: true }
+        checklist: d.checklist || { abastecimentoAtivo: true },
+        tab: d.tab || "checklist"
       };
     }
     var legacy=localStorage.getItem(LEGACY_KEY);
@@ -1876,7 +1879,8 @@ function saveNow(){
       currentOcorrenciaId:state.currentOcorrenciaId,
       mes:state.mes,
       ano:state.ano,
-      checklist:state.checklist
+      checklist:state.checklist,
+      tab: tab
     }));
   }catch(e){
     toast.error("⚠️ Não foi possível salvar (armazenamento cheio?). Exporte um backup.");
@@ -1999,18 +2003,6 @@ function handleConfigChange(field,value){
   state.config[field]=value;
   save();
   updateFormBadges();
-
-  if(field==="abastecimento"){
-    var ckNivel = $("ckNivel");
-    if (ckNivel) {
-      Array.from(ckNivel.options).forEach(function(opt) {
-        if (opt.value.startsWith(value)) {
-          ckNivel.value = opt.value;
-          state.checklist.nivelCombustivel = opt.value;
-        }
-      });
-    }
-  }
 
   if(field==="crv"){
     var ckCrv = $("ckCrv");
@@ -3413,12 +3405,6 @@ function wireEvents(){
   
   $("ckNivel").addEventListener("change", function(e) {
     state.checklist.nivelCombustivel = e.target.value;
-    var match = e.target.value.match(/(\d+%|E)/);
-    if (match) {
-      state.config.abastecimento = match[0];
-      var cfgAbast = $("cfg-abastecimento");
-      if (cfgAbast) cfgAbast.value = state.config.abastecimento;
-    }
     save();
   });
 
@@ -3516,6 +3502,7 @@ function switchTab(t){
   if(t==="mensal") renderMensal();
   if(t==="checklist") renderChecklist();
   if(t==="usuarios") renderUsersList();
+  save();
 }
 
 function init(){
@@ -3554,7 +3541,7 @@ function init(){
   
   checkShiftUpdate();
 
-  switchTab("checklist");
+  switchTab(store.tab || "checklist");
 
   initAuthSystem();
 
