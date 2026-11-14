@@ -435,7 +435,6 @@ html[data-theme="dark"] #ovTurno .dlg-head h3{color:#fde047}
     
     <button id="btnLogin" class="btn btn-chegada" style="width:100%; height:3rem; margin-top:1rem; font-size:1rem;">Entrar</button>
     
-    <!-- ✅ BOTÃO DE SUPORTE WHATSAPP -->
     <a href="https://wa.me/5598988248877?text=Ol%C3%A1,%20estou%20com%20problemas%20para%20acessar%20o%20sistema%20VTR." target="_blank" class="btn" style="width:100%; height:2.5rem; margin-top:0.75rem; background:#25D366; color:#fff; font-size:0.85rem; text-decoration:none;">
       💬 Suporte via WhatsApp
     </a>
@@ -476,7 +475,6 @@ html[data-theme="dark"] #ovTurno .dlg-head h3{color:#fde047}
           <input id="inpAno" type="number" min="2000" max="2100" aria-label="Ano">
         </div>
         <button class="icon-btn" id="btnInstall" title="Instalar aplicativo no celular" aria-label="Instalar aplicativo no celular" hidden>📥</button>
-        <!-- ✅ BOTÃO DE LOGOUT -->
         <button class="icon-btn" id="btnLogout" title="Sair do sistema" aria-label="Sair do sistema">🚪</button>
         <button class="icon-btn" id="btnTheme" title="Alternar tema claro/escuro" aria-label="Alternar tema claro/escuro">🌙</button>
         <button class="icon-btn" id="btnCollapse" aria-label="Expandir cabeçalho" aria-expanded="true" title="Expandir dados do plantão">▲</button>
@@ -489,7 +487,6 @@ html[data-theme="dark"] #ovTurno .dlg-head h3{color:#fde047}
     <button class="tab-btn" id="tabPlantao" role="tab" aria-controls="panePlantao" aria-selected="false">📋 Plantão</button>
     <button class="tab-btn active" id="tabChecklist" role="tab" aria-controls="paneChecklist" aria-selected="true">🧰 Check List</button>
     <button class="tab-btn" id="tabMensal" role="tab" aria-controls="paneMensal" aria-selected="false">📊 Mensal</button>
-    <!-- ✅ NOVA ABA DE USUÁRIOS (SÓ ADMIN VÊ) -->
     <button class="tab-btn" id="tabUsuarios" role="tab" aria-controls="paneUsuarios" aria-selected="false" hidden>👥 Usuários</button>
   </div>
 
@@ -511,7 +508,6 @@ html[data-theme="dark"] #ovTurno .dlg-head h3{color:#fde047}
         </div>
         <div class="f-field">
           <label class="f-label" for="fKm">🛞 KM (Odômetro)</label>
-          <!-- ✅ PLACEHOLDER ATUALIZADO -->
           <input class="f-input no-spinner" id="fKm" type="number" step="0.1" inputmode="decimal" placeholder="Ex: 125000">
         </div>
         
@@ -522,7 +518,6 @@ html[data-theme="dark"] #ovTurno .dlg-head h3{color:#fde047}
 
         <div class="f-field full" style="position: relative;">
           <label class="f-label" for="fLocal">📍 Local / Destino (Origem → Destino)</label>
-          <!-- ✅ PLACEHOLDER ATUALIZADO -->
           <input class="f-input field-upper" id="fLocal" type="text" placeholder="Ex: SÓ SAÚDE → HOSPITAL CENTRAL" autocomplete="off">
           <div id="sugestoesDestinoBox" class="sugestoes-box"></div>
         </div>
@@ -558,7 +553,6 @@ html[data-theme="dark"] #ovTurno .dlg-head h3{color:#fde047}
         <canvas class="sign-canvas" id="signCanvas" height="120" aria-label="Área de assinatura — desenhe com o dedo ou mouse"></canvas>
         <div class="nome-field">
           <label class="lbl-mini" for="nomeLegivel">Nome completo</label>
-          <!-- ✅ PLACEHOLDER ATUALIZADO -->
           <input class="inp-lg field-upper" id="nomeLegivel" type="text" placeholder="Ex: Anderson Martins">
         </div>
       </section>
@@ -585,7 +579,6 @@ html[data-theme="dark"] #ovTurno .dlg-head h3{color:#fde047}
         </div>
         <div class="f-field">
           <label class="f-label" for="ckKm">KM Abast.</label>
-          <!-- ✅ PLACEHOLDER ATUALIZADO -->
           <input class="f-input no-spinner" id="ckKm" type="number" step="0.1" placeholder="Ex: 125000" style="height:2.5rem">
         </div>
         <div class="f-field">
@@ -627,7 +620,6 @@ html[data-theme="dark"] #ovTurno .dlg-head h3{color:#fde047}
           <div style="display: flex; gap: 8px; width: 100%;">
             <div class="f-field" style="flex: 1;">
               <label class="f-label" for="ckLitros">Litros</label>
-              <!-- ✅ PLACEHOLDER ATUALIZADO -->
               <input class="f-input no-spinner" id="ckLitros" type="number" step="0.1" placeholder="Ex: 30.5" style="height:2.5rem">
             </div>
             <div class="f-field" style="flex: 1;">
@@ -675,19 +667,16 @@ html[data-theme="dark"] #ovTurno .dlg-head h3{color:#fde047}
 
   <div id="paneMensal" class="tab-pane" role="tabpanel" aria-label="Painel mensal" hidden></div>
   
-  <!-- ✅ NOVA ABA DE USUÁRIOS -->
   <div id="paneUsuarios" class="tab-pane" role="tabpanel" aria-label="Gerenciamento de Usuários" hidden>
     <section class="card">
       <h2 class="sec-title">👥 Cadastrar Novo Usuário</h2>
       <div class="form-grid">
         <div class="f-field">
           <label class="f-label" for="newUserUsername">Usuário</label>
-          <!-- ✅ PLACEHOLDER ATUALIZADO -->
           <input class="f-input" id="newUserUsername" type="text" placeholder="Ex: Joao Silva" autocomplete="off">
         </div>
         <div class="f-field">
           <label class="f-label" for="newUserPassword">Senha Inicial</label>
-          <!-- ✅ PLACEHOLDER ATUALIZADO -->
           <input class="f-input" id="newUserPassword" type="text" placeholder="Ex: Senha@2026" autocomplete="new-password">
         </div>
         <div class="f-field full">
@@ -765,7 +754,6 @@ var FROTA_KEY   = "frotaKms_hci";
 var AUTH_KEY    = "sistemaDeslocamentoVTR_auth";
 var USERS_KEY   = "sistemaDeslocamentoVTR_users";
 
-// ✅ USUÁRIOS PADRÃO (Só usados se não houver nenhum salvo no celular)
 var DEFAULT_USERS = [
   { username: "Martins", password: btoa("B@lu4891"), role: "admin", name: "Martins", blocked: false, requiresPasswordChange: true },
   { username: "Anderson", password: btoa("AdS&4891"), role: "condutor", name: "Anderson", blocked: false, requiresPasswordChange: true }
@@ -1687,7 +1675,6 @@ var loginBlockedUntil=0;
 var pendingUserForPasswordChange = null;
 function restaurarFoco(){ if(lastFocusEl && lastFocusEl.focus){ try{ lastFocusEl.focus(); }catch(e){} } lastFocusEl=null; }
 
-// ✅ CAMPOS COM PLACEHOLDERS ADICIONADOS
 var CAMPOS=[
   { field:"unidade",       label:"Base",          icon:"🏠", placeholder:"Ex: SÓ SAÚDE" },
   { field:"condutor",      label:"Condutor",      icon:"👤", placeholder:"Ex: Anderson Martins" },
@@ -2205,6 +2192,7 @@ function ignorarAlerta(){
   if(pendenteTipo){ executarRegistro(pendenteTipo); }
 }
 
+/* ✅ TELEGRAM — compartilhamento NATIVO com fallback */
 function handleCompartilhar(plataforma){
   try{
     var veic = veiculoKey(state.config);
@@ -2212,15 +2200,45 @@ function handleCompartilhar(plataforma){
       return r.veiculo === veic;
     });
     var texto = buildWhatsAppText(registrosFiltrados, state.config);
-    
+    var encodedText = encodeURIComponent(texto);
+
     if (plataforma === 'telegram') {
-      window.open("https://t.me/share/url?url=&text=" + encodeURIComponent(texto), "_blank");
+      // Deep link NATIVO — abre o app do Telegram direto na tela de escolha de contato
+      var appUrl = "tg://msg_url?url=&text=" + encodedText;
+      // Fallback (caso o app não esteja instalado)
+      var webUrl = "https://t.me/share/url?url=&text=" + encodedText;
+      abrirAppTelegram(appUrl, webUrl);
     } else {
-      window.open("https://api.whatsapp.com/send?text=" + encodeURIComponent(texto), "_blank");
+      // WhatsApp (continua funcionando normalmente)
+      window.open("https://api.whatsapp.com/send?text=" + encodedText, "_blank");
     }
   }catch(e){
     toast.error("Não foi possível abrir o aplicativo.");
   }
+}
+
+// ✅ TELEGRAM — abre app nativo; se falhar em 1,5s, abre versão web
+function abrirAppTelegram(appUrl, webUrl){
+  var agora = Date.now();
+  var timeoutMs = 1500;
+  var appAbriu = false;
+
+  function aoSairDaPagina(){
+    appAbriu = true;
+    document.removeEventListener("visibilitychange", aoSairDaPagina);
+  }
+  document.addEventListener("visibilitychange", aoSairDaPagina);
+
+  try{
+    window.location.href = appUrl;
+  }catch(e){}
+
+  setTimeout(function(){
+    document.removeEventListener("visibilitychange", aoSairDaPagina);
+    if (!appAbriu && document.visibilityState === "visible" && (Date.now() - agora) < 2500) {
+      window.open(webUrl, "_blank");
+    }
+  }, timeoutMs);
 }
 
 function handleCompartilharChecklist() {
@@ -2755,7 +2773,6 @@ function handleLocalFocus(){
   },50);
 }
 
-// ✅ FUNÇÃO buildHeaderGrid COM SUPORTE A PLACEHOLDER
 function buildHeaderGrid(){
   $("cfgGrid").innerHTML=CAMPOS.map(function(c){
     var control;
@@ -2797,7 +2814,6 @@ function checkShiftUpdate() {
   }
 }
 
-// ✅ SISTEMA DE AUTENTICAÇÃO E LOGIN
 function initAuthSystem() {
   var loginScreen = $("loginScreen");
   var usernameInput = $("usernameInput");
@@ -2831,25 +2847,21 @@ function initAuthSystem() {
     }
 
     if (userFound && btoa(p) === userFound.password) {
-      // Sucesso
       state.user = userFound;
       loginAttempts = 0;
       
       if (userFound.requiresPasswordChange) {
-        // Força a troca de senha antes de entrar no app
         pendingUserForPasswordChange = userFound;
         loginScreen.style.display = "none";
         $("changePasswordScreen").hidden = false;
         $("newPasswordInput").focus();
       } else {
-        // Login normal
         localStorage.setItem(AUTH_KEY, JSON.stringify({ user: state.user, timestamp: Date.now() }));
         loginScreen.style.display = "none";
         applyUserPermissions();
         toast.success("Bem-vindo, " + state.user.name + "!");
       }
     } else {
-      // Falha
       loginAttempts++;
       if (loginAttempts >= 5) {
         loginBlockedUntil = Date.now() + 60000;
@@ -2873,7 +2885,6 @@ function initAuthSystem() {
     if (e.key === "Enter") passwordInput.focus();
   });
 
-  // Lógica da Tela de Troca de Senha
   var changePassScreen = $("changePasswordScreen");
   var newPasswordInput = $("newPasswordInput");
   var confirmPasswordInput = $("confirmPasswordInput");
@@ -2896,7 +2907,6 @@ function initAuthSystem() {
       return;
     }
 
-    // Atualiza a senha no banco local
     var users = getUsers();
     var idx = users.findIndex(function(u) { return u.username === pendingUserForPasswordChange.username; });
     if (idx !== -1) {
@@ -2904,7 +2914,6 @@ function initAuthSystem() {
       users[idx].requiresPasswordChange = false;
       saveUsers(users);
       
-      // Loga o usuário
       state.user = users[idx];
       localStorage.setItem(AUTH_KEY, JSON.stringify({ user: state.user, timestamp: Date.now() }));
       
@@ -2914,12 +2923,10 @@ function initAuthSystem() {
     }
   });
 
-  // Verifica se já existe uma sessão válida (12 horas)
   var savedAuth = localStorage.getItem(AUTH_KEY);
   if (savedAuth) {
     try {
       var authData = JSON.parse(savedAuth);
-      // 12 horas = 12 * 60 * 60 * 1000 = 43200000
       if (Date.now() - authData.timestamp < 43200000) {
         state.user = authData.user;
         loginScreen.style.display = "none";
@@ -2931,7 +2938,6 @@ function initAuthSystem() {
     } catch(e) {}
   }
 
-  // Se não estiver logado, foca no input
   loginScreen.style.display = "flex";
   usernameInput.focus();
 }
@@ -2939,7 +2945,6 @@ function initAuthSystem() {
 function applyUserPermissions() {
   var isAdmin = state.user && state.user.role === "admin";
   
-  // Mostra aba de usuários só para admin
   if ($("tabUsuarios")) $("tabUsuarios").hidden = !isAdmin;
   if ($("adminBackupArea")) $("adminBackupArea").style.display = isAdmin ? "grid" : "none";
   
@@ -3263,7 +3268,6 @@ function init(){
 
   switchTab("checklist");
 
-  // Inicializa o sistema de login com usuário e senha
   initAuthSystem();
 
   window.addEventListener("pagehide",function(){
