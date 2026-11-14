@@ -585,7 +585,6 @@ html[data-theme="dark"] #ovTurno .dlg-head h3{color:#fde047}
   <div id="paneChecklist" class="tab-pane" role="tabpanel" aria-label="Check List">
     <section class="card" aria-label="Dados de Abastecimento">
       
-      <!-- ✅ CABEÇALHO DO ABASTECIMENTO COM BOTÃO SWITCH -->
       <div class="card-head-row">
         <h2 class="sec-title" style="margin:0;">⛽ Abastecimento e Nível</h2>
         <div style="display:flex; align-items:center; gap:8px;">
@@ -598,7 +597,6 @@ html[data-theme="dark"] #ovTurno .dlg-head h3{color:#fde047}
       </div>
 
       <div class="form-grid" style="grid-template-columns: 1fr 1fr;">
-        <!-- Campos que ficam ocultos se o switch estiver OFF -->
         <div class="f-field" id="field-ckData">
           <label class="f-label" for="ckData">Data Abast.</label>
           <input class="f-input" id="ckData" type="date" style="height:2.5rem">
@@ -616,7 +614,6 @@ html[data-theme="dark"] #ovTurno .dlg-head h3{color:#fde047}
           </select>
         </div>
         
-        <!-- Campos que continuam visíveis -->
         <div class="f-field">
           <label class="f-label" for="ckNivel">Nível Combustível</label>
           <select class="f-input" id="ckNivel" style="height:2.5rem">
@@ -1290,50 +1287,72 @@ function saveStore(store){
   catch(e){}
 }
 
-function buildWhatsAppText(registros,cfg,now){
-  now=now||new Date();
-  var isNoite=(cfg.plantao||"").indexOf("SN")!==-1;
-  var saudacao=isNoite?"Boa noite!":"Bom dia!";
-  var dataStr=pad(now.getDate())+"/"+pad(now.getMonth()+1)+"/"+now.getFullYear();
-  var horaStr=pad(now.getHours())+":"+pad(now.getMinutes());
-  var plantaoSigla=(cfg.plantao||"SD").split(" ")[0];
-  
-  var texto=saudacao+"\n\n";
-  texto+="CONDUTOR: "+cfg.condutor.toUpperCase()+"\n";
-  texto+="PLANTÃO: "+plantaoSigla+" | "+cfg.unidade.toUpperCase()+"\n";
-  texto+="VTR: "+cfg.ambulancia.toUpperCase()+" PLACA: "+cfg.placa.toUpperCase()+"\n";
-  texto+="O² PORTÁTIL: "+formatPct(cfg.o2Portatil)+" FIXO: "+formatPct(cfg.o2Fixo)+"\n";
-  texto+="COMBUSTÍVEL: "+formatPct(cfg.abastecimento)+" CARTÃO: "+(cfg.cartao?cfg.cartao.toUpperCase():"SEM")+"\n";
-  texto+="OBS: "+(cfg.observacao?cfg.observacao.toUpperCase():"SEM NOVAS AVARIAS")+"\n\n";
-  texto+="Bom plantão a todos! "+dataStr+" "+horaStr+"\n";
-  texto+="-----------------------------------\n";
-  texto+="RELATÓRIO DE DESLOCAMENTO\n\n";
-  
-  var grupos=agruparPorOcorrencia(registros);
-  var resumo=computeResumo(registros);
-  var solicitantes=resumo.solicitantes;
-  
-  if(grupos.length===0){
-    texto+="PLANTÃO SEM OCORRÊNCIAS\n\n";
-  }else{
+/* ✅ NOVO FORMATO DO RELATÓRIO DE DESLOCAMENTO */
+function buildWhatsAppText(registros, cfg, platform) {
+  var bold = (platform === 'telegram') ? '**' : '*';
+  var now = new Date();
+  var dataStr = pad(now.getDate()) + "/" + pad(now.getMonth() + 1) + "/" + now.getFullYear();
+  var horaStr = pad(now.getHours()) + ":" + pad(now.getMinutes());
+  var plantaoSigla = (cfg.plantao || "SD").split(" ")[0];
+
+  var hora = now.getHours();
+  var saudacao = "";
+  if (hora < 12) saudacao = "Bom dia!";
+  else if (hora < 18) saudacao = "Boa Tarde!";
+  else saudacao = "Boa Noite!";
+
+  var texto = saudacao + "\n\n";
+  texto += "CONDUTOR: " + cfg.condutor.toUpperCase() + "\n";
+  texto += "PLANTÃO: " + plantaoSigla + " | " + cfg.unidade.toUpperCase() + "\n";
+  texto += "VTR: " + cfg.ambulancia.toUpperCase() + " PLACA: " + cfg.placa.toUpperCase() + "\n";
+  texto += "O² PORTÁTIL: " + formatPct(cfg.o2Portatil) + " FIXO: " + formatPct(cfg.o2Fixo) + "\n";
+  texto += "CARTÃO: " + (cfg.cartao ? cfg.cartao.toUpperCase() : "NÃO") + " CRLV: " + (cfg.crv ? cfg.crv.toUpperCase() : "NÃO") + "\n";
+  texto += "-----------------------------------\n";
+
+  var kmExibir = cfg.kmInicial || "-";
+  if (kmExibir !== "-" && !isNaN(parseFloat(kmExibir))) kmExibir = parseFloat(kmExibir).toString();
+  var nivelComb = cfg.abastecimento || "-";
+  if (nivelComb !== "-" && nivelComb.indexOf("%") === -1 && nivelComb.indexOf("E") === -1) {
+      var match = nivelComb.match(/(\d+)/);
+      if (match) nivelComb = match[1] + "%";
+  }
+
+  texto += "KM: " + kmExibir + "  COMBUSTÍVEL: " + nivelComb + "\n";
+  texto += "-----------------------------------\n";
+
+  texto += "OBS: " + (cfg.observacao ? cfg.observacao.toUpperCase() : "VTR SEM NOVAS AVARIAS") + "\n\n";
+  texto += "Bom plantão a todos! " + dataStr + " " + horaStr + "\n";
+  texto += "-----------------------------------\n";
+  texto += bold + "🚑💭 RELATÓRIO DE DESLOCAMENTO" + bold + "\n\n";
+
+  var grupos = agruparPorOcorrencia(registros);
+  var resumo = computeResumo(registros);
+  var solicitantes = resumo.solicitantes;
+
+  if (grupos.length === 0) {
+    texto += "PLANTÃO SEM OCORRÊNCIAS\n\n";
+  } else {
     grupos.forEach(function(g){
       g.timeline.forEach(function(l){
-        texto+=l.tag+": "+l.local+" H: "+l.hora+" KM: "+l.km+"\n";
+        texto += l.tag + ": " + l.local + " H: " + l.hora + " KM: " + l.km + "\n";
       });
-      var dataInicio=formatDateBR(g.data);
-      var dataFim=formatDateBR(g.dataFim);
-      var stringData = dataInicio===dataFim ? ("DATA: "+dataInicio) : ("INÍCIO DATA: "+dataInicio+" FIM DATA: "+dataFim);
-      texto+="\n"+stringData+"  KM ROD: "+g.kmRodado.toFixed(1)+"\n";
-      texto+="-----------------------------------\n\n";
+      var dataInicio = formatDateBR(g.data);
+      var dataFim = formatDateBR(g.dataFim);
+      var stringData = dataInicio === dataFim ? ("DATA: " + dataInicio) : ("INÍCIO DATA: " + dataInicio + " FIM DATA: " + dataFim);
+      texto += "\n" + stringData + "  KM ROD: " + g.kmRodado.toFixed(1) + "\n";
+      texto += "-----------------------------------\n\n";
     });
   }
-  
-  texto+="RESUMO DO PLANTÃO\n";
-  texto+="Total de Deslocamentos: "+grupos.length+"\n";
-  texto+="Total KM Rodado: "+resumo.totalKm.toFixed(1)+" km\n\n";
-  texto+="UNIDADES SOLICITANTES:\n";
-  if(solicitantes.length>0){ solicitantes.forEach(function(s){ texto+="• "+s.local+": "+s.total+"\n"; }); }
-  else{ texto+="Nenhuma\n"; }
+
+  texto += "RESUMO DO PLANTÃO\n";
+  texto += "Total de Deslocamentos: " + grupos.length + "\n";
+  texto += "Total KM Rodado: " + resumo.totalKm.toFixed(1) + " km\n\n";
+  texto += "UNIDADES SOLICITANTES:\n";
+  if (solicitantes.length > 0) {
+    solicitantes.forEach(function(s){ texto += "• " + s.local + ": " + s.total + "\n"; });
+  } else {
+    texto += "Nenhuma\n";
+  }
   return texto;
 }
 
@@ -2363,7 +2382,7 @@ function handleCompartilhar(plataforma){
       return;
     }
 
-    var texto = buildWhatsAppText(registrosFiltrados, state.config);
+    var texto = buildWhatsAppText(registrosFiltrados, state.config, plataforma);
     var encodedText = encodeURIComponent(texto);
 
     if (plataforma === 'telegram') {
@@ -2379,42 +2398,37 @@ function handleCompartilhar(plataforma){
   }
 }
 
+/* ✅ NOVO FORMATO DO CHECK LIST */
 function buildChecklistText(platform) {
   var bold = (platform === 'telegram') ? '**' : '*';
   var hoje = new Date();
-  var hora = hoje.getHours();
-  var saudacao = "";
-  if (hora < 12) saudacao = "Bom dia!";
-  else if (hora < 18) saudacao = "Boa Tarde!";
-  else saudacao = "Boa Noite!";
-
   var dataStr = pad(hoje.getDate()) + "/" + pad(hoje.getMonth() + 1) + "/" + hoje.getFullYear();
   var plantaoCompleto = state.config.plantao || "SD 12hs";
+  var vtrNome = (state.config.ambulancia || "").toUpperCase();
 
-  var text = bold + "🚑💭 CHECK LIST DA VTR" + bold + "\n\n";
-  text += saudacao + "\n\n";
+  var text = bold + "🚑💭 CHECK LIST DA VTR " + vtrNome + bold + "\n\n";
+
+  var hora = hoje.getHours();
+  if (hora < 12) text += "Bom dia!\n\n";
+  else if (hora < 18) text += "Boa Tarde!\n\n";
+  else text += "Boa Noite!\n\n";
+
   text += "CONDUTOR: " + (state.config.condutor || "").toUpperCase() + "\n";
-  text += "UNIDADE: " + (state.config.unidade || "").toUpperCase() + "   PLANTÃO: " + plantaoCompleto + "\n";
+  text += "UNIDADE: " + (state.config.unidade || "").toUpperCase() + "    PLANTÃO: " + plantaoCompleto + "\n";
   text += "VTR: " + veiculoKey(state.config) + "\n";
   text += "CARTÃO: " + (state.checklist.cartao || "NÃO") + " CRLV: " + (state.config.crv || "NÃO") + "\n";
   text += "O² PORTÁTIL: " + formatPct(state.config.o2Portatil) + " FIXO: " + formatPct(state.config.o2Fixo) + "\n";
   text += "-----------------------------------\n";
 
-  var ativo = state.checklist.abastecimentoAtivo !== false;
-
-  if (ativo) {
-    text += "ABASTECIMENTO: " + (state.checklist.pagamento || "Não informado") + "\n";
-    var dtAbast = state.checklist.dataAbast ? formatDateBR(state.checklist.dataAbast) : "";
-    var kmAbast = state.checklist.kmAbast || "-";
-    var litros = state.checklist.litros || "-";
-    var nivel = state.checklist.nivelCombustivel || "Não informado";
-    text += "Data: " + dtAbast + "  | KM: " + kmAbast + "\n";
-    text += "Litros: " + litros + "  Nível: " + nivel + "\n";
-  } else {
-    var nivel = state.checklist.nivelCombustivel || "Não informado";
-    text += "NÍVEL COMBUSTÍVEL: " + nivel + "\n";
+  var kmExibir = state.checklist.kmAbast || state.config.kmInicial || "-";
+  if (kmExibir !== "-" && !isNaN(parseFloat(kmExibir))) kmExibir = parseFloat(kmExibir).toString();
+  var nivelComb = state.checklist.nivelCombustivel || state.config.abastecimento || "-";
+  if (nivelComb !== "-" && nivelComb.indexOf("%") === -1 && nivelComb.indexOf("E") === -1) {
+      var match = nivelComb.match(/(\d+)/);
+      if (match) nivelComb = match[1] + "%";
   }
-  
+
+  text += "KM: " + kmExibir + "  COMBUSTÍVEL: " + nivelComb + "\n";
   text += "-----------------------------------\n";
 
   var itensRuins = [];
@@ -2757,7 +2771,6 @@ function renderChecklist() {
   var ativo = state.checklist.abastecimentoAtivo;
   if ($("ckAbastecimentoAtivo")) $("ckAbastecimentoAtivo").checked = ativo;
   
-  // Mostra/Oculta campos de abastecimento
   var displayStyle = ativo ? "" : "none";
   if ($("field-ckData")) $("field-ckData").style.display = displayStyle;
   if ($("field-ckKm")) $("field-ckKm").style.display = displayStyle;
@@ -3318,7 +3331,6 @@ function wireEvents(){
 
   $("btnAddUser").addEventListener("click", handleAddUser);
 
-  // Switch de Abastecimento
   $("ckAbastecimentoAtivo").addEventListener("change", function(e) {
     state.checklist.abastecimentoAtivo = e.target.checked;
     save();
