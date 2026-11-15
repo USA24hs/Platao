@@ -59,7 +59,6 @@ main{flex:1;width:100%;max-width:768px;margin:0 auto;padding:8px 8px;display:fle
 
 @keyframes pageIn{from{opacity:0}to{opacity:1}}
 
-/* ✅ NOTIFICAÇÃO TOPO DA TELA */
 #topAlert {
   position: fixed; top: 0; left: 0; right: 0;
   background: #fbbf24; color: #000;
@@ -155,7 +154,6 @@ html[data-theme="dark"] .f-input.base-ok{border-color:#10b981;background:rgba(2,
 .btn-ghost-sm{height:1.75rem;border:none;background:transparent;color:var(--muted-foreground);font-size:.7rem;font-weight:700;border-radius:.5rem;padding:0 .5rem;cursor:pointer;display:inline-flex;align-items:center;gap:.25rem}
 .btn-ghost-sm:hover{color:var(--foreground);background:var(--muted)}
 
-/* ✅ ESTILO DO BOTÃO SWITCH ON/OFF */
 .switch { position: relative; display: inline-block; width: 46px; height: 26px; }
 .switch input { opacity: 0; width: 0; height: 0; }
 .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 26px; }
@@ -1115,15 +1113,26 @@ function validarSequencia(tipo,ultimoDaOcorrencia){
   return null;
 }
 
+/* ✅ CORREÇÃO: Lógica do KM para Novo Plantão */
 function prepararFormulario(registros,cfg,ocorrenciaId,mes,ano){
   var veiculo=veiculoKey(cfg);
   var base=limparNomeLocal(cfg.unidade.trim())||"BASE";
   var hoje=hojeStr();
   var prefix=ano+"-"+pad(mes)+"-";
   var data = hoje.indexOf(prefix)===0 ? hoje : (prefix+"01");
-  var kmRef=getUltimoKmChegada(registros,veiculo,cfg.kmInicial);
+  
   var itemsAtuais=registros.filter(function(r){ return r.ocorrenciaId===ocorrenciaId; });
   var lastRecordOc = itemsAtuais.length>0 ? itemsAtuais[0] : null;
+  
+  var kmRef;
+  if (itemsAtuais.length === 0) {
+    // Se não há registros para esta ocorrência, é um NOVO PLANTÃO.
+    // O KM deve ser o KM Inicial configurado no cabeçalho.
+    kmRef = cfg.kmInicial || "";
+  } else {
+    // Se já há registros, pega o último KM registrado.
+    kmRef = getUltimoKmChegada(registros, veiculo, cfg.kmInicial);
+  }
 
   var local = base+" → ";
   if(!lastRecordOc){
@@ -1317,7 +1326,6 @@ function saveStore(store){
   catch(e){}
 }
 
-/* ✅ NOVO FORMATO DO RELATÓRIO DE DESLOCAMENTO */
 function buildWhatsAppText(registros, cfg, platform) {
   var bold = (platform === 'telegram') ? '**' : '*';
   var now = new Date();
@@ -1867,7 +1875,6 @@ toast.success=function(m){ toast(m,"success"); };
 toast.warning=function(m){ toast(m,"warning"); };
 toast.error  =function(m){ toast(m,"error"); };
 
-/* ✅ FUNÇÃO PARA NOTIFICAÇÃO NO TOPO */
 var topAlertTimeout;
 function showTopAlert(msg) {
   var el = $("topAlert");
@@ -2087,7 +2094,6 @@ function handleMesAnoChange(novoMes,novoAno){
   renderDerived();
 }
 
-/* ✅ ATUALIZADO: PREENCHE AUTOMÁTICO E EXIBE NOTIFICAÇÃO NO TOPO */
 function handleNovoDeslocamento(){
   if(editingRecordId) toast.warning("Edição cancelada.");
   showTopAlert("⚠️ NOVO PLANTÃO ATUALIZAR OS DADOS DA VTR 🚑 E UNIDADE");
@@ -2097,12 +2103,10 @@ function handleNovoDeslocamento(){
   setEditingVisual(false);
   save(true);
   
-  // Preparar preenche data, hora, KM e Local automaticamente
   preparar(state.registros,state.config,state.currentOcorrenciaId,state.mes,state.ano);
   alertasParaZero();
   checkShiftUpdate();
 
-  // Vai para a aba de Plantão para facilitar
   switchTab("plantao");
 }
 
@@ -2452,7 +2456,6 @@ function handleCompartilhar(plataforma){
   }
 }
 
-/* ✅ NOVO FORMATO DO CHECK LIST */
 function buildChecklistText(platform) {
   var bold = (platform === 'telegram') ? '**' : '*';
   var hoje = new Date();
@@ -3489,7 +3492,6 @@ function wireEvents(){
     var target = document.querySelector('.app-header');
     if(target && target.scrollIntoView) target.scrollIntoView({ behavior: "smooth", block: "start" });
     
-    // ✅ Preenche automático o novo plantão
     handleNovoDeslocamento();
     
     var plantaoSelect = $("cfg-plantao");
