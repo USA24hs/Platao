@@ -756,10 +756,10 @@ html[data-theme="dark"] #ovTurno .dlg-head h3{color:#fde047}
 <div class="overlay" id="ovTurno" hidden>
   <div class="modal" role="dialog" aria-modal="true" aria-labelledby="turnoTitle">
     <div class="dlg-head">
-      <div class="dlg-icon">🌅</div>
+      <div class="dlg-icon">⚠️</div>
       <div>
-        <h3 id="turnoTitle">Fim de Plantão Detectado!</h3>
-        <p>O horário do plantão anterior já encerrou. Deseja atualizar os dados (KM, O², Plantão, etc.) para o novo plantão?</p>
+        <h3 id="turnoTitle">NOVO PLANTÃO</h3>
+        <p>ATUALIZAR OS DADOS DA VTR 🚑 E UNIDADE</p>
       </div>
     </div>
     <div class="dlg-actions">
@@ -1321,11 +1321,10 @@ function buildWhatsAppText(registros, cfg, platform) {
   texto += "PLANTÃO: " + plantaoSigla + " | " + cfg.unidade.toUpperCase() + "  \n";
   texto += "VTR: " + (cfg.ambulancia || "").toUpperCase() + " PLACA: " + (cfg.placa || "").toUpperCase() + "\n";
   texto += "O² PORTÁTIL: " + formatPct(cfg.o2Portatil) + " FIXO: " + formatPct(cfg.o2Fixo) + "\n";
-  texto += "CARTÃO: " + (cfg.cartao ? cfg.cartao.toUpperCase() : "SEM") + " CRLV: " + (cfg.crv ? cfg.crv.toUpperCase() : "SIM") + "\n";
+  texto += "CARTÃO: " + (cfg.cartao ? cfg.cartao.toUpperCase() : "SEM") + " CRLV: " + (cfg.crv ? cfg.crv.toUpperCase() : "NÃO") + "\n";
   texto += "-----------------------------------\n";
 
   var kmTopo = cfg.kmInicial || "-";
-  if (kmTopo !== "-" && !isNaN(parseFloat(kmTopo))) kmTopo = parseFloat(kmTopo).toString();
   var combTopo = cfg.abastecimento || "-";
 
   texto += "KM: " + kmTopo + " COMBUSTÍVEL: " + formatPct(combTopo) + "\n";
@@ -1385,7 +1384,6 @@ function buildSingleOcorrenciaText(grupo, cfg) {
   texto += "UNIDADE: " + ((cfg.unidade || "").toUpperCase()) + " VTR: " + (cfg.ambulancia || "").toUpperCase() + "\n";
   
   var kmTopo = cfg.kmInicial || "-";
-  if (kmTopo !== "-" && !isNaN(parseFloat(kmTopo))) kmTopo = parseFloat(kmTopo).toString();
   
   texto += "KM: " + kmTopo + " PLACA - " + (cfg.placa || "").toUpperCase() + "\n";
   texto += "-----------------------------------\n";
@@ -2062,8 +2060,8 @@ function handleMesAnoChange(novoMes,novoAno){
 }
 
 function handleNovoDeslocamento(){
-  if(editingRecordId) toast("Edição cancelada. Novo deslocamento iniciado.");
-  else toast("🆕 Novo deslocamento iniciado");
+  if(editingRecordId) toast.warning("Edição cancelada. ⚠️ NOVO PLANTÃO ATUALIZAR OS DADOS DA VTR 🚑 E UNIDADE");
+  else toast.warning("⚠️ NOVO PLANTÃO ATUALIZAR OS DADOS DA VTR 🚑 E UNIDADE");
   state.currentOcorrenciaId=String(Date.now());
   editingRecordId=null;
   setEditingVisual(false);
@@ -2234,12 +2232,12 @@ function executarRegistro(tipo){
           kmChegada:km,
           veiculo:veic
         });
-        toast.success("🏥 Fim de Plantão na Base!");
+        toast.warning("🏥 Fim de Plantão na Base! ⚠️ NOVO PLANTÃO ATUALIZAR OS DADOS DA VTR 🚑 E UNIDADE");
     }
     else if(idxAberto!==-1){
       var patched2=Object.assign({},next[idxAberto],{ tipo:tipo, horaChegada:hora, kmChegada:km });
       next[idxAberto]=patched2;
-      if(tipo==="base") toast.success("🏥 Fim de Plantão na Base!");
+      if(tipo==="base") toast.warning("🏥 Fim de Plantão na Base! ⚠️ NOVO PLANTÃO ATUALIZAR OS DADOS DA VTR 🚑 E UNIDADE");
       else toast.success("📍 Chegada registrada!");
     }
     else if(tipo==="base"){
@@ -2257,7 +2255,7 @@ function executarRegistro(tipo){
         kmChegada:km,
         veiculo:veic
       });
-      toast.success("🏥 Fim de Plantão na Base!");
+      toast.warning("🏥 Fim de Plantão na Base! ⚠️ NOVO PLANTÃO ATUALIZAR OS DADOS DA VTR 🚑 E UNIDADE");
     }else{
       toast.error("Não há saída em aberto para esta VTR.");
       return;
@@ -2429,14 +2427,15 @@ function buildChecklistText(platform) {
   else if (hora < 18) text += "╰┈[I☞» Boa Tarde!\n\n";
   else text += "╰┈[I☞» Boa Noite!\n\n";
 
-  text += "CONDUTOR: " + (state.config.condutor || "").toUpperCase() + "  \n";
-  text += "UNIDADE: " + (state.config.unidade || "").toUpperCase() + "  PLANTÃO: " + plantaoCompleto + "\n";
+  text += "CONDUTOR: " + (state.config.condutor || "").toUpperCase() + "   \n";
+  text += "UNIDADE: " + (state.config.unidade || "").toUpperCase() + " \n";
+  text += "PLANTÃO: " + plantaoCompleto + "\n";
   text += "VTR: " + (state.config.ambulancia || "").toUpperCase() + " - " + (state.config.placa || "").toUpperCase() + "\n";
-  
+
   var kmTopo = state.config.kmInicial || "-";
   text += "KM: " + kmTopo + " COMBUSTÍVEL: " + formatPct(state.config.abastecimento) + "\n";
   
-  text += "CARTÃO: " + (state.config.cartao || "NÃO") + "  CRLV: " + (state.config.crv || "SIM") + "\n";
+  text += "CARTÃO: " + (state.config.cartao || "SEM") + "  CRLV: " + (state.config.crv ? state.config.crv.toUpperCase() : "NÃO") + "\n";
   text += "O² PORTÁTIL: " + formatPct(state.config.o2Portatil) + " FIXO: " + formatPct(state.config.o2Fixo) + "\n";
   text += "-----------------------------------\n";
 
