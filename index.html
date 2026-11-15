@@ -1312,14 +1312,14 @@ function buildWhatsAppText(registros, cfg, platform) {
 
   var hora = now.getHours();
   var saudacao = "";
-  if (hora < 12) saudacao = "Bom dia!";
-  else if (hora < 18) saudacao = "Boa Tarde!";
-  else saudacao = "Boa Noite!";
+  if (hora < 12) saudacao = "╰┈[I☞» Bom dia!";
+  else if (hora < 18) saudacao = "╰┈[I☞» Boa Tarde!";
+  else saudacao = "╰┈[I☞» Boa Noite!";
 
   var texto = saudacao + "\n\n";
-  texto += "CONDUTOR: " + cfg.condutor.toUpperCase() + " \n";
-  texto += "PLANTÃO: " + plantaoSigla + " | " + cfg.unidade.toUpperCase() + " \n";
-  texto += "VTR: " + cfg.ambulancia.toUpperCase() + " PLACA: " + cfg.placa.toUpperCase() + "\n";
+  texto += "CONDUTOR: " + cfg.condutor.toUpperCase() + "  \n";
+  texto += "PLANTÃO: " + plantaoSigla + " | " + cfg.unidade.toUpperCase() + "  \n";
+  texto += "VTR: " + (cfg.ambulancia || "").toUpperCase() + " PLACA: " + (cfg.placa || "").toUpperCase() + "\n";
   texto += "O² PORTÁTIL: " + formatPct(cfg.o2Portatil) + " FIXO: " + formatPct(cfg.o2Fixo) + "\n";
   texto += "CARTÃO: " + (cfg.cartao ? cfg.cartao.toUpperCase() : "SEM") + " CRLV: " + (cfg.crv ? cfg.crv.toUpperCase() : "SIM") + "\n";
   texto += "-----------------------------------\n";
@@ -1331,7 +1331,7 @@ function buildWhatsAppText(registros, cfg, platform) {
   texto += "KM: " + kmTopo + " COMBUSTÍVEL: " + formatPct(combTopo) + "\n";
   texto += "-----------------------------------\n";
 
-  texto += "OBS: " + (cfg.observacao ? cfg.observacao.toUpperCase() : "VTR SEM NOVAS AVARIAS") + " \n\n";
+  texto += "OBS: " + (cfg.observacao ? cfg.observacao.toUpperCase() : "VTR SEM NOVAS AVARIAS") + "  \n\n";
   texto += "Bom plantão a todos! " + dataStr + " " + horaStr + "\n";
   texto += "-----------------------------------\n";
   texto += bold + "🚑💭 RELATÓRIO DE DESLOCAMENTO" + bold + "\n\n";
@@ -1351,11 +1351,11 @@ function buildWhatsAppText(registros, cfg, platform) {
       var dataFim = formatDateBR(g.dataFim);
       var stringData = dataInicio === dataFim ? ("DATA: " + dataInicio) : ("INÍCIO DATA: " + dataInicio + " FIM DATA: " + dataFim);
       texto += "\n" + stringData + "  KM ROD: " + g.kmRodado.toFixed(1) + "\n";
-      texto += "-----------------------------------\n\n";
+      texto += "-----------------------------------\n";
     });
   }
 
-  texto += "RESUMO DO PLANTÃO\n";
+  texto += "\nRESUMO DO PLANTÃO\n";
   texto += "Total de Deslocamentos: " + grupos.length + "\n";
   texto += "Total KM Rodado: " + resumo.totalKm.toFixed(1) + " km\n";
   
@@ -1370,7 +1370,7 @@ function buildWhatsAppText(registros, cfg, platform) {
   }
   
   texto += "-----------------------------------\n";
-  texto += "UNIDADES SOLICITANTES:\n";
+  texto += "LOCAL/UNIDADES:\n";
   if (solicitantes.length > 0) {
     solicitantes.forEach(function(s){ texto += "• " + s.local + ": " + s.total + "\n"; });
   } else {
@@ -1380,10 +1380,14 @@ function buildWhatsAppText(registros, cfg, platform) {
 }
 
 function buildSingleOcorrenciaText(grupo, cfg) {
-  var texto = "RELATÓRIO DE DESLOCAMENTO (INDIVIDUAL)\n\n";
+  var texto = "*RELATÓRIO DESLOCAMENTO (INDIVIDUAL)*\n\n";
   texto += "CONDUTOR: " + ((grupo.condutor || cfg.condutor || "").toUpperCase()) + "\n";
-  texto += "UNIDADE: "  + ((cfg.unidade  || "").toUpperCase()) + "\n";
-  texto += "VTR: "      + grupo.veiculo + "\n";
+  texto += "UNIDADE: " + ((cfg.unidade || "").toUpperCase()) + " VTR: " + (cfg.ambulancia || "").toUpperCase() + "\n";
+  
+  var kmTopo = cfg.kmInicial || "-";
+  if (kmTopo !== "-" && !isNaN(parseFloat(kmTopo))) kmTopo = parseFloat(kmTopo).toString();
+  
+  texto += "KM: " + kmTopo + " PLACA - " + (cfg.placa || "").toUpperCase() + "\n";
   texto += "-----------------------------------\n";
   texto += "DATA: " + formatDateBR(grupo.data) + " | TURNO: " + grupo.shift + "\n\n";
 
@@ -2421,13 +2425,13 @@ function buildChecklistText(platform) {
   var text = bold + "🚑💭 CHECK LIST VTR " + vtrNome + bold + "\n\n";
 
   var hora = hoje.getHours();
-  if (hora < 12) text += "Bom dia!\n\n";
-  else if (hora < 18) text += "Boa Tarde!\n\n";
-  else text += "Boa Noite!\n\n";
+  if (hora < 12) text += "╰┈[I☞» Bom dia!\n\n";
+  else if (hora < 18) text += "╰┈[I☞» Boa Tarde!\n\n";
+  else text += "╰┈[I☞» Boa Noite!\n\n";
 
-  text += "CONDUTOR: " + (state.config.condutor || "").toUpperCase() + " \n";
-  text += "UNIDADE: " + (state.config.unidade || "").toUpperCase() + " PLANTÃO: " + plantaoCompleto + "\n";
-  text += "VTR: " + veiculoKey(state.config) + "\n";
+  text += "CONDUTOR: " + (state.config.condutor || "").toUpperCase() + "  \n";
+  text += "UNIDADE: " + (state.config.unidade || "").toUpperCase() + "  PLANTÃO: " + plantaoCompleto + "\n";
+  text += "VTR: " + (state.config.ambulancia || "").toUpperCase() + " - " + (state.config.placa || "").toUpperCase() + "\n";
   
   var kmTopo = state.config.kmInicial || "-";
   text += "KM: " + kmTopo + " COMBUSTÍVEL: " + formatPct(state.config.abastecimento) + "\n";
