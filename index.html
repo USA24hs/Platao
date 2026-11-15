@@ -59,6 +59,19 @@ main{flex:1;width:100%;max-width:768px;margin:0 auto;padding:8px 8px;display:fle
 
 @keyframes pageIn{from{opacity:0}to{opacity:1}}
 
+/* ✅ NOTIFICAÇÃO TOPO DA TELA */
+#topAlert {
+  position: fixed; top: 0; left: 0; right: 0;
+  background: #fbbf24; color: #000;
+  padding: 12px; text-align: center;
+  font-weight: 800; font-size: 0.9rem;
+  z-index: 10000; transform: translateY(-100%);
+  transition: transform 0.3s ease-in-out;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+}
+#topAlert.show { transform: translateY(0); }
+html[data-theme="dark"] #topAlert { background: #d97706; color: #fff; }
+
 .app-header{
   border-radius:1rem; color:#fff; overflow:hidden;
   background:linear-gradient(135deg,#0a3d4f 0%,#0e5a77 55%,#117399 100%);
@@ -428,6 +441,8 @@ html[data-theme="dark"] #ovTurno .dlg-head h3{color:#fde047}
 </style>
 </head>
 <body>
+
+<div id="topAlert"></div>
 
 <div id="loginScreen">
   <div class="login-box" id="loginBox">
@@ -1852,6 +1867,19 @@ toast.success=function(m){ toast(m,"success"); };
 toast.warning=function(m){ toast(m,"warning"); };
 toast.error  =function(m){ toast(m,"error"); };
 
+/* ✅ FUNÇÃO PARA NOTIFICAÇÃO NO TOPO */
+var topAlertTimeout;
+function showTopAlert(msg) {
+  var el = $("topAlert");
+  if(!el) return;
+  el.innerHTML = msg;
+  el.classList.add("show");
+  clearTimeout(topAlertTimeout);
+  topAlertTimeout = setTimeout(function() {
+    el.classList.remove("show");
+  }, 6000);
+}
+
 function showConfirm(opts) {
   $("confirmIcon").textContent = opts.icon || "❓";
   $("confirmTitle").textContent = opts.title || "Confirmação";
@@ -2059,16 +2087,23 @@ function handleMesAnoChange(novoMes,novoAno){
   renderDerived();
 }
 
+/* ✅ ATUALIZADO: PREENCHE AUTOMÁTICO E EXIBE NOTIFICAÇÃO NO TOPO */
 function handleNovoDeslocamento(){
-  if(editingRecordId) toast.warning("Edição cancelada. ⚠️ NOVO PLANTÃO ATUALIZAR OS DADOS DA VTR 🚑 E UNIDADE");
-  else toast.warning("⚠️ NOVO PLANTÃO ATUALIZAR OS DADOS DA VTR 🚑 E UNIDADE");
+  if(editingRecordId) toast.warning("Edição cancelada.");
+  showTopAlert("⚠️ NOVO PLANTÃO ATUALIZAR OS DADOS DA VTR 🚑 E UNIDADE");
+  
   state.currentOcorrenciaId=String(Date.now());
   editingRecordId=null;
   setEditingVisual(false);
   save(true);
+  
+  // Preparar preenche data, hora, KM e Local automaticamente
   preparar(state.registros,state.config,state.currentOcorrenciaId,state.mes,state.ano);
   alertasParaZero();
   checkShiftUpdate();
+
+  // Vai para a aba de Plantão para facilitar
+  switchTab("plantao");
 }
 
 function handleRegistrar(tipo){
@@ -2232,12 +2267,16 @@ function executarRegistro(tipo){
           kmChegada:km,
           veiculo:veic
         });
-        toast.warning("🏥 Fim de Plantão na Base! ⚠️ NOVO PLANTÃO ATUALIZAR OS DADOS DA VTR 🚑 E UNIDADE");
+        toast.success("🏥 Fim de Plantão na Base!");
+        showTopAlert("⚠️ NOVO PLANTÃO ATUALIZAR OS DADOS DA VTR 🚑 E UNIDADE");
     }
     else if(idxAberto!==-1){
       var patched2=Object.assign({},next[idxAberto],{ tipo:tipo, horaChegada:hora, kmChegada:km });
       next[idxAberto]=patched2;
-      if(tipo==="base") toast.warning("🏥 Fim de Plantão na Base! ⚠️ NOVO PLANTÃO ATUALIZAR OS DADOS DA VTR 🚑 E UNIDADE");
+      if(tipo==="base") {
+        toast.success("🏥 Fim de Plantão na Base!");
+        showTopAlert("⚠️ NOVO PLANTÃO ATUALIZAR OS DADOS DA VTR 🚑 E UNIDADE");
+      }
       else toast.success("📍 Chegada registrada!");
     }
     else if(tipo==="base"){
@@ -2255,7 +2294,8 @@ function executarRegistro(tipo){
         kmChegada:km,
         veiculo:veic
       });
-      toast.warning("🏥 Fim de Plantão na Base! ⚠️ NOVO PLANTÃO ATUALIZAR OS DADOS DA VTR 🚑 E UNIDADE");
+      toast.success("🏥 Fim de Plantão na Base!");
+      showTopAlert("⚠️ NOVO PLANTÃO ATUALIZAR OS DADOS DA VTR 🚑 E UNIDADE");
     }else{
       toast.error("Não há saída em aberto para esta VTR.");
       return;
@@ -3448,6 +3488,10 @@ function wireEvents(){
     setCollapsed(false);
     var target = document.querySelector('.app-header');
     if(target && target.scrollIntoView) target.scrollIntoView({ behavior: "smooth", block: "start" });
+    
+    // ✅ Preenche automático o novo plantão
+    handleNovoDeslocamento();
+    
     var plantaoSelect = $("cfg-plantao");
     if(plantaoSelect) setTimeout(function() { plantaoSelect.focus(); }, 300);
   });
