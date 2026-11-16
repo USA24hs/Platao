@@ -59,6 +59,7 @@ main{flex:1;width:100%;max-width:768px;margin:0 auto;padding:8px 8px;display:fle
 
 @keyframes pageIn{from{opacity:0}to{opacity:1}}
 
+/* ✅ NOTIFICAÇÃO TOPO DA TELA */
 #topAlert {
   position: fixed; top: 0; left: 0; right: 0;
   background: #fbbf24; color: #000;
@@ -154,6 +155,7 @@ html[data-theme="dark"] .f-input.base-ok{border-color:#10b981;background:rgba(2,
 .btn-ghost-sm{height:1.75rem;border:none;background:transparent;color:var(--muted-foreground);font-size:.7rem;font-weight:700;border-radius:.5rem;padding:0 .5rem;cursor:pointer;display:inline-flex;align-items:center;gap:.25rem}
 .btn-ghost-sm:hover{color:var(--foreground);background:var(--muted)}
 
+/* ✅ ESTILO DO BOTÃO SWITCH ON/OFF */
 .switch { position: relative; display: inline-block; width: 46px; height: 26px; }
 .switch input { opacity: 0; width: 0; height: 0; }
 .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 26px; }
@@ -551,7 +553,7 @@ html[data-theme="dark"] #ovTurno .dlg-head h3{color:#fde047}
       <div class="actions">
         <button class="btn btn-saida" id="btnSaida">🚑 Saída</button>
         <button class="btn btn-chegada" id="btnChegada">📍 Chegada</button>
-        <button class="btn btn-base" id="btnBase">🏥 Base (Fim)</button>
+        <button class="btn btn-base" id="btnBase">🏥 Chegada Base</button>
       </div>
     </section>
 
@@ -1113,26 +1115,15 @@ function validarSequencia(tipo,ultimoDaOcorrencia){
   return null;
 }
 
-/* ✅ CORREÇÃO: Lógica do KM para Novo Plantão */
 function prepararFormulario(registros,cfg,ocorrenciaId,mes,ano){
   var veiculo=veiculoKey(cfg);
   var base=limparNomeLocal(cfg.unidade.trim())||"BASE";
   var hoje=hojeStr();
   var prefix=ano+"-"+pad(mes)+"-";
   var data = hoje.indexOf(prefix)===0 ? hoje : (prefix+"01");
-  
+  var kmRef=getUltimoKmChegada(registros,veiculo,cfg.kmInicial);
   var itemsAtuais=registros.filter(function(r){ return r.ocorrenciaId===ocorrenciaId; });
   var lastRecordOc = itemsAtuais.length>0 ? itemsAtuais[0] : null;
-  
-  var kmRef;
-  if (itemsAtuais.length === 0) {
-    // Se não há registros para esta ocorrência, é um NOVO PLANTÃO.
-    // O KM deve ser o KM Inicial configurado no cabeçalho.
-    kmRef = cfg.kmInicial || "";
-  } else {
-    // Se já há registros, pega o último KM registrado.
-    kmRef = getUltimoKmChegada(registros, veiculo, cfg.kmInicial);
-  }
 
   var local = base+" → ";
   if(!lastRecordOc){
@@ -1326,6 +1317,7 @@ function saveStore(store){
   catch(e){}
 }
 
+/* ✅ NOVO FORMATO DO RELATÓRIO DE DESLOCAMENTO */
 function buildWhatsAppText(registros, cfg, platform) {
   var bold = (platform === 'telegram') ? '**' : '*';
   var now = new Date();
@@ -1875,6 +1867,7 @@ toast.success=function(m){ toast(m,"success"); };
 toast.warning=function(m){ toast(m,"warning"); };
 toast.error  =function(m){ toast(m,"error"); };
 
+/* ✅ FUNÇÃO PARA NOTIFICAÇÃO NO TOPO */
 var topAlertTimeout;
 function showTopAlert(msg) {
   var el = $("topAlert");
@@ -2096,8 +2089,16 @@ function handleMesAnoChange(novoMes,novoAno){
 
 function handleNovoDeslocamento(){
   if(editingRecordId) toast.warning("Edição cancelada.");
-  showTopAlert("⚠️ NOVO PLANTÃO ATUALIZAR OS DADOS DA VTR 🚑 E UNIDADE");
+  showTopAlert("⚠️ NOVO DESLOCAMENTO ATUALIZAR KM 🛞");
   
+  // Atualiza o KM inicial do cabeçalho com o último KM registrado
+  var veic = veiculoKey(state.config);
+  var ultimoKm = getUltimoKmChegada(state.registros, veic, state.config.kmInicial);
+  if(ultimoKm) {
+    state.config.kmInicial = ultimoKm;
+    syncHeaderFields();
+  }
+
   state.currentOcorrenciaId=String(Date.now());
   editingRecordId=null;
   setEditingVisual(false);
@@ -2107,6 +2108,7 @@ function handleNovoDeslocamento(){
   alertasParaZero();
   checkShiftUpdate();
 
+  // Vai para a aba de Plantão para facilitar
   switchTab("plantao");
 }
 
@@ -2188,29 +2190,29 @@ function executarRegistro(tipo){
     if(!destino && origem){ destino=origem; local=origem+" → "+destino; }
     else if(!destino){ setAlert("local",true); toast.warning("Preencha o DESTINO para registrar a Saída."); return; }
     else { local=origem+" → "+destino; }
-  }else if(tipo==="chegada"){
-    if(!destino){
-      destino=origem||getLocalAtual(state.registros,veic)||base||"ORIGEM";
-      local=destino+" → "+destino;
-    }else{
-      local=origem+" → "+destino;
+  }else if(tipo==="chegada" || tipo==="base"){
+    // Lógica unificada para chegada e base
+    var idxAberto = state.registros.findIndex(function(r){ return r.veiculo===veic && r.ocorrenciaId===state.currentOcorrenciaId && !r.horaChegada; });
+    if(tipo==="base") {
+        if(idxAberto !== -1) {
+            var localSaidaAberta = state.registros[idxAberto].local;
+            var destinoSaidaAberta = getLocalDisplay(localSaidaAberta, true);
+            local = destinoSaidaAberta + " → " + base;
+        } else {
+            var ultimaLocalizacao=getLocalAtual(state.registros,veic);
+            origem=ultimaLocalizacao||origem||base;
+            local=origem+" → "+base;
+        }
+        setBaseOk(true);
+    } else {
+        if(!destino){
+          destino=origem||getLocalAtual(state.registros,veic)||base||"ORIGEM";
+          local=destino+" → "+destino;
+        }else{
+          local=origem+" → "+destino;
+        }
     }
-  }else if(tipo==="base"){
-    if(editingRecordId){
-      local=local||(base+" → "+base);
-    }else{
-      var idxAberto = state.registros.findIndex(function(r){ return r.veiculo===veic && r.ocorrenciaId===state.currentOcorrenciaId && !r.horaChegada; });
-      if(idxAberto !== -1) {
-          var localSaidaAberta = state.registros[idxAberto].local;
-          var destinoSaidaAberta = getLocalDisplay(localSaidaAberta, true);
-          local = destinoSaidaAberta + " → " + base;
-      } else {
-          var ultimaLocalizacao=getLocalAtual(state.registros,veic);
-          origem=ultimaLocalizacao||origem||base;
-          local=origem+" → "+base;
-      }
-      setBaseOk(true);
-    }
+    tipo = "chegada"; // Trata base como um tipo de chegada para manter a ocorrência aberta
   }
 
   var next=state.registros.slice();
@@ -2256,41 +2258,20 @@ function executarRegistro(tipo){
       return r.veiculo===veic && r.ocorrenciaId===state.currentOcorrenciaId && !r.horaChegada;
     });
 
-    if(tipo === "base" && idxAberto !== -1) {
-        next.unshift({
-          id:String(Date.now()),
-          ocorrenciaId:state.currentOcorrenciaId,
-          data:data,
-          shift:state.config.plantao||"SD 12hs",
-          condutor:(state.config.condutor||"").trim().toUpperCase(),
-          tipo:"base",
-          horaSaida:"",
-          kmSaida:"",
-          local:local,
-          horaChegada:hora,
-          kmChegada:km,
-          veiculo:veic
-        });
-        toast.success("🏥 Fim de Plantão na Base!");
-        showTopAlert("⚠️ NOVO PLANTÃO ATUALIZAR OS DADOS DA VTR 🚑 E UNIDADE");
-    }
-    else if(idxAberto!==-1){
+    if(idxAberto !== -1){
       var patched2=Object.assign({},next[idxAberto],{ tipo:tipo, horaChegada:hora, kmChegada:km });
       next[idxAberto]=patched2;
-      if(tipo==="base") {
-        toast.success("🏥 Fim de Plantão na Base!");
-        showTopAlert("⚠️ NOVO PLANTÃO ATUALIZAR OS DADOS DA VTR 🚑 E UNIDADE");
-      }
-      else toast.success("📍 Chegada registrada!");
+      toast.success("📍 Chegada registrada!");
     }
-    else if(tipo==="base"){
+    else{
+      // Fallback se não houver saída em aberto
       next.unshift({
         id:String(Date.now()),
         ocorrenciaId:state.currentOcorrenciaId,
         data:data,
         shift:state.config.plantao||"SD 12hs",
         condutor:(state.config.condutor||"").trim().toUpperCase(),
-        tipo:"base",
+        tipo:"chegada",
         horaSaida:"",
         kmSaida:"",
         local:local,
@@ -2298,19 +2279,17 @@ function executarRegistro(tipo){
         kmChegada:km,
         veiculo:veic
       });
-      toast.success("🏥 Fim de Plantão na Base!");
-      showTopAlert("⚠️ NOVO PLANTÃO ATUALIZAR OS DADOS DA VTR 🚑 E UNIDADE");
-    }else{
-      toast.error("Não há saída em aberto para esta VTR.");
-      return;
+      toast.success("📍 Chegada registrada!");
     }
   }
 
-  var proximaOcorrencia = tipo==="base" ? String(Date.now()) : state.currentOcorrenciaId;
-  if(tipo==="base") state.currentOcorrenciaId=proximaOcorrencia;
-
   state.registros=next;
   updateFrotaKms(next);
+  
+  // Atualiza o KM inicial no cabeçalho
+  state.config.kmInicial = getUltimoKmChegada(next, veic, state.config.kmInicial);
+  syncHeaderFields();
+
   save(true);
 
   if(tipo==="base" && !editingRecordId){
@@ -2319,11 +2298,11 @@ function executarRegistro(tipo){
     form.local=local;
     renderDerived();
     setTimeout(function(){
-      preparar(next,state.config,proximaOcorrencia,state.mes,state.ano);
+      preparar(next,state.config,state.currentOcorrenciaId,state.mes,state.ano);
       setBaseOk(false);
     }, 800);
   }else{
-    preparar(next,state.config,proximaOcorrencia,state.mes,state.ano);
+    preparar(next,state.config,state.currentOcorrenciaId,state.mes,state.ano);
     renderDerived();
   }
 }
@@ -2456,6 +2435,7 @@ function handleCompartilhar(plataforma){
   }
 }
 
+/* ✅ NOVO FORMATO DO CHECK LIST */
 function buildChecklistText(platform) {
   var bold = (platform === 'telegram') ? '**' : '*';
   var hoje = new Date();
@@ -3072,6 +3052,7 @@ function checkShiftUpdate() {
     var sessionKey = "shiftWarn_" + lastRecord.data + "_" + lastRecord.shift;
     if (!sessionStorage.getItem(sessionKey)) {
       $("ovTurno").hidden = false;
+      showTopAlert("⚠️ NOVO PLANTÃO ATUALIZAR OS DADOS DA VTR 🚑 E UNIDADE");
       sessionStorage.setItem(sessionKey, "1");
     }
   }
