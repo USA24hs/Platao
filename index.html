@@ -1694,9 +1694,9 @@ function buildRelatorioPlantaoHTML(registros,cfg,assinaturaImg,mes,ano){
 
   var condutorNome = escapeHtml(cfg.nomeLegivel||cfg.condutor||"-");
 
-  return '<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><title>Relatório de Plantão</title>'+
+  return '<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><title>Relatório do Plantão</title>'+
     '<style>'+REPORT_BASE_CSS+'</style></head><body><div class="container">'+
-    '<div class="titulo">Relatório de Plantão <span>VTR</span></div>'+
+    '<div class="titulo">Relatório do Plantão <span>VTR</span></div>'+
     '<div class="sub">'+nomeMes(mes)+' / '+ano+' • '+escapeHtml((cfg.unidade||"").toUpperCase())+' • gerado em '+dataHoraAgoraBR()+'</div>'+
     '<table class="info">'+
     '<tr><td class="k">Condutor</td><td>'+condutorNome+'</td><td class="k">VTR</td><td>'+escapeHtml(veiculoKey(cfg))+'</td></tr>'+
