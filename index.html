@@ -1659,6 +1659,61 @@ function buildFechamentoMensalHTML(resumoMensal,cfg,mes,ano){
     '</div></div></body></html>';
 }
 
+function buildRelatorioPlantaoHTML(registros,cfg,assinaturaImg,mes,ano){
+  var grupos=agruparPorOcorrencia(registros);
+  var totalKm=grupos.reduce(function(acc,g){ return acc+g.kmRodado; },0);
+  var diasSet={};
+  grupos.forEach(function(g){ if(g.items && g.items.length){ diasSet[g.data]=1; } });
+
+  var fichasHTML = grupos.length
+    ? grupos.map(function(g){
+        var linhas=g.timeline.map(function(l){
+          var cls = l.tag==="INICIO" ? "inicio" : l.tag==="SAÍDA" ? "saida" : l.tag==="CHEGADA" ? "chegada" : "fim";
+          return '<div class="linha"><span class="tag '+cls+'">'+escapeHtml(l.tag)+'</span>'+
+                 '<span class="loc">'+escapeHtml(l.local||"-")+'</span>'+
+                 '<span class="hora">'+escapeHtml(l.hora||"-")+'</span>'+
+                 '<span class="km">'+(l.km!==""&&l.km!==undefined&&l.km!==null?escapeHtml(String(l.km)):"—")+'</span></div>';
+        }).join("");
+        var dIni=formatDateBR(g.data);
+        var dFim=formatDateBR(g.dataFim);
+        var periodo = dIni===dFim ? dIni : dIni+" → "+dFim;
+        return '<div class="ficha">'+
+          '<div class="ficha-head"><span>'+escapeHtml(periodo)+' • '+escapeHtml(g.shift||cfg.plantao||"")+'</span>'+
+          '<small>'+escapeHtml(g.condutor||cfg.nomeLegivel||cfg.condutor||"-")+'</small></div>'+
+          '<div class="ficha-body">'+(linhas||'<div class="linha"><span class="loc">Sem horários registrados</span></div>')+'</div>'+
+          '<div class="ficha-foot"><span>KM Inicial: '+escapeHtml(String(g.kmInicial||"—"))+'</span>'+
+          '<span>KM Final: '+escapeHtml(String(g.kmFinal||"—"))+'</span>'+
+          '<span class="km">'+g.kmRodado.toFixed(1)+' km</span></div>'+
+          '</div>';
+      }).join("")
+    : '<div style="text-align:center;color:#5a6b78;font-size:9pt;padding:18px 0;border:1px dashed #cfd9e2;border-radius:8px;">SEM OCORRÊNCIAS REGISTRADAS NESTE MÊS</div>';
+
+  var assHTML = (assinaturaImg && assinaturaImg.indexOf("data:image")===0)
+    ? '<div class="ass"><span>Assinatura do Condutor:</span><img src="'+assinaturaImg+'" alt="Assinatura"></div>'
+    : '<div class="ass"><span>Assinatura do Condutor:</span><div style="border-bottom:1px solid #000;width:200px;"></div></div>';
+
+  var condutorNome = escapeHtml(cfg.nomeLegivel||cfg.condutor||"-");
+
+  return '<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><title>Relatório de Plantão</title>'+
+    '<style>'+REPORT_BASE_CSS+'</style></head><body><div class="container">'+
+    '<div class="titulo">Relatório de Plantão <span>VTR</span></div>'+
+    '<div class="sub">'+nomeMes(mes)+' / '+ano+' • '+escapeHtml((cfg.unidade||"").toUpperCase())+' • gerado em '+dataHoraAgoraBR()+'</div>'+
+    '<table class="info">'+
+    '<tr><td class="k">Condutor</td><td>'+condutorNome+'</td><td class="k">VTR</td><td>'+escapeHtml(veiculoKey(cfg))+'</td></tr>'+
+    '<tr><td class="k">Unidade</td><td>'+escapeHtml((cfg.unidade||"-").toUpperCase())+'</td><td class="k">Turno</td><td>'+escapeHtml(cfg.plantao||"-")+'</td></tr>'+
+    '</table>'+
+    '<div class="box"><h3>Resumo do Plantão</h3><div class="stats">'+
+    '<div><span>Ocorrências</span><strong>'+grupos.length+'</strong></div>'+
+    '<div><span>KM Rodado</span><strong>'+totalKm.toFixed(1)+'</strong></div>'+
+    '<div><span>Dias c/ Saída</span><strong>'+Object.keys(diasSet).length+'</strong></div>'+
+    '</div></div>'+
+    '<div class="box" style="background:#fff;border-color:#cfd9e2;"><h3 style="color:#12212b;">Ocorrências do Mês</h3>'+fichasHTML+'</div>'+
+    '<div class="rodape">'+
+    assHTML+
+    '<div style="text-align:right;font-size:8.5pt;color:#5a6b78;">'+condutorNome+'<br>Documento gerado pelo Sistema de Deslocamento VTR.</div>'+
+    '</div></div></body></html>';
+}
+
 var CRC_TABLE=(function(){
   var t=new Uint32Array(256);
   for(var n=0;n<256;n++){
