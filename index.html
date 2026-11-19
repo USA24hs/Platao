@@ -1649,7 +1649,7 @@ function buildFechamentoMensalHTML(resumoMensal,cfg,mes,ano){
     '<div><span>VTRs</span><strong>'+resumoMensal.vtrs.length+'</strong></div>'+
     '</div></div>'+
     '<div class="box"><h3>KM por VTR</h3>'+vtrsHTML+'</div>'+
-    '<div class="box"><h3>Unidades Solicitantes</h3>'+solicitantesHTML+'</div>'+
+    '<div class="box"><h3>Local/Unidade Deslocamentos</h3>'+solicitantesHTML+'</div>'+
     '<div class="box" style="background:#fff;border-color:#cfd9e2;"><h3 style="color:#12212b;">Deslocamentos do Mês</h3>'+
     '<table class="ocorr"><tr><th>Período</th><th>Turno</th><th>VTR</th><th>Trajeto</th><th style="text-align:right;">KM</th></tr>'+
     ocorrenciasHTML+'</table></div>'+
@@ -1772,7 +1772,7 @@ function buildXlsxFiles(rm,cfg,mes,ano){
   rm.vtrs.forEach(function(v){
     resumoRows.push([v.veiculo,v.ocorrencias,v.kmInicial,v.kmFinal,Number(v.totalKm.toFixed(1))]);
   });
-  resumoRows.push([],["UNIDADES SOLICITANTES"],["Local","Atendimentos"]);
+  resumoRows.push([],["Local/Unidade Deslocamentos"],["Local","Atendimentos"]);
   rm.solicitantes.forEach(function(s){ resumoRows.push([s.local,s.total]); });
 
   var deslocRows=[["Data Início","Data Fim","Turno","VTR","Trajeto","KM Rodado"]];
@@ -2729,7 +2729,7 @@ function renderResumo(){
     '<div class="stat" style="animation-delay:.06s"><span class="stat-label">KM Rodados</span><strong class="stat-value em">'+resumo.totalKm.toFixed(1)+'</strong></div>'+
     '</div>'+
     '<div class="stat-card-list">'+
-    '<h3 class="sol-title">Unidades Solicitantes</h3>'+solHTML+
+    '<h3 class="sol-title">Local/Unidade Deslocamentos</h3>'+solHTML+
     '</div>';
 }
 
@@ -2806,7 +2806,7 @@ function renderMensal(){
     '</section>'+
     chartSection+
     '<section class="card" aria-label="KM por VTR"><h2 class="sec-title">🚚 KM por VTR</h2>'+vtrSection+'</section>'+
-    '<section class="card" aria-label="Unidades solicitantes do mês"><h2 class="sec-title">🎯 Unidades Solicitantes do Mês</h2>'+solSection+'</section>'+
+    '<section class="card" aria-label="Local/Unidade Deslocamentos do mês"><h2 class="sec-title">🎯 Local/Unidade Deslocamentos do Mês</h2>'+solSection+'</section>'+
     '<div class="export-grid" aria-label="Exportar fechamento">'+
     '<button class="btn btn-excel" id="btnExcel">📊 Exportar Excel (.xlsx)</button>'+
     '<button class="btn btn-pdf2" id="btnPdfMensal">📄 Relatório PDF (imprimir)</button>'+
