@@ -427,7 +427,7 @@ html[data-theme="dark"] #ovTurno .dlg-head h3{color:#fde047}
 }
 
 .user-card {
-  display: flex; justify-content: space-between; align-items: center;
+  display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;
   padding: 10px; border: 1px solid var(--border); border-radius: 8px;
   margin-bottom: 8px; background: var(--card);
 }
@@ -436,6 +436,15 @@ html[data-theme="dark"] #ovTurno .dlg-head h3{color:#fde047}
 .user-role { font-size: 0.7rem; font-weight: 700; color: var(--primary); text-transform: uppercase; }
 .user-actions { display: flex; gap: 4px; flex-wrap: wrap; }
 .blocked { background: #fee2e2; color: #b91c1c; padding: 2px 6px; border-radius: 4px; font-size: 0.65rem; font-weight: 800; }
+.user-perms { width: 100%; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin-top: 8px; padding-top: 8px; border-top: 1px dashed var(--border); }
+.perm-title { width: 100%; font-size: 0.62rem; font-weight: 800; color: var(--muted-foreground); text-transform: uppercase; letter-spacing: .05em; }
+.perm-chip { border: none; border-radius: 999px; padding: 4px 10px; font-size: 0.7rem; font-weight: 700; cursor: pointer; transition: filter .2s; }
+.perm-chip.on { background: #dcfce7; color: #15803d; }
+.perm-chip.off { background: var(--muted); color: var(--muted-foreground); opacity: .85; }
+.perm-chip:hover { filter: brightness(.94); }
+.perm-full { width: 100%; font-size: 0.7rem; font-weight: 700; color: var(--muted-foreground); }
+html[data-theme="dark"] .perm-chip.on { background: rgba(21,128,61,.45); color: #86efac; }
+html[data-theme="dark"] .perm-chip.off { background: rgba(100,116,139,.25); }
 </style>
 </head>
 <body>
@@ -834,9 +843,37 @@ function b64DecodeUnicode(str) {
 }
 
 var DEFAULT_USERS = [
-  { username: "Martins", password: b64EncodeUnicode("B@lu4891"), role: "admin", name: "Martins", blocked: false, requiresPasswordChange: true },
-  { username: "Anderson", password: b64EncodeUnicode("AdS&4891"), role: "condutor", name: "Anderson", blocked: false, requiresPasswordChange: true }
+  { username: "Martins", password: b64EncodeUnicode("B@lu4891"), role: "admin", name: "Martins", blocked: false, requiresPasswordChange: true, permissoes: permissoesPadrao() },
+  { username: "Anderson", password: b64EncodeUnicode("AdS&4891"), role: "condutor", name: "Anderson", blocked: false, requiresPasswordChange: true, permissoes: permissoesPadrao() }
 ];
+
+function permissoesPadrao() {
+  return { abaPlantao: true, gerarRelatorio: true, abaMensal: true, exportarExcel: true, relatorioPdf: true };
+}
+
+var PERM_LABELS = [
+  { key: "abaPlantao",     label: "Aba Plantão" },
+  { key: "gerarRelatorio", label: "Gerar Relatório (PDF)" },
+  { key: "abaMensal",      label: "Aba Mensal" },
+  { key: "exportarExcel",  label: "Exportar Excel (.xlsx)" },
+  { key: "relatorioPdf",   label: "Relatório PDF (imprimir)" }
+];
+
+function getPermissoes(user) {
+  var p = permissoesPadrao();
+  if (user && user.permissoes && typeof user.permissoes === "object") {
+    for (var k in p) {
+      if (Object.prototype.hasOwnProperty.call(user.permissoes, k)) p[k] = !!user.permissoes[k];
+    }
+  }
+  return p;
+}
+
+function podeFunc(chave) {
+  if (state.user && state.user.role === "admin") return true;
+  if (!state.user) return false;
+  return getPermissoes(state.user)[chave];
+}
 
 function getUsers() {
   try {
@@ -1694,9 +1731,9 @@ function buildRelatorioPlantaoHTML(registros,cfg,assinaturaImg,mes,ano){
 
   var condutorNome = escapeHtml(cfg.nomeLegivel||cfg.condutor||"-");
 
-  return '<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><title>Relatório do Plantão</title>'+
+  return '<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><title>Relatório de Plantão</title>'+
     '<style>'+REPORT_BASE_CSS+'</style></head><body><div class="container">'+
-    '<div class="titulo">Relatório do Plantão <span>VTR</span></div>'+
+    '<div class="titulo">Relatório de Plantão <span>VTR</span></div>'+
     '<div class="sub">'+nomeMes(mes)+' / '+ano+' • '+escapeHtml((cfg.unidade||"").toUpperCase())+' • gerado em '+dataHoraAgoraBR()+'</div>'+
     '<table class="info">'+
     '<tr><td class="k">Condutor</td><td>'+condutorNome+'</td><td class="k">VTR</td><td>'+escapeHtml(veiculoKey(cfg))+'</td></tr>'+
@@ -2598,6 +2635,10 @@ function handleCompartilharChecklist(plataforma) {
 }
 
 function handleGerarPDF(){
+  if (!podeFunc("gerarRelatorio")) {
+    toast.warning("⛔ Você não tem autorização para gerar o relatório.");
+    return;
+  }
   try{
     var veic = veiculoKey(state.config);
     var registrosFiltrados = getOcorrenciasDoMes(state.registros, state.mes, state.ano).filter(function(r){
@@ -2610,6 +2651,10 @@ function handleGerarPDF(){
   }
 }
 function gerarPdfMensal(){
+  if (!podeFunc("relatorioPdf")) {
+    toast.warning("⛔ Você não tem autorização para gerar o Relatório PDF (imprimir).");
+    return;
+  }
   try{
     var rm=computeResumoMensal(state.registros,state.mes,state.ano,state.config);
     printHTML(buildFechamentoMensalHTML(rm,state.config,state.mes,state.ano));
@@ -2619,6 +2664,10 @@ function gerarPdfMensal(){
   }
 }
 function exportarExcel(){
+  if (!podeFunc("exportarExcel")) {
+    toast.warning("⛔ Você não tem autorização para exportar o Excel (.xlsx).");
+    return;
+  }
   try{
     var rm=computeResumoMensal(state.registros,state.mes,state.ano,state.config);
     exportarFechamentoXLSX(rm,state.config,state.mes,state.ano);
@@ -2862,10 +2911,10 @@ function renderMensal(){
     chartSection+
     '<section class="card" aria-label="KM por VTR"><h2 class="sec-title">🚚 KM por VTR</h2>'+vtrSection+'</section>'+
     '<section class="card" aria-label="Local/Unidade Deslocamentos do mês"><h2 class="sec-title">🎯 Local/Unidade Deslocamentos do Mês</h2>'+solSection+'</section>'+
-    '<div class="export-grid" aria-label="Exportar fechamento">'+
-    '<button class="btn btn-excel" id="btnExcel">📊 Exportar Excel (.xlsx)</button>'+
-    '<button class="btn btn-pdf2" id="btnPdfMensal">📄 Relatório PDF (imprimir)</button>'+
-    '</div>';
+    (podeFunc("exportarExcel") || podeFunc("relatorioPdf") ? '<div class="export-grid" aria-label="Exportar fechamento">'+
+    (podeFunc("exportarExcel") ? '<button class="btn btn-excel" id="btnExcel">📊 Exportar Excel (.xlsx)</button>' : '')+
+    (podeFunc("relatorioPdf") ? '<button class="btn btn-pdf2" id="btnPdfMensal">📄 Relatório PDF (imprimir)</button>' : '')+
+    '</div>' : '');
 
   $("pmMes").addEventListener("change",function(e){
     handleMesAnoChange(Number(e.target.value),state.ano);
@@ -2874,8 +2923,8 @@ function renderMensal(){
     var v=parseInt(e.target.value,10);
     handleMesAnoChange(state.mes,Number.isNaN(v)?new Date().getFullYear():v);
   });
-  $("btnExcel").addEventListener("click",exportarExcel);
-  $("btnPdfMensal").addEventListener("click",gerarPdfMensal);
+  if($("btnExcel")) $("btnExcel").addEventListener("click",exportarExcel);
+  if($("btnPdfMensal")) $("btnPdfMensal").addEventListener("click",gerarPdfMensal);
 }
 
 function renderChecklist() {
@@ -3267,12 +3316,20 @@ function initAuthSystem() {
 
 function applyUserPermissions() {
   var isAdmin = state.user && state.user.role === "admin";
-  
+  var perms = isAdmin ? permissoesPadrao() : (state.user ? getPermissoes(state.user) : permissoesPadrao());
+
   if ($("tabUsuarios")) $("tabUsuarios").hidden = !isAdmin;
+  if ($("tabPlantao")) $("tabPlantao").hidden = !isAdmin && !perms.abaPlantao;
+  if ($("tabMensal")) $("tabMensal").hidden = !isAdmin && !perms.abaMensal;
+  if ($("btnPDF")) $("btnPDF").style.display = (isAdmin || perms.gerarRelatorio) ? "" : "none";
   if ($("adminBackupArea")) $("adminBackupArea").style.display = isAdmin ? "grid" : "none";
-  
+
   if (isAdmin) {
     renderUsersList();
+  } else if (tab === "plantao" && !perms.abaPlantao) {
+    switchTab("checklist");
+  } else if (tab === "mensal" && !perms.abaMensal) {
+    switchTab("checklist");
   }
 }
 
@@ -3284,7 +3341,9 @@ function renderUsersList() {
     var isBlocked = u.blocked;
     var statusClass = isBlocked ? "blocked" : "";
     var statusText = isBlocked ? "BLOQUEADO" : "";
-    
+    var isAdminUser = u.role === "admin";
+    var perms = getPermissoes(u);
+
     html += '<div class="user-card">' +
       '<div class="user-info">' +
         '<span class="user-name">' + escapeHtml(u.name) + ' ' + (statusText ? '<span class="'+statusClass+'">'+statusText+'</span>' : '') + '</span>' +
@@ -3293,8 +3352,17 @@ function renderUsersList() {
       '<div class="user-actions">' +
         '<button class="mini-btn edit" onclick="adminShowPassword(\''+u.username+'\')" title="Ver Senha Atual">🔑</button>' +
         '<button class="mini-btn edit" style="background:#fef08a; color:#854d0e;" onclick="adminResetPassword(\''+u.username+'\')" title="Forçar troca de senha (Reset)">🔄</button>' +
-        '<button class="mini-btn '+(isBlocked ? 'del' : 'edit')+'" onclick="adminToggleBlock(\''+u.username+'\')" title="'+(isBlocked ? 'Desbloquear' : 'Bloquear')+'">'+(isBlocked ? '🔓' : '🔒')+'</button>' +
+        '<button class="mini-btn '+(isBlocked ? 'del' : 'edit')+'" onclick="adminToggleBlock(\''+u.username+'\')" title="'+(isBlocked ? 'Desbloquear usuário' : 'Bloquear usuário (desativar acesso)')+'">'+(isBlocked ? '🔓' : '🔒')+'</button>' +
         (u.username !== 'Martins' ? '<button class="mini-btn del" onclick="adminDeleteUser(\''+u.username+'\')" title="Excluir usuário">🗑️</button>' : '') +
+      '</div>' +
+      '<div class="user-perms">' +
+        '<span class="perm-title">Autorizações — toque para ativar ou desativar cada função</span>' +
+        (isAdminUser
+          ? '<span class="perm-full">👑 Administrador tem acesso total a todas as funções.</span>'
+          : PERM_LABELS.map(function(pl) {
+              var on = !!perms[pl.key];
+              return '<button class="perm-chip '+(on?'on':'off')+'" onclick="adminTogglePermissao(\''+u.username+'\',\''+pl.key+'\')" title="Toque para '+(on?'desativar':'ativar')+'">'+(on?'✅':'⛔')+' '+pl.label+'</button>';
+            }).join('')) +
       '</div>' +
     '</div>';
   });
@@ -3310,6 +3378,19 @@ window.adminToggleBlock = function(username) {
     saveUsers(users);
     renderUsersList();
     toast.success("Status do usuário alterado.");
+  }
+};
+
+window.adminTogglePermissao = function(username, chave) {
+  var users = getUsers();
+  var user = users.find(function(u) { return u.username === username; });
+  if (user && user.role !== "admin") {
+    if (!user.permissoes || typeof user.permissoes !== "object") user.permissoes = permissoesPadrao();
+    user.permissoes[chave] = !user.permissoes[chave];
+    saveUsers(users);
+    renderUsersList();
+    var pl = PERM_LABELS.find(function(x) { return x.key === chave; });
+    toast.success(escapeHtml(user.name) + ": " + (pl ? pl.label : chave) + " " + (user.permissoes[chave] ? "ativada ✅" : "desativada ⛔") + ".");
   }
 };
 
@@ -3389,7 +3470,8 @@ function handleAddUser() {
     role: r,
     name: u,
     blocked: false,
-    requiresPasswordChange: true
+    requiresPasswordChange: true,
+    permissoes: permissoesPadrao()
   });
   saveUsers(users);
   
@@ -3589,6 +3671,15 @@ function wireEvents(){
 }
 
 function switchTab(t){
+  if (t === "usuarios" && !(state.user && state.user.role === "admin")) {
+    toast.warning("⛔ Apenas administradores podem gerenciar usuários.");
+    return;
+  }
+  if (state.user && state.user.role !== "admin") {
+    var pPerm = getPermissoes(state.user);
+    if (t === "plantao" && !pPerm.abaPlantao) { toast.warning("⛔ Você não tem autorização para acessar a Aba Plantão."); return; }
+    if (t === "mensal" && !pPerm.abaMensal) { toast.warning("⛔ Você não tem autorização para acessar a Aba Mensal."); return; }
+  }
   tab=t;
   $("tabPlantao").classList.toggle("active",t==="plantao");
   $("tabChecklist").classList.toggle("active",t==="checklist");
