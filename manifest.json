@@ -2,7 +2,7 @@
   "name": "Sistema de Deslocamento VTR",
   "short_name": "VTR",
   "description": "Controle de deslocamento de Viatura de Resgate (VTR)",
-  "start_url": "./sistema-vtr-corrigido.html",
+  "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#0e5a77",
